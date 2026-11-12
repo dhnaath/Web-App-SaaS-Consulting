@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Link } from "@tanstack/react-router";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { useKembaliButtonClass } from "@/hooks/useKembaliButtonClass";
 import { HeaderNavPills, ShellHeader } from "@/app/shell-header";
 import { CardMoreMenu } from "@/components/common/CardMoreMenu";

@@ -11,7 +11,7 @@ import {
   Plus,
   BookOpen,
 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { useDeletedItems } from "../hooks/useDeletedItems";
 import { useScrollRestore } from "../hooks/useScrollRestore";
 

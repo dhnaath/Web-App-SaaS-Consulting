@@ -3,40 +3,17 @@ import { innovationQualityOrgFrameworks } from "@/data/frameworksInnovationQuali
 import { operationsAndFinanceFrameworks } from "@/data/frameworksOperations";
 import { salesTechPRFrameworks } from "@/data/frameworksSalesTechPR";
 import { sustainabilityAndHRFrameworks } from "@/data/frameworksSustainabilityHR";
+import type {
+  FrameworkContent,
+  FrameworkCategory,
+  MBAPillar,
+} from "@/data/types/framework";
 
-export interface FrameworkContent {
-  teori: {
-    deskripsi: string;
-    manfaat: string;
-  };
-  layout: {
-    tipe: string;
-    elemen: string[];
-    visualType?: string;
-  };
-  draft: Array<{
-    bagian: string;
-    hint: string;
-  }>;
-  tutorial: Array<{
-    step: string;
-    desc: string;
-  }>;
-  actionPlan: string[];
-}
-
-export interface FrameworkCategory {
-  name: string;
-  pillar: string;
-  frameworks: string[];
-}
-
-export interface MBAPillar {
-  id: string;
-  name: string;
-  description: string;
-  categories: string[];
-}
+export type {
+  FrameworkContent,
+  FrameworkCategory,
+  MBAPillar,
+} from "@/data/types/framework";
 
 export const MBA_PILLARS: MBAPillar[] = [
   {

@@ -1,13 +1,13 @@
 import React from "react";
 import { createRoute, type AnyRoute } from "@tanstack/react-router";
-import {
-  WiraView,
-  KlienWorkspaceView,
-  CatatanView,
-  LainnyaView,
-} from "@/features/nonWhiteApps/NonWhiteAppRenderer";
-import ProductApp from "@/features/product/App";
 import { AppShell } from "@/app/app-shell";
+import { lazyComponent, lazyNamed } from "../lazyRoute";
+
+const WiraView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "WiraView", "Memuat Wira...");
+const KlienWorkspaceView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "KlienWorkspaceView", "Memuat Ruang Kerja Klien...");
+const CatatanView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "CatatanView", "Memuat Catatan...");
+const LainnyaView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "LainnyaView", "Memuat Modul Lainnya...");
+const ProductApp = lazyComponent(() => import("@/features/product/App"), "Memuat Katalog Produk...");
 
 const WIRA_KEYS = [
   "budget",

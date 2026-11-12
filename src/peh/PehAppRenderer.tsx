@@ -70,15 +70,20 @@ import { AdvocacyApp } from "./components/apps/society/AdvocacyApp";
 import { GlobalOverview } from "./components/dashboard/GlobalOverview";
 import { InnovationsHub } from "./components/dashboard/InnovationsHub";
 import { EcosystemComparison } from "./components/dashboard/EcosystemComparison";
+import { PEHLayout } from "./PEHLayout";
+
+export { PEHLayout };
 
 function wrapWithShell(title: string, subtitle: string, Component: React.ComponentType) {
   return function ShellWrappedView() {
     return (
-      <AppShell title={title} subtitle={subtitle}>
-        <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 py-4 space-y-6">
-          <Component />
-        </div>
-      </AppShell>
+      <PEHLayout>
+        <AppShell title={title} subtitle={subtitle}>
+          <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 py-4 space-y-6">
+            <Component />
+          </div>
+        </AppShell>
+      </PEHLayout>
     );
   };
 }

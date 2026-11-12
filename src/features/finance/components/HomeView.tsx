@@ -11,7 +11,7 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { useDebts } from "../hooks/useDebts";
 import { useScrollRestore } from "../hooks/useScrollRestore";
 

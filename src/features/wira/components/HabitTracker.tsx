@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { Droplet, Check } from "lucide-react";
 import { cn } from "../lib/utils";
 import confetti from "canvas-confetti";

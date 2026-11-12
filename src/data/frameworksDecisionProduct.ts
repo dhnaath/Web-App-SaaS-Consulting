@@ -1,4 +1,4 @@
-import { FrameworkContent } from "@/frameworkData";
+import type { FrameworkContent } from "@/data/types/framework";
 
 export const decisionAndProductFrameworks: Record<string, FrameworkContent> = {
   "Decision Tree Analysis": {

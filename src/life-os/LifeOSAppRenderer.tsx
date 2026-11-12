@@ -22,16 +22,21 @@ import { HabitTrackerView } from "./components/habit-tracker/HabitTrackerView";
 import { ContactsView } from "./components/contacts/ContactsView";
 import { SubscriptionTrackerView } from "./components/subscriptions/SubscriptionTrackerView";
 import { AssetsTrackerView } from "./components/assets/AssetsTrackerView";
+import { LifeOSLayout } from "./LifeOSLayout";
+
+export { LifeOSLayout };
 
 function wrapLifeWithShell(title: string, subtitle: string, Component: React.ComponentType) {
   return function LifeShellWrappedView() {
     return (
-      <AppShell title={title} subtitle={subtitle}>
-        <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 py-4 space-y-6">
-          <Component />
-        </div>
-        <ActionModals />
-      </AppShell>
+      <LifeOSLayout>
+        <AppShell title={title} subtitle={subtitle}>
+          <div className="w-full max-w-[1720px] mx-auto px-4 sm:px-6 py-4 space-y-6">
+            <Component />
+          </div>
+          <ActionModals />
+        </AppShell>
+      </LifeOSLayout>
     );
   };
 }

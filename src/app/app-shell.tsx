@@ -1,7 +1,6 @@
 import { AppDock } from "./shell/app-dock";
 import { ShellSidebarProvider } from "./shell-sidebar";
 import { ShellHeaderProvider } from "./shell-header";
-import { SidebarPillarsMenu } from "./shell/SidebarPillarsMenu";
 import {
   ShellSectionsProvider,
   type ShellSection,
@@ -13,76 +12,9 @@ import {
 import { useState, useEffect, useMemo, useRef, useCallback, useLayoutEffect } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  Scale,
-  FileCheck,
-  Coins,
-  ShieldCheck,
-  LayoutDashboard,
-  Users,
-  FolderKanban,
-  CheckSquare,
   CheckCircle2,
-  NotebookText,
-  CalendarDays,
-  Compass,
-  MessagesSquare,
-  Activity,
-  HeartHandshake,
-  Navigation,
-  Menu,
-  Building,
-  TrendingUp,
-  Package,
-  Grid2X2,
-  MoreHorizontal,
-  MoreVertical,
-  Star,
-  User,
   Settings,
-  Wallet,
-  ChevronRight,
-  Timer,
-  Clock,
-  Flame,
-  Dumbbell,
-  Key,
-  Briefcase,
-  Target,
-  BookOpen,
-  Lightbulb,
-  Utensils,
-  Plane,
-  ShoppingCart,
-  Heart,
-  HeartPulse,
-  GraduationCap,
-  PenTool,
-  DollarSign,
-  Building2,
-  Store,
-  Receipt,
-  LineChart,
-  Truck,
   Home,
-  Palette,
-  Car,
-  Film,
-  GitFork,
-  ShieldAlert,
-  FileCode2,
-  Code,
-  LayoutGrid,
-  Wrench,
-  Pocket,
-  ShoppingBag,
-  Vault,
-  Luggage,
-  Landmark,
-  Camera,
-  Layers,
-  Workflow,
-  Sparkles,
-  Eye,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -109,295 +41,20 @@ import { useDockStore } from "@/hooks/useDockState";
 import { useLiquidGlassSetting } from "@/hooks/useLiquidGlassSetting";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { getAppMetaByRoute } from "@/utils/appLookup";
-import {
-  BIZ_OPS_SUMMARY_DESC,
-  BIZ_OPS_TOTAL_BADGE,
-} from "@/features/business-operations/BusinessOperationsCustomersPage";
 import { getRaw, setRaw, removeRaw } from "../core/rawStorage";
+import { 
+  AppModeId, 
+  ModeItem, 
+  APP_MODES, 
+  SUPER_CATEGORIES, 
+  CATEGORY_META 
+} from "./shell/appModesData";
+import { ShellLeftSidebar } from "./shell/ShellLeftSidebar";
+import { ShellRightDrawer } from "./shell/ShellRightDrawer";
 
-
-export type AppModeId =
-  | "financial"
-  | "business"
-  | "employment"
-  | "creative"
-  | "research"
-  | "sharia"
-  | "personal"
-  | "family"
-  | "public_affairs"
-  | "networks"
-  | "phase_side";
-
-export interface ModeItem {
-  id: AppModeId;
-  label: string;
-  badge: string;
-  desc: string;
-  icon: LucideIcon;
-  badgeClass: string;
-  links: { to: string; label: string; icon: LucideIcon }[];
-}
-
-export const APP_MODES: ModeItem[] = [
-  {
-    id: "financial",
-    label: "Financial Planning and Wealth Management",
-    badge: "25 Modul",
-    desc: "Semua (25) · Surety (5) · Flow (5) · Build (5) · Grow (5) · Legacy (5)",
-    icon: Coins,
-    badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-    links: [
-      { to: "/financial-planning", label: "Financial Planning Hub", icon: Coins },
-      { to: "/surety", label: "Tahap 1: Surety & Kepatuhan", icon: ShieldCheck },
-      { to: "/flow", label: "Tahap 2: Flow & Cashflow", icon: Wallet },
-      { to: "/build", label: "Tahap 3: Build & Portofolio", icon: Building },
-      { to: "/grow", label: "Tahap 4: Grow & Wealth Asset", icon: TrendingUp },
-      { to: "/legacy", label: "Tahap 5: Legacy & Suksesi", icon: BookOpen },
-      { to: "/asset", label: "Kuadran Aset", icon: Briefcase },
-      { to: "/earning", label: "Kuadran Pendapatan", icon: DollarSign },
-      { to: "/liability", label: "Kuadran Liabilitas", icon: Receipt },
-      { to: "/expense", label: "Kuadran Pengeluaran", icon: ShoppingCart },
-      { to: "/valuasi", label: "Valuasi Bisnis MAPPI", icon: Landmark },
-    ],
-  },
-  {
-    id: "business",
-    label: "Business Administration and Operations Management",
-    badge: BIZ_OPS_TOTAL_BADGE,
-    desc: BIZ_OPS_SUMMARY_DESC,
-    icon: Store,
-    badgeClass: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
-    links: [
-      { to: "/business-operations", label: "Business Administration and Operations Management", icon: Store },
-      { to: "/100-framework", label: "8 Pilar Strategis & 100 MBA Tools", icon: Grid2X2 },
-      { to: "/peh/vendors", label: "Procurement", icon: Truck },
-      { to: "/katalog-produk", label: "Inventory Management", icon: Package },
-      { to: "/klien", label: "Client Management", icon: Briefcase },
-      { to: "/portal", label: "Customer Relations", icon: MessagesSquare },
-      { to: "/lainnya?app=queue-line", label: "Service Management", icon: Clock },
-      { to: "/expense-tracker", label: "Expenses and Assets", icon: Receipt },
-      { to: "/statistics", label: "Data Management", icon: LineChart },
-    ],
-  },
-  {
-    id: "employment",
-    label: "Productivity Workspace and Workflow Systems",
-    badge: "9 Modul",
-    desc: "Semua (9) · Planning (1) · Workflow (2) · Resources (2) · Coordination (1) · Governance (2) · Ownership (1)",
-    icon: Briefcase,
-    badgeClass: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
-    links: [
-      { to: "/work-productivity", label: "Productivity Workspace Hub", icon: Briefcase },
-      { to: "/peh/milestones", label: "Goals & Milestones", icon: Target },
-      { to: "/peh/workflows", label: "Workflow & Delivery Pipeline", icon: CheckCircle2 },
-      { to: "/peh/projects", label: "Content Production Pipeline", icon: FolderKanban },
-      { to: "/peh/vendors", label: "Vendor & Service Management", icon: Building },
-      { to: "/peh/procurement", label: "Procurement & Purchase Orders", icon: DollarSign },
-      { to: "/peh/meetings", label: "Meetings & Decision Log", icon: CheckSquare },
-      { to: "/peh/incidents", label: "Issues & Incident Management", icon: ShieldAlert },
-      { to: "/peh/compliance", label: "Compliance & Regulatory Audit", icon: ShieldCheck },
-      { to: "/peh/cap-table", label: "Equity & Cap Table", icon: LayoutGrid },
-    ],
-  },
-  {
-    id: "creative",
-    label: "Creative Workspace and Media Production",
-    badge: "6 Modul",
-    desc: "Semua (6) · Studio (2) · Publishing (1) · Media (2) · Interactive (1)",
-    icon: Palette,
-    badgeClass: "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20",
-    links: [
-      { to: "/creative-workspace", label: "Creative Workspace Hub", icon: Palette },
-      { to: "/design", label: "Design Management", icon: Palette },
-      { to: "/movies", label: "Video Production", icon: Film },
-      { to: "/writing", label: "Writing and Publishing", icon: PenTool },
-      { to: "/podcasts", label: "Audio Production", icon: Activity },
-      { to: "/photography", label: "Photography and Media", icon: Camera },
-      { to: "/games", label: "Interactive Media", icon: Code },
-    ],
-  },
-  {
-    id: "research",
-    label: "Research Foundations and Reference Frameworks",
-    badge: "6 Modul",
-    desc: "Semua (6) · Frameworks (2) · Reference (2) · Research (2)",
-    icon: GraduationCap,
-    badgeClass: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
-    links: [
-      { to: "/research-frameworks", label: "Research Frameworks Hub", icon: GraduationCap },
-      { to: "/100-framework", label: "100 Strategic Frameworks", icon: Grid2X2 },
-      { to: "/valuasi", label: "Business Valuation & MAPPI", icon: Building },
-      { to: "/research-manager", label: "Research Intelligence", icon: Compass },
-      { to: "/kurasi/bisnis", label: "Kurasi Pengetahuan Bisnis", icon: BookOpen },
-      { to: "/knowledge-base", label: "Knowledge Base & Wiki", icon: NotebookText },
-      { to: "/courses", label: "Academic Studies & Credentials", icon: GraduationCap },
-    ],
-  },
-  {
-    id: "sharia",
-    label: "Islamic Principles and Sharia Values",
-    badge: "16 Modul",
-    desc: "Semua (16) · Sosial (3) · Komersial (5) · Proteksi (1) · Simpanan (1) · Zakat (3) · Investasi (1) · Kepatuhan (2)",
-    icon: Scale,
-    badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-    links: [
-      { to: "/sharia-values", label: "Islamic Principles Hub", icon: Scale },
-      { to: "/syariah/akad?app=tabarru", label: "Tabarru' & Hibah Manager", icon: HeartHandshake },
-      { to: "/syariah/akad?app=mudharabah", label: "Mudharabah Bagi Hasil Usaha", icon: TrendingUp },
-      { to: "/syariah/akad?app=musyarakah", label: "Musyarakah & Kemitraan Bersama", icon: Users },
-      { to: "/syariah/akad?app=murabahah", label: "Murabahah & Margin Transparan", icon: Receipt },
-      { to: "/syariah/akad?app=ijarah", label: "Ijarah & Sewa Jasa (IMBT)", icon: FileCheck },
-      { to: "/zakat?app=maal", label: "Zakat Maal & Portofolio", icon: Coins },
-      { to: "/zakat?app=profesi", label: "Zakat Profesi", icon: Wallet },
-      { to: "/syariah/terlarang?app=riba", label: "Audit Bebas Riba & Gharar", icon: ShieldAlert },
-      { to: "/100-komoditas?tab=syariah", label: "Saham Syariah & Pasar Halal", icon: ShieldCheck },
-    ],
-  },
-  {
-    id: "personal",
-    label: "Personal Life Management",
-    badge: "5 Modul",
-    desc: "Semua (5) · Pengembangan (1) · Refleksi (1) · Kesehatan (2) · Utilitas (1)",
-    icon: Heart,
-    badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-    links: [
-      { to: "/personal-life", label: "Personal Life Hub", icon: Heart },
-      { to: "/habit-tracker", label: "Personal Development", icon: Flame },
-      { to: "/journal", label: "Personal Journaling", icon: BookOpen },
-      { to: "/health?tab=workouts", label: "Health and Fitness", icon: Dumbbell },
-      { to: "/health", label: "Health Records", icon: HeartPulse },
-      { to: "/passwords", label: "Personal Tools", icon: Key },
-    ],
-  },
-  {
-    id: "family",
-    label: "Family Records and Household Planning",
-    badge: "6 Modul",
-    desc: "Semua (6) · Keluarga (3) · Rumah Tangga (2) · Kendaraan (1)",
-    icon: Home,
-    badgeClass: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
-    links: [
-      { to: "/family-records", label: "Family Records Hub", icon: Home },
-      { to: "/peh/family-tree", label: "Family Heritage", icon: GitFork },
-      { to: "/lainnya?app=emergency-hub", label: "Family Safety", icon: ShieldAlert },
-      { to: "/peh/family-budget", label: "Household Finance", icon: Wallet },
-      { to: "/peh/chores", label: "Household Management", icon: CheckSquare },
-      { to: "/peh/pantry", label: "Kitchen Management", icon: Utensils },
-      { to: "/peh/vehicles", label: "Vehicle Records", icon: Car },
-    ],
-  },
-  {
-    id: "public_affairs",
-    label: "Public Affairs and Relations",
-    badge: "6 Modul",
-    desc: "Semua (6) · Civic (3) · Policy (2) · Media (1)",
-    icon: Landmark,
-    badgeClass: "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20",
-    links: [
-      { to: "/public-affairs", label: "Public Relations Hub", icon: Landmark },
-      { to: "/komunitas-warga", label: "Komunitas Warga & RT/RW", icon: Building },
-      { to: "/lainnya?app=public-services-guide", label: "Layanan Publik & Tata Kelola", icon: Compass },
-      { to: "/lainnya?app=civic-calendar", label: "Agenda Musyawarah Publik", icon: CalendarDays },
-      { to: "/peh/advocacy", label: "Advokasi Kebijakan & Regulasi", icon: ShieldAlert },
-      { to: "/peh/media", label: "Humas & Hubungan Media", icon: MessagesSquare },
-      { to: "/zakat", label: "Zakat, Filantropi & Dampak", icon: Wallet },
-    ],
-  },
-  {
-    id: "networks",
-    label: "Contact Directory and Social Networks",
-    badge: "6 Modul",
-    desc: "Semua (6) · Direktori (2) · Relasi (2) · Jaringan (2)",
-    icon: Users,
-    badgeClass: "bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20",
-    links: [
-      { to: "/social-networks", label: "Contact Directory Hub", icon: Users },
-      { to: "/people-manager", label: "People Directory", icon: Users },
-      { to: "/peh/contacts", label: "Contact Directory", icon: Key },
-      { to: "/interaction-manager", label: "Relationship Management", icon: MessagesSquare },
-      { to: "/peh/circle-groups", label: "Groups and Communities", icon: Users },
-      { to: "/peh/mentorship", label: "Professional Networking", icon: Compass },
-      { to: "/peh/gifts", label: "Celebrations and Gifts", icon: Star },
-    ],
-  },
-  {
-    id: "phase_side",
-    label: "Phase: Mutual-Self-Organization",
-    badge: "12 Modul",
-    desc: "Self-Shaping (4) · Mutual-Mapping (4) · Organization-Optimizing (4)",
-    icon: Compass,
-    badgeClass: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
-    links: [
-      { to: "/reliance", label: "Reliance (Kemandirian)", icon: ShieldCheck },
-      { to: "/sufficient", label: "Sufficient (Kecukupan)", icon: CheckCircle2 },
-      { to: "/improvement", label: "Improvement (Perbaikan)", icon: TrendingUp },
-      { to: "/development", label: "Development (Pengembangan)", icon: Sparkles },
-      { to: "/interact", label: "Interact (Interaksi Sosial)", icon: MessagesSquare },
-      { to: "/interest", label: "Interest (Kepentingan Bersama)", icon: Heart },
-      { to: "/intersect", label: "Intersect (Titik Temu)", icon: Layers },
-      { to: "/interdependence", label: "Interdependence (Simbiosis)", icon: Workflow },
-      { to: "/insider", label: "Insider (Tata Kelola Internal)", icon: Eye },
-      { to: "/insight", label: "Insight (Wawasan Strategis)", icon: Lightbulb },
-      { to: "/outward", label: "Outward (Dinamika Eksternal)", icon: Compass },
-      { to: "/outlook", label: "Outlook (Prospek Masa Depan)", icon: TrendingUp },
-    ],
-  },
-];
-
-const CATEGORY_META: Record<string, { icon: LucideIcon; accent: string }> = {
-  // Super Categories
-  "21 Kategori": { icon: LayoutGrid, accent: "text-primary" },
-  "100 Framework": { icon: Grid2X2, accent: "text-purple-600 dark:text-purple-400" },
-  "Keuangan & Pasar": { icon: Wallet, accent: "text-emerald-600 dark:text-emerald-400" },
-  "Kesehatan & Personal": { icon: Heart, accent: "text-rose-600 dark:text-rose-400" },
-  "Kreatif & Akademi": { icon: PenTool, accent: "text-pink-600 dark:text-pink-400" },
-  "Knowledge & Bisnis": { icon: BookOpen, accent: "text-sky-600 dark:text-sky-400" },
-
-  // The 21 Categories
-  "Dapur dan Bahan Makanan": { icon: Utensils, accent: "text-orange-500 dark:text-orange-400" },
-  "Pemeliharaan Rumah dan Utilitas": { icon: Home, accent: "text-amber-600 dark:text-amber-400" },
-  "Kendaraan dan Otomotif": { icon: Car, accent: "text-blue-600 dark:text-blue-400" },
-  "Perjalanan": { icon: Plane, accent: "text-teal-600 dark:text-teal-400" },
-  "Keluarga dan Internal Rumah": { icon: Heart, accent: "text-pink-600 dark:text-pink-400" },
-  "Relasi Jejaring dan Profesional": { icon: Users, accent: "text-indigo-600 dark:text-indigo-400" },
-  "Lingkungan Komunitas Warga": { icon: Building2, accent: "text-emerald-600 dark:text-emerald-400" },
-  "Sosial dan Keagamaan": { icon: HeartHandshake, accent: "text-green-600 dark:text-green-400" },
-  "Keselamatan dan Darurat": { icon: ShieldAlert, accent: "text-rose-600 dark:text-rose-400" },
-  "Perencanaan Alur Kerja Proyek": { icon: FolderKanban, accent: "text-purple-600 dark:text-purple-400" },
-  "Pelaksanaan Tugas dan Karya": { icon: CheckSquare, accent: "text-sky-600 dark:text-sky-400" },
-  "Jadwal dan Kalender": { icon: CalendarDays, accent: "text-blue-500 dark:text-blue-400" },
-  "Fokus dan Kebiasaan": { icon: Timer, accent: "text-yellow-600 dark:text-yellow-400" },
-  "Rapat dan Kolaborasi Tim": { icon: MessagesSquare, accent: "text-violet-600 dark:text-violet-400" },
-  "Manajemen Sumber Daya Manusia": { icon: Users, accent: "text-cyan-600 dark:text-cyan-400" },
-  "Dokumentasi dan Wiki": { icon: BookOpen, accent: "text-emerald-500 dark:text-emerald-400" },
-  "Pengelolaan Form dan Template": { icon: FileCode2, accent: "text-indigo-500 dark:text-indigo-400" },
-  "Keuangan dan Aset": { icon: Wallet, accent: "text-emerald-600 dark:text-emerald-400" },
-  "Vendor dan Logistik Kantor": { icon: Truck, accent: "text-amber-500 dark:text-amber-400" },
-  "Target dan Performa": { icon: Target, accent: "text-rose-500 dark:text-rose-400" },
-  "Utilitas Sistem": { icon: Settings, accent: "text-slate-500 dark:text-slate-400" },
-
-  // Legacy Domain Categories
-  Finance: { icon: Wallet, accent: "text-emerald-600 dark:text-emerald-400" },
-  "Phase Side": { icon: Compass, accent: "text-indigo-600 dark:text-indigo-400" },
-  "100 Tools": { icon: Grid2X2, accent: "text-purple-600 dark:text-purple-400" },
-  Productivity: { icon: CheckSquare, accent: "text-blue-600 dark:text-blue-400" },
-  Personal: { icon: User, accent: "text-rose-600 dark:text-rose-400" },
-  Society: { icon: Users, accent: "text-amber-600 dark:text-amber-400" },
-  "Creative & Media": { icon: PenTool, accent: "text-pink-600 dark:text-pink-400" },
-  "Academy & Tools": { icon: GraduationCap, accent: "text-sky-600 dark:text-sky-400" },
-};
-
-export const SUPER_CATEGORIES = [
-  { id: "All", label: "Semua", icon: LayoutDashboard },
-  { id: "Tools", label: "Tools", icon: Wrench },
-  { id: "100 Framework", label: "100 Framework", icon: Grid2X2 },
-  { id: "Keuangan & Pasar", label: "Keuangan & Pasar", icon: Wallet },
-  { id: "Kesehatan & Personal", label: "Kesehatan & Personal", icon: Heart },
-  { id: "Kreatif & Akademi", label: "Kreatif & Akademi", icon: PenTool },
-  { id: "Knowledge & Bisnis", label: "Knowledge & Bisnis", icon: BookOpen },
-];
-
+// Re-export mode and category items for backward compatibility
+export type { AppModeId, ModeItem };
+export { APP_MODES, SUPER_CATEGORIES };
 
 export function AppShell({
   title,
@@ -413,19 +70,14 @@ export function AppShell({
   const pathname = location.pathname;
   const fullPath = pathname + (location.searchStr || "");
   const rawNav = navKonsultan;
-  const { enabledMenus } = useMenuSettings();
-  const { findItemById, findItemByPath } = useCustomNav();
+  const { enabledMenus: _enabledMenus } = useMenuSettings();
+  const { findItemById: _findItemById, findItemByPath: _findItemByPath } = useCustomNav();
   const { config: blurConfig, blurLevels } = useProgressiveBlurSetting();
   const isDockMinimized = useDockStore((s) => s.isMinimized);
   useLiquidGlassSetting();
   useThemeColor();
 
-
-  // ---------------------------------------------------------------------------
-  // CONTEXT RESOLUTION — determine which nav group / parent-category the route
-  // that is currently open belongs to. This drives BOTH the left sidebar scope
-  // and the header's context pill so the shell adapts to the active app.
-  // ---------------------------------------------------------------------------
+  // CONTEXT RESOLUTION — determine active nav category for header pill
   const contextMatch: { item: NavItem; group: NavGroupType } | null = (() => {
     const sidebarAll: { item: NavItem; group: NavGroupType }[] = [];
     navAllSidebar.forEach((g) => g.items.forEach((item) => sidebarAll.push({ item, group: g })));
@@ -460,11 +112,6 @@ export function AppShell({
   const ContextCategoryIcon = contextCategory
     ? CATEGORY_META[contextCategory]?.icon
     : null;
-
-  // Standalone mini-app config for the current route, so the fallback sidebar
-  // can surface that app's own tabs as per-app navigation.
-
-  // Category currently browsed in the left sidebar. Default to "All".
 
   const isHome = pathname === "/" || pathname === "/home";
   const [hasAppSidebar, setHasAppSidebar] = useState(false);
@@ -511,10 +158,7 @@ export function AppShell({
   const [hasAppHeader, setHasAppHeader] = useState(false);
   const shellHeaderCtx = useMemo(() => ({ setHasAppHeader }), []);
 
-  // Sections published by the open app via useShellSections(). Kept in a ref so
-  // click handlers are never stale; `bump` forces a re-render when they change.
-  // These drive BOTH the sidebar "Di aplikasi ini" list and the header's row of
-  // up to 5 interactive buttons (the header is an elaboration of the sidebar).
+  // Sections published by the open app via useShellSections().
   const sectionsRef = useRef<ShellSection[]>([]);
   const [, setSectionsVersion] = useState(0);
   const bumpSections = useCallback(() => setSectionsVersion((v) => v + 1), []);
@@ -523,11 +167,7 @@ export function AppShell({
     [bumpSections],
   );
 
-  // The section list to surface. Priority: app-registered sections, then a
-  // standalone mini-app's own tabs (deep-linked via ?tab=). Empty otherwise.
-
-  // Measure the (variable-height) contextual header so the scrollable content
-  // always starts exactly below it.
+  // Measure the contextual header so scrollable content starts exactly below it.
   const headerRef = useRef<HTMLElement | null>(null);
   const [headerHeight, setHeaderHeight] = useState(60);
   const [isTopPanelOpen, setIsTopPanelOpen] = useState(false);
@@ -554,7 +194,6 @@ export function AppShell({
     };
   }, [hasAppHeader, pathname, isTopPanelOpen]);
 
-  const [collapsedNavGroups, setCollapsedNavGroups] = useState<Record<string, boolean>>({});
   const [currentMode, setCurrentMode] = useState<AppModeId>(() => {
     try {
       const saved = getRaw("client_os_active_mode") || getRaw("aio_active_mode");
@@ -564,7 +203,6 @@ export function AppShell({
     } catch {}
     return "financial";
   });
-  const [isModeOpen, setIsModeOpen] = useState(false);
 
   useEffect(() => {
     const handleLauncherModeChanged = (e: any) => {
@@ -577,7 +215,7 @@ export function AppShell({
     return () => window.removeEventListener("aio_launcher_mode_changed", handleLauncherModeChanged);
   }, []);
 
-  // Sinkronisasi otomatis workspace aktif dengan route yang sedang dibuka
+  // Sync active workspace mode with route opened
   useEffect(() => {
     if (!pathname || pathname === "/") return;
     if (pathname.includes("financial")) setCurrentMode("financial");
@@ -591,6 +229,7 @@ export function AppShell({
     else if (pathname.includes("public")) setCurrentMode("public_affairs");
     else if (pathname.includes("network") || pathname.includes("social") || pathname.includes("contact")) setCurrentMode("networks");
   }, [pathname]);
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const toggleLeftSidebar75 = () => {
@@ -617,7 +256,6 @@ export function AppShell({
   const [activeSettingsTab, setActiveSettingsTab] = useState("general");
   const { favorites, toggleFavorite } = useFavorites();
 
-  // Gabungan semua item nav untuk daftar Favorit
   const favItems = favorites.map((route) => {
     const meta = getAppMetaByRoute(route);
     return {
@@ -659,7 +297,7 @@ export function AppShell({
   const [isQuickCaptureOpen, setIsQuickCaptureOpen] = useState(false);
   const [isShortcutOpen, setIsShortcutOpen] = useState(false);
   const [isTerminalOpen, setIsTerminalOpen] = useState(false);
-  const [isExpandOpen, setIsExpandOpen] = useState(false);
+  const [_isExpandOpen, setIsExpandOpen] = useState(false);
   const [isRecentOpen, setIsRecentOpen] = useState(false);
   const [isTaskbarOpen, setIsTaskbarOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -683,7 +321,6 @@ export function AppShell({
   // Global Keyboard Shortcuts (Cmd+K / Ctrl+K, +, Esc) & custom dock events
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if user is typing in an input/textarea
       const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
       const isInput = tag === "input" || tag === "textarea" || (e.target as HTMLElement)?.isContentEditable;
 
@@ -812,479 +449,35 @@ export function AppShell({
         initialTab={activeSettingsTab}
       />
 
-      <aside
-        id="sidenavLeft"
-        className={`fixed inset-y-0 left-0 z-50 flex ${
-          isLeftSidebar75
-            ? "w-[75px] bg-primary border-r border-white/20 shadow-xl"
-            : "w-[400px] liquid-glass-sidebar-left"
-        } max-w-[85vw] shrink-0 flex-col transition-all duration-300 ease-in-out ${isLeftOpen ? "translate-x-0" : "-translate-x-full"}`}
-      >
-        {/* Spacer atas: Tombol close / toggle kiri yang sejajar dengan header + 3 dots traffic controls & 3 dots action */}
-        <div
-          className={`w-full h-[60px] sidebar-top-glass shrink-0 flex items-center px-3 ${
-            isLeftSidebar75
-              ? "justify-center px-1 !border-b-0 !border-none !shadow-none"
-              : "justify-between border-b border-white/20 dark:border-white/10"
-          }`}
-        >
-          {!isLeftSidebar75 ? (
-            <>
-              <button
-                type="button"
-                className="size-9 rounded-full aspect-square text-white/90 hover:text-white hover:bg-white/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center shrink-0"
-                onClick={closeLeftSidebar}
-                title="Sembunyikan Navigasi"
-                aria-label="Tutup sidebar kiri"
-              >
-                <WindowPositionLeftIcon size={24} />
-              </button>
+      {/* Sidenav Kiri */}
+      <ShellLeftSidebar
+        isLeftOpen={isLeftOpen}
+        isLeftSidebar75={isLeftSidebar75}
+        closeLeftSidebar={closeLeftSidebar}
+        toggleLeftSidebar75={toggleLeftSidebar75}
+        sidebarView={sidebarView}
+        setSidebarView={setSidebarView}
+        hasAppSidebar={hasAppSidebar}
+        pathname={pathname}
+        setIsLeftOpen={setIsLeftOpen}
+        currentMode={currentMode}
+        blurConfig={blurConfig}
+      />
 
-              {/* 3 Dots: Klik langsung minimize / switch ke mode ringkas 75px */}
-              <button
-                type="button"
-                onClick={toggleLeftSidebar75}
-                className="size-9 rounded-full aspect-square text-white/90 hover:text-white hover:bg-white/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center shrink-0"
-                title="Mode Ringkas 75px (Minimize)"
-                aria-label="Mode ringkas 75px"
-              >
-                <MoreVertical size={20} className="shrink-0" />
-              </button>
-            </>
-          ) : (
-            /* Mode Ringkas 75px: Hanya 3 Dots untuk mengembalikan ke 400px (tombol kedua dihapus) */
-            <div className="w-full flex items-center justify-center">
-              <button
-                type="button"
-                onClick={toggleLeftSidebar75}
-                className="size-9 rounded-full aspect-square text-white/80 hover:text-white hover:bg-white/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center shrink-0"
-                title="Perluas ke Lebar Penuh (400px)"
-                aria-label="Perluas ke 400px"
-              >
-                <MoreHorizontal size={20} className="shrink-0" />
-              </button>
-            </div>
-          )}
-        </div>
+      {/* Sidenav Kanan (Control Center) */}
+      <ShellRightDrawer
+        isRightOpen={isRightOpen}
+        setIsRightOpen={setIsRightOpen}
+        rightSidebarTab={rightSidebarTab}
+        setRightSidebarTab={setRightSidebarTab}
+        favorites={favorites}
+        favItems={favItems}
+        pathname={pathname}
+        fullPath={fullPath}
+        toggleFavorite={toggleFavorite}
+        blurConfig={blurConfig}
+      />
 
-        {/* View switcher: Ribbon Tab - hanya muncul di mode full view (tidak muncul saat minimize) */}
-        {!isLeftSidebar75 && (
-          <div className="sidebar-tab-switcher-bar flex items-end w-full h-10 bg-white/10 dark:bg-white/5 shrink-0 gap-0 relative z-20">
-            {/* Bilah Tab 1: Navigation */}
-            <button
-              type="button"
-              onClick={() => setSidebarView("navigation")}
-              className={`relative flex-1 h-10 flex items-center justify-center gap-2 px-2 text-xs transition-all cursor-pointer rounded-tl-none rounded-tr-xl -mb-px ${
-                sidebarView === "navigation"
-                  ? "sidebar-tab-active-glass !border-b-0"
-                  : "sidebar-tab-inactive-glass"
-              }`}
-              title="Navigation"
-            >
-              <Navigation className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">Navigation</span>
-            </button>
-
-            {/* Bilah Tab 2: Menu */}
-            <button
-              type="button"
-              onClick={() => setSidebarView("menu")}
-              className={`relative flex-1 h-10 flex items-center justify-center gap-2 px-2 text-xs transition-all cursor-pointer rounded-tl-xl rounded-tr-none -mb-px ${
-                sidebarView === "menu"
-                  ? "sidebar-tab-active-glass !border-b-0"
-                  : "sidebar-tab-inactive-glass"
-              }`}
-              title="Menu"
-            >
-              <Menu className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">Menu</span>
-              {hasAppSidebar && (
-                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-white text-primary font-bold shrink-0 shadow-2xs">
-                  Fitur
-                </span>
-              )}
-            </button>
-          </div>
-        )}
-
-        <div
-          className={`flex-1 min-h-0 overflow-y-auto no-scrollbar px-3 ${
-            isLeftSidebar75 ? "pt-1 pb-4 !border-t-0 !border-none !shadow-none" : "pt-5 pb-4"
-          } sidebar-menu-body-glass`}
-        >
-          {/* Slot untuk konten sidebar milik app (target portal ShellSidebar) */}
-          <div
-            id="shellSidebarSlot"
-            className={hasAppSidebar ? "block mb-4" : "hidden"}
-          />
-
-          {sidebarView === "navigation" ? (
-            <div className="flex flex-col gap-3">
-              {!isLeftSidebar75 ? (
-                <div className="flex flex-col gap-3">
-                  {/* 1. Self-Shaping */}
-                  <div className="rounded-xl border border-white/15 dark:border-white/10 bg-white/10 dark:bg-white/5 p-2 flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase text-indigo-600 dark:text-indigo-400 px-1 mb-0.5 flex items-center gap-1">
-                      <ShieldCheck className="size-3" /> 1. Self-Shaping (Fase Diri)
-                    </span>
-                    <div className="grid grid-cols-2 gap-1">
-                      {[
-                        { to: "/reliance", label: "Reliance", icon: ShieldCheck },
-                        { to: "/sufficient", label: "Sufficient", icon: CheckCircle2 },
-                        { to: "/improvement", label: "Improvement", icon: TrendingUp },
-                        { to: "/development", label: "Development", icon: Sparkles },
-                      ].map((item) => {
-                        const isActive = pathname === item.to;
-                        const Icon = item.icon;
-                        return (
-                          <Link
-                            key={item.to}
-                            to={item.to}
-                            onClick={() => {
-                              if (window.innerWidth < 1024) setIsLeftOpen(false);
-                            }}
-                            className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] transition-all border ${
-                              isActive
-                                ? "bg-primary text-white font-semibold border-primary shadow-xs"
-                                : "hover:bg-white/15 dark:hover:bg-white/10 border-transparent text-foreground"
-                            }`}
-                          >
-                            <Icon className="size-3 shrink-0" />
-                            <span className="truncate">{item.label}</span>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* 2. Mutual-Mapping */}
-                  <div className="rounded-xl border border-white/15 dark:border-white/10 bg-white/10 dark:bg-white/5 p-2 flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase text-indigo-600 dark:text-indigo-400 px-1 mb-0.5 flex items-center gap-1">
-                      <Workflow className="size-3" /> 2. Mutual-Mapping (Fase Timbal Balik)
-                    </span>
-                    <div className="grid grid-cols-2 gap-1">
-                      {[
-                        { to: "/interact", label: "Interact", icon: MessagesSquare },
-                        { to: "/interest", label: "Interest", icon: Heart },
-                        { to: "/intersect", label: "Intersect", icon: Layers },
-                        { to: "/interdependence", label: "Interdependence", icon: Workflow },
-                      ].map((item) => {
-                        const isActive = pathname === item.to;
-                        const Icon = item.icon;
-                        return (
-                          <Link
-                            key={item.to}
-                            to={item.to}
-                            onClick={() => {
-                              if (window.innerWidth < 1024) setIsLeftOpen(false);
-                            }}
-                            className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] transition-all border ${
-                              isActive
-                                ? "bg-primary text-white font-semibold border-primary shadow-xs"
-                                : "hover:bg-white/15 dark:hover:bg-white/10 border-transparent text-foreground"
-                            }`}
-                          >
-                            <Icon className="size-3 shrink-0" />
-                            <span className="truncate">{item.label}</span>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* 3. Organization-Optimizing */}
-                  <div className="rounded-xl border border-white/15 dark:border-white/10 bg-white/10 dark:bg-white/5 p-2 flex flex-col gap-1">
-                    <span className="text-[10px] font-bold uppercase text-indigo-600 dark:text-indigo-400 px-1 mb-0.5 flex items-center gap-1">
-                      <Eye className="size-3" /> 3. Organization-Optimizing (Fase Organisasi)
-                    </span>
-                    <div className="grid grid-cols-2 gap-1">
-                      {[
-                        { to: "/insider", label: "Insider", icon: Eye },
-                        { to: "/insight", label: "Insight", icon: Lightbulb },
-                        { to: "/outward", label: "Outward", icon: Compass },
-                        { to: "/outlook", label: "Outlook", icon: TrendingUp },
-                      ].map((item) => {
-                        const isActive = pathname === item.to;
-                        const Icon = item.icon;
-                        return (
-                          <Link
-                            key={item.to}
-                            to={item.to}
-                            onClick={() => {
-                              if (window.innerWidth < 1024) setIsLeftOpen(false);
-                            }}
-                            className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] transition-all border ${
-                              isActive
-                                ? "bg-primary text-white font-semibold border-primary shadow-xs"
-                                : "hover:bg-white/15 dark:hover:bg-white/10 border-transparent text-foreground"
-                            }`}
-                          >
-                            <Icon className="size-3 shrink-0" />
-                            <span className="truncate">{item.label}</span>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                /* Mode Ringkas 75px: 12 ikon modul Phase */
-                <div className="flex flex-col gap-1.5 items-center">
-                  {[
-                    { to: "/reliance", label: "Reliance", icon: ShieldCheck },
-                    { to: "/sufficient", label: "Sufficient", icon: CheckCircle2 },
-                    { to: "/improvement", label: "Improvement", icon: TrendingUp },
-                    { to: "/development", label: "Development", icon: Sparkles },
-                    { to: "/interact", label: "Interact", icon: MessagesSquare },
-                    { to: "/interest", label: "Interest", icon: Heart },
-                    { to: "/intersect", label: "Intersect", icon: Layers },
-                    { to: "/interdependence", label: "Interdependence", icon: Workflow },
-                    { to: "/insider", label: "Insider", icon: Eye },
-                    { to: "/insight", label: "Insight", icon: Lightbulb },
-                    { to: "/outward", label: "Outward", icon: Compass },
-                    { to: "/outlook", label: "Outlook", icon: TrendingUp },
-                  ].map((item) => {
-                    const isActive = pathname === item.to;
-                    const Icon = item.icon;
-                    return (
-                      <Link
-                        key={item.to}
-                        to={item.to}
-                        title={item.label}
-                        className={`p-2 rounded-xl border transition-all hover:scale-105 active:scale-95 ${
-                          isActive
-                            ? "bg-white text-primary border-white font-bold shadow-md ring-2 ring-white/40"
-                            : "bg-white/10 hover:bg-white/20 border-white/20 text-white/90 hover:text-white"
-                        }`}
-                      >
-                        <Icon className="size-4 shrink-0" />
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          ) : (
-            <SidebarPillarsMenu
-              isCompact={isLeftSidebar75}
-              activeMode={currentMode}
-              onNavigate={() => {
-                if (!isLeftSidebar75 && typeof window !== "undefined" && window.innerWidth < 1024) {
-                  setIsLeftOpen(false);
-                }
-              }}
-            />
-          )}
-
-          {blurConfig.enabled && !isLeftSidebar75 && (
-            <div className="sticky bottom-0 inset-x-0 -mx-3 -mb-4 h-8 pointer-events-none z-20">
-              <ProgressiveBlur
-                direction="bottom"
-                height={32}
-                blurLevels={[0.5, 1, 2, 4, 8]}
-                tint={blurConfig.tint ? "linear-gradient(to bottom, transparent 0%, hsl(var(--card) / 0.8) 100%)" : false}
-              />
-            </div>
-          )}
-        </div>
-      </aside>
-
-      <aside id="sidenavRight" className={`fixed inset-y-0 right-0 z-50 flex w-[400px] max-w-[85vw] flex-col liquid-glass-sidebar-right transition-transform duration-300 ease-in-out ${isRightOpen ? "translate-x-0" : "translate-x-full"}`}>
-        {/* Right Sidebar Spacer: Tombol close / toggle kanan yang sejajar dengan header */}
-        <div className="w-full h-[60px] sidebar-top-glass shrink-0 flex items-center justify-end px-3 border-b border-white/20 dark:border-white/10">
-          <button
-            type="button"
-            className="size-9 rounded-full aspect-square text-white/90 hover:text-white hover:bg-white/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center shrink-0"
-            onClick={() => setIsRightOpen(false)}
-            title="Sembunyikan Control Center"
-            aria-label="Tutup sidebar kanan"
-          >
-            <WindowPositionRightIcon size={24} />
-          </button>
-        </div>
-
-        {/* Right Sidebar Tab Switcher: Ribbon Tab diturunkan sejajar serata di bawah garis header 60px */}
-        <div className="sidebar-tab-switcher-bar flex items-end w-full h-10 bg-white/10 dark:bg-white/5 shrink-0 gap-0 relative z-20">
-          <button
-            type="button"
-            onClick={() => setRightSidebarTab("control")}
-            className={`relative flex-1 h-10 flex items-center justify-center gap-2 px-3 text-xs transition-all cursor-pointer rounded-tl-none rounded-tr-xl -mb-px ${
-              rightSidebarTab === "control"
-                ? "sidebar-tab-active-glass !border-b-0"
-                : "sidebar-tab-inactive-glass"
-            }`}
-          >
-            <Settings className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">Control</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setRightSidebarTab("favorites")}
-            className={`relative flex-1 h-10 flex items-center justify-center gap-2 px-3 text-xs transition-all cursor-pointer rounded-tl-xl rounded-tr-none -mb-px ${
-              rightSidebarTab === "favorites"
-                ? "sidebar-tab-active-glass !border-b-0"
-                : "sidebar-tab-inactive-glass"
-            }`}
-          >
-            <Star className={`h-3.5 w-3.5 shrink-0 ${rightSidebarTab === "favorites" ? "text-amber-500 fill-amber-500" : "text-white/80"}`} />
-            <span className="truncate">Favorit</span>
-            {favorites.length > 0 && (
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold leading-none shrink-0 ${
-                rightSidebarTab === "favorites" ? "bg-amber-500/20 text-amber-600 dark:text-amber-400" : "bg-muted text-muted-foreground"
-              }`}>
-                {favorites.length}
-              </span>
-            )}
-          </button>
-        </div>
-
-        <div className="flex-1 min-h-0 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-4 py-4 sm:px-5 sidebar-menu-body-glass">
-          {rightSidebarTab === "favorites" ? (
-            favItems.length > 0 ? (
-              <div className="flex flex-col gap-1.5 w-full">
-                {favItems.map((item) => {
-                  const FavIcon = item.icon || Star;
-                  const isActive = pathname === item.to || fullPath === item.to;
-                  const toPath = item.to.split("?")[0];
-                  const toSearch = item.to.includes("?")
-                    ? Object.fromEntries(new URLSearchParams(item.to.split("?")[1]))
-                    : undefined;
-                  return (
-                    <div
-                      key={item.to}
-                      className={`group flex items-center justify-between rounded-xl px-2.5 py-2 text-xs transition-all border backdrop-blur-md ${
-                        isActive
-                          ? "bg-white/25 dark:bg-white/10 border-primary/40 text-primary shadow-2xs font-semibold"
-                          : "bg-white/10 dark:bg-white/5 border-white/15 dark:border-white/10 text-foreground hover:bg-white/20 dark:hover:bg-white/10"
-                      }`}
-                    >
-                      <Link
-                        to={toPath as any}
-                        search={toSearch as any}
-                        onClick={() => setIsRightOpen(false)}
-                        className="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer"
-                      >
-                        <div
-                          className={`grid h-7 w-7 place-items-center rounded-lg shrink-0 ${
-                            isActive
-                              ? "bg-primary/20 text-primary"
-                              : "bg-white/15 dark:bg-white/10 text-muted-foreground group-hover:text-foreground"
-                          }`}
-                        >
-                          <FavIcon className={`h-4 w-4 ${!isActive && item.color ? item.color : ""}`} />
-                        </div>
-                        <span className="truncate">{item.label}</span>
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => toggleFavorite(item.to)}
-                        className="p-1 rounded-lg text-amber-500 hover:bg-amber-500/15 transition-colors cursor-pointer shrink-0"
-                        title="Hapus dari Favorit"
-                      >
-                        <Star className="h-3.5 w-3.5 fill-amber-500" />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : null
-          ) : (
-          <nav className="flex flex-col gap-2.5 items-start w-full">
-            <div className="grid grid-cols-1 gap-2 w-full">
-              {[
-                {
-                  to: "/wallet",
-                  title: "Wallet",
-                  subtitle: "Dompet kas, komparasi harga & nota belanja",
-                  badge: "Dompet",
-                  icon: Wallet,
-                  accentColor: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30",
-                },
-                {
-                  to: "/pocket",
-                  title: "Pocket",
-                  subtitle: "Kartu akses, voucher, tiket & slip saku",
-                  badge: "Saku",
-                  icon: Pocket,
-                  accentColor: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
-                },
-                {
-                  to: "/pouch",
-                  title: "Pouch",
-                  subtitle: "Organizer dokumen esensial & kit bepergian",
-                  badge: "Travel",
-                  icon: ShoppingBag,
-                  accentColor: "bg-pink-500/15 text-pink-600 dark:text-pink-400 border-pink-500/30",
-                },
-                {
-                  to: "/vault",
-                  title: "Vault",
-                  subtitle: "Brankas digital & identitas resmi terenkripsi",
-                  badge: "Kredensial",
-                  icon: Vault,
-                  accentColor: "bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30",
-                },
-                {
-                  to: "/trunk",
-                  title: "Trunk",
-                  subtitle: "Gudang perkakas & inventaris rumah tangga",
-                  badge: "Gudang",
-                  icon: Luggage,
-                  accentColor: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
-                },
-              ].map((item) => {
-                const ItemIcon = item.icon;
-                const isActive = pathname === item.to;
-                return (
-                  <Link
-                    key={item.to}
-                    to={item.to as any}
-                    onClick={() => setIsRightOpen(false)}
-                    className={`group flex items-center justify-between rounded-xl p-2.5 transition-all border backdrop-blur-md cursor-pointer ${
-                      isActive
-                        ? "bg-white/25 dark:bg-white/10 border-primary/40 text-primary shadow-xs font-semibold ring-1 ring-primary/30"
-                        : "bg-white/10 dark:bg-white/5 border-white/15 dark:border-white/10 text-foreground hover:bg-white/20 dark:hover:bg-white/10 hover:border-white/25"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className={`grid h-8 w-8 place-items-center rounded-lg shrink-0 border ${item.accentColor} transition-transform group-hover:scale-105`}>
-                        <ItemIcon className="h-4 w-4" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-xs truncate text-foreground group-hover:text-primary transition-colors">
-                            {item.title}
-                          </span>
-                          <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded-full bg-muted/70 text-muted-foreground">
-                            {item.badge}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                          {item.subtitle}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-foreground group-hover:translate-x-0.5 transition-all shrink-0 ml-1" />
-                  </Link>
-                );
-              })}
-            </div>
-          </nav>
-          )}
-
-          {blurConfig.enabled && (
-            <div className="sticky bottom-0 inset-x-0 -mx-4 -mb-4 sm:-mx-5 sm:-mb-4 h-8 pointer-events-none z-20">
-              <ProgressiveBlur
-                direction="bottom"
-                height={32}
-                blurLevels={[0.5, 1, 2, 4, 8]}
-                tint={blurConfig.tint ? "linear-gradient(to bottom, transparent 0%, hsl(var(--card) / 0.8) 100%)" : false}
-              />
-            </div>
-          )}
-        </div>
-
-      </aside>
       <main
         id="mainContent"
         className={`relative flex flex-1 flex-col overflow-hidden transition-[margin,width] duration-300 ease-in-out ${
@@ -1306,7 +499,7 @@ export function AppShell({
           />
         )}
         <header ref={headerRef as any} className={`absolute top-0 inset-x-0 ${isTopPanelOpen ? "z-50" : "z-20"} pointer-events-none transition-all duration-300`}>
-          {/* Panel Bar Atas (Gear Setting): Full Panel Atas Kotak Full (Sama Seperti Sidebar Kiri & Kanan) */}
+          {/* Panel Bar Atas (Gear Setting): Full Panel Atas Kotak Full */}
           {isTopPanelOpen && (
             <div className="pointer-events-auto w-full">
               <div
@@ -1314,7 +507,7 @@ export function AppShell({
                 className="w-full flex flex-col bg-primary border-b border-white/20 dark:border-white/10 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300"
                 style={{ backgroundColor: "hsl(var(--primary))" }}
               >
-                {/* Top Bar Header Panel Atas: Kotak full sejajar gaya header sidebar kiri & kanan */}
+                {/* Top Bar Header Panel Atas */}
                 <div className="w-full h-[60px] sidebar-top-glass shrink-0 flex items-center justify-between px-4 sm:px-6 border-b border-white/20 dark:border-white/10 text-white">
                   <div className="flex items-center gap-2.5">
                     <div className="size-8 rounded-xl bg-white/15 text-white flex items-center justify-center shadow-xs">
@@ -1347,11 +540,10 @@ export function AppShell({
           )}
 
           <div className="flex items-center justify-between gap-3 px-3 py-3 sm:px-5 pointer-events-none">
-            {/* Bagian Kiri Header: 2 Floating Pills Terpisah (Pill 1: Home & Nav Toggle, Pill 2: Panah Kiri, Refresh & Panah Kanan) */}
+            {/* Bagian Kiri Header: 2 Floating Pills */}
             <div className="flex items-center gap-2">
               {/* Pill 1: Nav Toggle (Sidebar Kiri) & Home */}
               <div className="pointer-events-auto flex items-center gap-1 p-1 rounded-full liquid-glass-header-pill">
-                {/* Toggle Sidebar Kiri (Paling Kiri) */}
                 <button
                   type="button"
                   className={`relative z-10 size-9 rounded-full aspect-square shrink-0 transition-colors flex items-center justify-center cursor-pointer ${
@@ -1375,7 +567,6 @@ export function AppShell({
                   <WindowPositionLeftIcon size={24} />
                 </button>
 
-                {/* Icon Home (Di Kanan Toggle Sidebar) */}
                 <Link
                   to="/"
                   className="relative z-10 size-9 rounded-full aspect-square shrink-0 transition-colors flex items-center justify-center cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -1392,7 +583,7 @@ export function AppShell({
               </div>
             </div>
 
-            {/* Bagian Kanan Header: 2 Floating Pills (Pill 1: Wadah Utama untuk Elemen Aksi & Portal, Pill 2: Pengaturan & Sidebar Kanan) */}
+            {/* Bagian Kanan Header: 2 Floating Pills */}
             <div className="flex items-center gap-2 min-w-0">
               {/* Pill Shape Wadah Utama tempat elemen aksi, modul, & portal disiapkan */}
               <div
@@ -1421,7 +612,6 @@ export function AppShell({
 
               {/* Pill 2: Pengaturan (Panel Atas) & Sidebar Kanan (Control Center) */}
               <div className="pointer-events-auto flex items-center gap-1 p-1 rounded-full liquid-glass-header-pill">
-                {/* Toggle Panel Atas (Akun, Tema, Region / Setting) */}
                 <button
                   type="button"
                   className={`relative z-10 size-9 rounded-full aspect-square shrink-0 transition-colors flex items-center justify-center cursor-pointer ${
@@ -1436,7 +626,6 @@ export function AppShell({
                   <Settings size={20} className="shrink-0" />
                 </button>
 
-                {/* Toggle Sidebar Kanan (Control Center) */}
                 <button
                   type="button"
                   className={`relative z-10 size-9 rounded-full aspect-square shrink-0 transition-colors flex items-center justify-center cursor-pointer ${
@@ -1464,10 +653,9 @@ export function AppShell({
           </div>
         </header>
 
-        {/* Progressive Blur (Top & Bottom Viewport Transitions - Planes & Apple VisionOS Inspired) */}
+        {/* Progressive Blur (Top & Bottom Viewport Transitions) */}
         {blurConfig.enabled && (
           <>
-            {/* Top progressive blur: seamless melt for scrolling content under header pills */}
             <ProgressiveBlur
               direction="top"
               height={96}
@@ -1479,7 +667,6 @@ export function AppShell({
               }}
             />
 
-            {/* Bottom progressive blur: soft dissolve above floating dock and edge */}
             <ProgressiveBlur
               direction="bottom"
               height={isDockMinimized ? 56 : 116}
@@ -1529,7 +716,7 @@ export function AppShell({
             setIsTaskbarOpen(false);
           }}
           onExpand={() => {
-            setIsExpandOpen((prev) => !prev);
+            setIsExpandOpen(true);
             setIsQuickCaptureOpen(false);
             setIsShortcutOpen(false);
             setIsTerminalOpen(false);
@@ -1555,12 +742,12 @@ export function AppShell({
           isQuickCaptureOpen={isQuickCaptureOpen}
           isShortcutOpen={isShortcutOpen}
           isTerminalOpen={isTerminalOpen}
-          isExpandOpen={isExpandOpen}
+          isExpandOpen={_isExpandOpen}
           isRecentOpen={isRecentOpen}
           isTaskbarOpen={isTaskbarOpen}
         />
 
-        {/* Global Modals: Command Palette, Quick Capture, Shortcut, Terminal, Recent & Taskbar */}
+        {/* Global Modals */}
         <CommandPalette
           isOpen={isCommandPaletteOpen}
           onClose={() => setIsCommandPaletteOpen(false)}

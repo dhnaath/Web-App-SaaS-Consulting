@@ -10,7 +10,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, LayoutGroup, motion } from "motion/react";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { Maximize2, Minimize2 } from "lucide-react";
 
 type ShellHeaderCtxValue = {

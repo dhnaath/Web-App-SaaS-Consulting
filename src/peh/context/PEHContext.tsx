@@ -330,7 +330,7 @@ interface PEHContextType {
 
 const STORAGE_KEY = 'peh_pfs_workspace_v2';
 
-const PEHContext = createContext<PEHContextType | undefined>(undefined);
+export const PEHContext = createContext<PEHContextType | undefined>(undefined);
 
 export const PEHProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Workspace state (default: peh, seamlessly switchable to pfs)

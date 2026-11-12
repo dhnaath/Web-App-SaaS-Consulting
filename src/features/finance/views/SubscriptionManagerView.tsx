@@ -9,7 +9,7 @@ import {
   Settings,
   Target,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useDeletedItems } from "../hooks/useDeletedItems";
 
 export function SubscriptionManagerView({
