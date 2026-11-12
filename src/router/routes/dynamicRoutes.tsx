@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import {
   createRoute,
   useNavigate,
@@ -8,115 +8,199 @@ import {
 import { AppShell } from "@/app/app-shell";
 import { navKonsultan, type NavItem } from "@/config/nav";
 import { STANDALONE_APPS } from "@/features/standalone/standaloneAppsData";
-import { StandaloneAppView } from "@/features/standalone/StandaloneAppView";
 import { ArrowLeft } from "lucide-react";
+import { RouteLoadingFallback } from "@/components/RouteLoadingFallback";
+import { lazyNamed } from "../lazyRoute";
 
-// PEH Imports
-import {
-  PehHabitsView,
-  PehJournalView,
-  PehGoalsView,
-  PehReadingView,
-  PehFitnessView,
-  PehSleepView,
-  PehVaultView,
-  PehDocumentsView,
-  PehSubscriptionsView,
-  PehBudgetView,
-  PehInsuranceView,
-  PehChoresView,
-  PehMaintenanceView,
-  PehPantryView,
-  PehPlantsView,
-  PehVehiclesView,
-  PehFamilyTreeView,
-  PehFamilyHealthView,
-  PehFamilyRecipesView,
-  PehTraditionsView,
-  PehFamilyBudgetView,
-  PehPetCareView,
-  PehWorkflowsView,
-  PehVendorsView,
-  PehIncidentsView,
-  PehProcurementView,
-  PehComplianceView,
-  PehAssetsView,
-  PehIpLicensesView,
-  PehCapTableView,
-  PehInvestmentsView,
-  PehRealEstateView,
-  PehContactsView,
-  PehMilestonesView,
-  PehGiftsView,
-  PehIntroductionsView,
-  PehMentorshipView,
-  PehKnowledgeView,
-  PehMeetingsView,
-  PehProjectsView,
-  PehTasksView,
-  PehTimeAuditView,
-  PehCivicView,
-  PehVolunteeringView,
-  PehCharityView,
-  PehCommunityEventsView,
-  PehAdvocacyView,
-  PehGlobalOverviewView,
-  PehInnovationsHubView,
-  PehEcosystemComparisonView,
-} from "@/peh/PehAppRenderer";
+// Lazy-loaded standalone and framework fallbacks
+const LazyStandaloneAppView = lazyNamed(
+  () => import("@/features/standalone/StandaloneAppView"),
+  "StandaloneAppView",
+  "Memuat Modul Standalone..."
+);
 
-// LifeOS Imports
-import {
-  LifeOSPlannerView,
-  LifeOSFinanceView,
-  LifeOSSimpleFinanceView,
-  LifeOSBudgetView,
-  LifeOSWeightView,
-  LifeOSDoctorView,
-  LifeOSHouseholdView,
-  LifeOSWishlistView,
-  LifeOSGroceryView,
-  LifeOSMovieView,
-  LifeOSRecipeView,
-  LifeOSCertificateView,
-  LifeOSTravelView,
-  LifeOSNotesView,
-  LifeOSJournalView,
-  LifeOSHabitsView,
-  LifeOSContactsView,
-  LifeOSSubscriptionsView,
-  LifeOSAssetsView,
-} from "@/life-os/LifeOSAppRenderer";
+const LazyValueTreatedPage = lazyNamed(
+  () => import("@/features/value-treated/ValueTreatedPage"),
+  "ValueTreatedPage",
+  "Memuat Applied Value Framework..."
+);
 
-// Fallback views
-import {
-  CommodityView,
-  ShariaAkadView,
-  ShariaTerlarangView,
-  ShariaAsuransiView,
-  ZakatAppView,
-  TaxAppView,
-  InvestmentAppView,
-  ValuationView,
-  IncotermsView,
-  WaterView,
-  MatrixAssetView,
-  MatrixEarningView,
-  MatrixLiabilityView,
-  MatrixExpenseView,
-  MatrixFinancialHealthView,
-  MatrixSwotView,
-  MatrixTowsView,
-  SpectrumStageView,
-  SocietyView,
-  FrameworkByNameView,
-  WiraView,
-  KlienWorkspaceView,
-  CatatanView,
-  LainnyaView,
-} from "@/features/nonWhiteApps/NonWhiteAppRenderer";
-import { ValueTreatedPage } from "@/features/value-treated/ValueTreatedPage";
-import { NationalIndicesDashboard } from "@/routes/national-indices";
+const LazyNationalIndicesDashboard = lazyNamed(
+  () => import("@/routes/national-indices"),
+  "NationalIndicesDashboard",
+  "Memuat Indeks Pembangunan Nasional..."
+);
+
+const LazyFrameworkByNameView = lazyNamed(
+  () => import("@/features/nonWhiteApps/NonWhiteAppRenderer"),
+  "FrameworkByNameView",
+  "Memuat Framework..."
+);
+
+// Lazy PEH bundle dispatcher
+const LazyPehDynamicView = React.lazy(async () => {
+  const m = await import("@/peh/PehAppRenderer");
+  const pehMap: Record<string, React.ComponentType> = {
+    "/peh/habits": m.PehHabitsView,
+    "/peh/journal": m.PehJournalView,
+    "/peh/goals": m.PehGoalsView,
+    "/peh/reading": m.PehReadingView,
+    "/peh/fitness": m.PehFitnessView,
+    "/peh/sleep": m.PehSleepView,
+    "/peh/vault": m.PehVaultView,
+    "/peh/documents": m.PehDocumentsView,
+    "/peh/subscriptions": m.PehSubscriptionsView,
+    "/peh/budget": m.PehBudgetView,
+    "/peh/insurance": m.PehInsuranceView,
+    "/peh/chores": m.PehChoresView,
+    "/peh/maintenance": m.PehMaintenanceView,
+    "/peh/pantry": m.PehPantryView,
+    "/peh/plants": m.PehPlantsView,
+    "/peh/vehicles": m.PehVehiclesView,
+    "/peh/family-tree": m.PehFamilyTreeView,
+    "/peh/family-health": m.PehFamilyHealthView,
+    "/peh/family-recipes": m.PehFamilyRecipesView,
+    "/peh/traditions": m.PehTraditionsView,
+    "/peh/family-budget": m.PehFamilyBudgetView,
+    "/peh/pet-care": m.PehPetCareView,
+    "/peh/workflows": m.PehWorkflowsView,
+    "/peh/vendors": m.PehVendorsView,
+    "/peh/incidents": m.PehIncidentsView,
+    "/peh/procurement": m.PehProcurementView,
+    "/peh/compliance": m.PehComplianceView,
+    "/peh/assets": m.PehAssetsView,
+    "/peh/ip-licenses": m.PehIpLicensesView,
+    "/peh/cap-table": m.PehCapTableView,
+    "/peh/investments": m.PehInvestmentsView,
+    "/peh/real-estate": m.PehRealEstateView,
+    "/peh/contacts": m.PehContactsView,
+    "/peh/milestones": m.PehMilestonesView,
+    "/peh/gifts": m.PehGiftsView,
+    "/peh/introductions": m.PehIntroductionsView,
+    "/peh/mentorship": m.PehMentorshipView,
+    "/peh/knowledge": m.PehKnowledgeView,
+    "/peh/meetings": m.PehMeetingsView,
+    "/peh/projects": m.PehProjectsView,
+    "/peh/tasks": m.PehTasksView,
+    "/peh/time-audit": m.PehTimeAuditView,
+    "/peh/civic": m.PehCivicView,
+    "/peh/volunteering": m.PehVolunteeringView,
+    "/peh/charity": m.PehCharityView,
+    "/peh/community-events": m.PehCommunityEventsView,
+    "/peh/advocacy": m.PehAdvocacyView,
+    "/peh/global-overview": m.PehGlobalOverviewView,
+    "/peh/innovations-hub": m.PehInnovationsHubView,
+    "/peh/ecosystem-comparison": m.PehEcosystemComparisonView,
+  };
+  return {
+    default: ({ path }: { path: string }) => {
+      const Comp = pehMap[path];
+      return Comp ? (
+        <m.PEHLayout>
+          <Comp />
+        </m.PEHLayout>
+      ) : null;
+    },
+  };
+});
+
+// Lazy LifeOS bundle dispatcher
+const LazyLifeDynamicView = React.lazy(async () => {
+  const m = await import("@/life-os/LifeOSAppRenderer");
+  const lifeMap: Record<string, React.ComponentType> = {
+    "/life/life-planner": m.LifeOSPlannerView,
+    "/life/finance-os": m.LifeOSFinanceView,
+    "/life/simple-finance": m.LifeOSSimpleFinanceView,
+    "/life/budget-tracker": m.LifeOSBudgetView,
+    "/life/weight-tracker": m.LifeOSWeightView,
+    "/life/doctor-consultation": m.LifeOSDoctorView,
+    "/life/household-tracker": m.LifeOSHouseholdView,
+    "/life/wishlist": m.LifeOSWishlistView,
+    "/life/grocery-list": m.LifeOSGroceryView,
+    "/life/movie-tracker": m.LifeOSMovieView,
+    "/life/recipe-book": m.LifeOSRecipeView,
+    "/life/certificate-tracker": m.LifeOSCertificateView,
+    "/life/travel-backpack": m.LifeOSTravelView,
+    "/life/notes": m.LifeOSNotesView,
+    "/life/journal": m.LifeOSJournalView,
+    "/life/habits": m.LifeOSHabitsView,
+    "/life/contacts": m.LifeOSContactsView,
+    "/life/subscriptions": m.LifeOSSubscriptionsView,
+    "/life/assets": m.LifeOSAssetsView,
+  };
+  return {
+    default: ({ path }: { path: string }) => {
+      const Comp = lifeMap[path];
+      return Comp ? (
+        <m.LifeOSLayout>
+          <Comp />
+        </m.LifeOSLayout>
+      ) : null;
+    },
+  };
+});
+
+// Lazy NonWhite apps dispatcher
+const LazyNonWhiteDynamicView = React.lazy(async () => {
+  const m = await import("@/features/nonWhiteApps/NonWhiteAppRenderer");
+  return {
+    default: ({ pathname }: { pathname: string }) => {
+      if (pathname === "/syariah/indeks") return <m.CommodityView />;
+      if (pathname === "/syariah/akad") return <m.ShariaAkadView />;
+      if (pathname === "/syariah/terlarang") return <m.ShariaTerlarangView />;
+      if (pathname === "/syariah/asuransi") return <m.ShariaAsuransiView />;
+      if (pathname === "/syariah") return <m.CommodityView />;
+      if (pathname === "/zakat") return <m.ZakatAppView />;
+      if (pathname === "/pajak") return <m.TaxAppView />;
+      if (pathname === "/investasi") return <m.InvestmentAppView />;
+      if (pathname === "/valuasi") return <m.ValuationView />;
+      if (pathname === "/100-komoditas" || pathname === "/commodity-dashboard") return <m.CommodityView />;
+      if (pathname === "/incoterms") return <m.IncotermsView />;
+      if (pathname === "/water") return <m.WaterView />;
+      if (pathname === "/asset") return <m.MatrixAssetView />;
+      if (pathname === "/earning") return <m.MatrixEarningView />;
+      if (pathname === "/liability") return <m.MatrixLiabilityView />;
+      if (pathname === "/expense") return <m.MatrixExpenseView />;
+      if (pathname === "/financial-health") return <m.MatrixFinancialHealthView />;
+      if (pathname === "/swot") return <m.MatrixSwotView />;
+      if (pathname === "/tows") return <m.MatrixTowsView />;
+      if (pathname === "/grow") return <m.SpectrumStageView stage="grow" />;
+      if (pathname === "/flow") return <m.SpectrumStageView stage="flow" />;
+      if (pathname === "/build") return <m.SpectrumStageView stage="build" />;
+      if (pathname === "/legacy") return <m.SpectrumStageView stage="legacy" />;
+      if (pathname === "/surety") return <m.SpectrumStageView stage="surety" />;
+      if (pathname === "/development") return <m.SocietyView type="development" />;
+      if (pathname === "/improvement") return <m.SocietyView type="improvement" />;
+      if (pathname === "/reliance") return <m.SocietyView type="reliance" />;
+      if (pathname === "/sufficient") return <m.SocietyView type="sufficient" />;
+      if (pathname === "/interact") return <m.SocietyView type="interact" />;
+      if (pathname === "/interdependence") return <m.SocietyView type="interdependence" />;
+      if (pathname === "/interest") return <m.SocietyView type="interest" />;
+      if (pathname === "/intersect") return <m.SocietyView type="intersect" />;
+      if (pathname === "/insider") return <m.SocietyView type="insider" />;
+      if (pathname === "/insight") return <m.SocietyView type="insight" />;
+      if (pathname === "/outward") return <m.SocietyView type="outward" />;
+      if (pathname === "/outlook") return <m.SocietyView type="outlook" />;
+      if (pathname === "/klien") return <m.KlienWorkspaceView />;
+      if (pathname === "/catatan") return <m.CatatanView />;
+      if (pathname === "/lainnya") return <m.LainnyaView />;
+
+      const wiraKeys = [
+        "budget", "code", "contacts", "courses", "design", "exams",
+        "flashcards", "games", "health", "ideas", "inventory", "journal",
+        "kalkulator", "languages", "movies", "music", "passwords", "photography",
+        "podcasts", "proyek-personal", "reading", "recipes", "shopping",
+        "subscriptions", "trips", "weather", "workouts", "writing"
+      ];
+      const matchedWira = wiraKeys.find((k) => pathname === "/" + k);
+      if (matchedWira) {
+        return <m.WiraView type={matchedWira} />;
+      }
+
+      return null;
+    },
+  };
+});
 
 function PartnerAreaPlaceholder() {
   return (
@@ -164,142 +248,33 @@ function DynamicAppView() {
   const search = (routerState.location.search || {}) as Record<string, any>;
   const currentAppParam = typeof search?.app === "string" ? search.app : "";
 
-  // PEH / PFS / POO routes
-  const pehMap: Record<string, React.ComponentType> = {
-    "/peh/habits": PehHabitsView,
-    "/peh/journal": PehJournalView,
-    "/peh/goals": PehGoalsView,
-    "/peh/reading": PehReadingView,
-    "/peh/fitness": PehFitnessView,
-    "/peh/sleep": PehSleepView,
-    "/peh/vault": PehVaultView,
-    "/peh/documents": PehDocumentsView,
-    "/peh/subscriptions": PehSubscriptionsView,
-    "/peh/budget": PehBudgetView,
-    "/peh/insurance": PehInsuranceView,
-    "/peh/chores": PehChoresView,
-    "/peh/maintenance": PehMaintenanceView,
-    "/peh/pantry": PehPantryView,
-    "/peh/plants": PehPlantsView,
-    "/peh/vehicles": PehVehiclesView,
-    "/peh/family-tree": PehFamilyTreeView,
-    "/peh/family-health": PehFamilyHealthView,
-    "/peh/family-recipes": PehFamilyRecipesView,
-    "/peh/traditions": PehTraditionsView,
-    "/peh/family-budget": PehFamilyBudgetView,
-    "/peh/pet-care": PehPetCareView,
-    "/peh/workflows": PehWorkflowsView,
-    "/peh/vendors": PehVendorsView,
-    "/peh/incidents": PehIncidentsView,
-    "/peh/procurement": PehProcurementView,
-    "/peh/compliance": PehComplianceView,
-    "/peh/assets": PehAssetsView,
-    "/peh/ip-licenses": PehIpLicensesView,
-    "/peh/cap-table": PehCapTableView,
-    "/peh/investments": PehInvestmentsView,
-    "/peh/real-estate": PehRealEstateView,
-    "/peh/contacts": PehContactsView,
-    "/peh/milestones": PehMilestonesView,
-    "/peh/gifts": PehGiftsView,
-    "/peh/introductions": PehIntroductionsView,
-    "/peh/mentorship": PehMentorshipView,
-    "/peh/knowledge": PehKnowledgeView,
-    "/peh/meetings": PehMeetingsView,
-    "/peh/projects": PehProjectsView,
-    "/peh/tasks": PehTasksView,
-    "/peh/time-audit": PehTimeAuditView,
-    "/peh/civic": PehCivicView,
-    "/peh/volunteering": PehVolunteeringView,
-    "/peh/charity": PehCharityView,
-    "/peh/community-events": PehCommunityEventsView,
-    "/peh/advocacy": PehAdvocacyView,
-    "/peh/global-overview": PehGlobalOverviewView,
-    "/peh/innovations-hub": PehInnovationsHubView,
-    "/peh/ecosystem-comparison": PehEcosystemComparisonView,
-  };
-
-  const PehComponent = pehMap[pathname];
-  if (PehComponent) {
-    return <PehComponent />;
+  // 1. PEH routes
+  if (pathname.startsWith("/peh/")) {
+    return (
+      <Suspense fallback={<RouteLoadingFallback message="Memuat modul PEH..." />}>
+        <LazyPehDynamicView path={pathname} />
+      </Suspense>
+    );
   }
 
-  // LifeOS routes
-  const lifeMap: Record<string, React.ComponentType> = {
-    "/life/life-planner": LifeOSPlannerView,
-    "/life/finance-os": LifeOSFinanceView,
-    "/life/simple-finance": LifeOSSimpleFinanceView,
-    "/life/budget-tracker": LifeOSBudgetView,
-    "/life/weight-tracker": LifeOSWeightView,
-    "/life/doctor-consultation": LifeOSDoctorView,
-    "/life/household-tracker": LifeOSHouseholdView,
-    "/life/wishlist": LifeOSWishlistView,
-    "/life/grocery-list": LifeOSGroceryView,
-    "/life/movie-tracker": LifeOSMovieView,
-    "/life/recipe-book": LifeOSRecipeView,
-    "/life/certificate-tracker": LifeOSCertificateView,
-    "/life/travel-backpack": LifeOSTravelView,
-    "/life/notes": LifeOSNotesView,
-    "/life/journal": LifeOSJournalView,
-    "/life/habits": LifeOSHabitsView,
-    "/life/contacts": LifeOSContactsView,
-    "/life/subscriptions": LifeOSSubscriptionsView,
-    "/life/assets": LifeOSAssetsView,
-  };
-
-  const LifeComponent = lifeMap[pathname];
-  if (LifeComponent) {
-    return <LifeComponent />;
+  // 2. LifeOS routes
+  if (pathname.startsWith("/life/")) {
+    return (
+      <Suspense fallback={<RouteLoadingFallback message="Memuat Life OS..." />}>
+        <LazyLifeDynamicView path={pathname} />
+      </Suspense>
+    );
   }
 
-  // Sharia routes
-  if (pathname === "/syariah/indeks") return <CommodityView />;
-  if (pathname === "/syariah/akad") return <ShariaAkadView />;
-  if (pathname === "/syariah/terlarang") return <ShariaTerlarangView />;
-  if (pathname === "/syariah/asuransi") return <ShariaAsuransiView />;
-  if (pathname === "/syariah") return <CommodityView />;
-  if (pathname === "/zakat") return <ZakatAppView />;
+  // 3. Value Treated & Finance
+  if (pathname === "/value-treated" || pathname === "/applied-value") {
+    return <LazyValueTreatedPage />;
+  }
+  if (pathname === "/10-indeks" || pathname === "/indeks-pembangunan") {
+    return <LazyNationalIndicesDashboard />;
+  }
 
-  // Value Treated & Finance
-  if (pathname === "/value-treated" || pathname === "/applied-value") return <ValueTreatedPage />;
-  if (pathname === "/pajak") return <TaxAppView />;
-  if (pathname === "/investasi") return <InvestmentAppView />;
-  if (pathname === "/valuasi") return <ValuationView />;
-  if (pathname === "/100-komoditas" || pathname === "/commodity-dashboard") return <CommodityView />;
-  if (pathname === "/10-indeks" || pathname === "/indeks-pembangunan") return <NationalIndicesDashboard />;
-  if (pathname === "/incoterms") return <IncotermsView />;
-  if (pathname === "/water") return <WaterView />;
-
-  // Matrix & Quadrants
-  if (pathname === "/asset") return <MatrixAssetView />;
-  if (pathname === "/earning") return <MatrixEarningView />;
-  if (pathname === "/liability") return <MatrixLiabilityView />;
-  if (pathname === "/expense") return <MatrixExpenseView />;
-  if (pathname === "/financial-health") return <MatrixFinancialHealthView />;
-  if (pathname === "/swot") return <MatrixSwotView />;
-  if (pathname === "/tows") return <MatrixTowsView />;
-
-  // Spectrum Stages
-  if (pathname === "/grow") return <SpectrumStageView stage="grow" />;
-  if (pathname === "/flow") return <SpectrumStageView stage="flow" />;
-  if (pathname === "/build") return <SpectrumStageView stage="build" />;
-  if (pathname === "/legacy") return <SpectrumStageView stage="legacy" />;
-  if (pathname === "/surety") return <SpectrumStageView stage="surety" />;
-
-  // Society Views
-  if (pathname === "/development") return <SocietyView type="development" />;
-  if (pathname === "/improvement") return <SocietyView type="improvement" />;
-  if (pathname === "/reliance") return <SocietyView type="reliance" />;
-  if (pathname === "/sufficient") return <SocietyView type="sufficient" />;
-  if (pathname === "/interact") return <SocietyView type="interact" />;
-  if (pathname === "/interdependence") return <SocietyView type="interdependence" />;
-  if (pathname === "/interest") return <SocietyView type="interest" />;
-  if (pathname === "/intersect") return <SocietyView type="intersect" />;
-  if (pathname === "/insider") return <SocietyView type="insider" />;
-  if (pathname === "/insight") return <SocietyView type="insight" />;
-  if (pathname === "/outward") return <SocietyView type="outward" />;
-  if (pathname === "/outlook") return <SocietyView type="outlook" />;
-
-  // Framework Views
+  // 4. Framework Views
   const frameworkMap: Record<string, string> = {
     "/bcg": "BCG Matrix",
     "/pestel": "PESTEL Analysis",
@@ -322,41 +297,66 @@ function DynamicAppView() {
     "/100-framework": "Katalog 100 Framework",
   };
   if (frameworkMap[pathname]) {
-    return <FrameworkByNameView name={frameworkMap[pathname]} />;
+    return <LazyFrameworkByNameView name={frameworkMap[pathname]} />;
   }
 
-  // Wira personal & productivity views
-  const wiraKeys = [
-    "budget", "code", "contacts", "courses", "design", "exams",
-    "flashcards", "games", "health", "ideas", "inventory", "journal",
-    "kalkulator", "languages", "movies", "music", "passwords", "photography",
-    "podcasts", "proyek-personal", "reading", "recipes", "shopping",
-    "subscriptions", "trips", "weather", "workouts", "writing"
-  ];
-  const matchedWira = wiraKeys.find((k) => pathname === "/" + k);
-  if (matchedWira) {
-    return <WiraView type={matchedWira} />;
-  }
-
-  // Client & Notes & Custom Workspace
-  if (pathname === "/klien") return <KlienWorkspaceView />;
-  if (pathname === "/catatan") return <CatatanView />;
-  if (pathname === "/lainnya") return <LainnyaView />;
-
-  // Standalone app requested via query or path
+  // 5. Standalone app requested via query or path
   const effectiveAppKey = currentAppParam || (pathname.startsWith("/") ? pathname.slice(1) : pathname);
   if (effectiveAppKey && STANDALONE_APPS[effectiveAppKey]) {
     const standaloneConfig = STANDALONE_APPS[effectiveAppKey];
     return (
       <AppShell title={standaloneConfig.title} subtitle={standaloneConfig.subtitle}>
         <div className="w-full">
-          <StandaloneAppView appId={effectiveAppKey} />
+          <LazyStandaloneAppView appId={effectiveAppKey} />
         </div>
       </AppShell>
     );
   }
 
-  // Fallback: search nav for matching metadata
+  // 6. Non-white apps fallback (Syariah, Quadrants, Society, Wira, Klien, Catatan, Lainnya)
+  const isNonWhiteCandidate =
+    pathname.startsWith("/syariah") ||
+    pathname === "/zakat" ||
+    pathname === "/pajak" ||
+    pathname === "/investasi" ||
+    pathname === "/valuasi" ||
+    pathname === "/100-komoditas" ||
+    pathname === "/commodity-dashboard" ||
+    pathname === "/incoterms" ||
+    pathname === "/water" ||
+    pathname === "/asset" ||
+    pathname === "/earning" ||
+    pathname === "/liability" ||
+    pathname === "/expense" ||
+    pathname === "/financial-health" ||
+    pathname === "/swot" ||
+    pathname === "/tows" ||
+    ["/grow", "/flow", "/build", "/legacy", "/surety"].includes(pathname) ||
+    [
+      "/development", "/improvement", "/reliance", "/sufficient",
+      "/interact", "/interdependence", "/interest", "/intersect",
+      "/insider", "/insight", "/outward", "/outlook"
+    ].includes(pathname) ||
+    pathname === "/klien" ||
+    pathname === "/catatan" ||
+    pathname === "/lainnya" ||
+    [
+      "/budget", "/code", "/contacts", "/courses", "/design", "/exams",
+      "/flashcards", "/games", "/health", "/ideas", "/inventory", "/journal",
+      "/kalkulator", "/languages", "/movies", "/music", "/passwords", "/photography",
+      "/podcasts", "/proyek-personal", "/reading", "/recipes", "/shopping",
+      "/subscriptions", "/trips", "/weather", "/workouts", "/writing"
+    ].includes(pathname);
+
+  if (isNonWhiteCandidate) {
+    return (
+      <Suspense fallback={<RouteLoadingFallback message="Memuat modul..." />}>
+        <LazyNonWhiteDynamicView pathname={pathname} />
+      </Suspense>
+    );
+  }
+
+  // 7. Fallback: search nav for matching metadata
   let matchedItem: NavItem | undefined;
   let matchedGroupTitle = "Workspace";
   for (const group of navKonsultan) {

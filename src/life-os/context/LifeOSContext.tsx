@@ -243,7 +243,7 @@ interface LifeOSContextType {
   totalLiquidAssets: number;
 }
 
-const LifeOSContext = createContext<LifeOSContextType | undefined>(undefined);
+export const LifeOSContext = createContext<LifeOSContextType | undefined>(undefined);
 
 const STORAGE_KEY_PREFIX = 'life_planner_os_v1_';
 

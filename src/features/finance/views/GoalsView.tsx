@@ -7,7 +7,7 @@ import {
   ChevronRight,
   LifeBuoy,
 } from "lucide-react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { useDeletedItems } from "../hooks/useDeletedItems";
 
 export function GoalsView({ onBack }: { onBack: () => void }) {

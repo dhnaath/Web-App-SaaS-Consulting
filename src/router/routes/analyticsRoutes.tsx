@@ -1,27 +1,28 @@
 import React from "react";
 import { createRoute, type AnyRoute } from "@tanstack/react-router";
-import {
-  ShariaAkadView,
-  ShariaTerlarangView,
-  ShariaAsuransiView,
-  ZakatAppView,
-  TaxAppView,
-  InvestmentAppView,
-  ValuationView,
-  CommodityView,
-  IncotermsView,
-  WaterView,
-  MatrixAssetView,
-  MatrixEarningView,
-  MatrixLiabilityView,
-  MatrixExpenseView,
-  MatrixFinancialHealthView,
-  MatrixSwotView,
-  MatrixTowsView,
-  SpectrumStageView,
-  SocietyView,
-} from "@/features/nonWhiteApps/NonWhiteAppRenderer";
-import { NationalIndicesDashboard } from "@/routes/national-indices";
+import { lazyNamed } from "../lazyRoute";
+
+// Lazy-load analytics, syariah, and market views
+const CommodityView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "CommodityView", "Memuat Commodity Dashboard...");
+const ShariaAkadView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "ShariaAkadView", "Memuat Akad Syariah...");
+const ShariaTerlarangView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "ShariaTerlarangView", "Memuat Transaksi Terlarang...");
+const ShariaAsuransiView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "ShariaAsuransiView", "Memuat Asuransi Syariah...");
+const ZakatAppView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "ZakatAppView", "Memuat Kalkulator Zakat...");
+const TaxAppView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "TaxAppView", "Memuat Pajak...");
+const InvestmentAppView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "InvestmentAppView", "Memuat Investasi...");
+const ValuationView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "ValuationView", "Memuat Valuasi...");
+const IncotermsView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "IncotermsView", "Memuat Incoterms...");
+const WaterView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "WaterView", "Memuat Water Tracker...");
+const MatrixAssetView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "MatrixAssetView", "Memuat Kuadran Aset...");
+const MatrixEarningView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "MatrixEarningView", "Memuat Kuadran Pendapatan...");
+const MatrixLiabilityView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "MatrixLiabilityView", "Memuat Kuadran Liabilitas...");
+const MatrixExpenseView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "MatrixExpenseView", "Memuat Kuadran Pengeluaran...");
+const MatrixFinancialHealthView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "MatrixFinancialHealthView", "Memuat Financial Health Matrix...");
+const MatrixSwotView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "MatrixSwotView", "Memuat Matriks SWOT...");
+const MatrixTowsView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "MatrixTowsView", "Memuat Matriks TOWS...");
+const SpectrumStageView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "SpectrumStageView", "Memuat Tahapan Spektrum...");
+const SocietyView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "SocietyView", "Memuat Society View...");
+const NationalIndicesDashboard = lazyNamed(() => import("@/routes/national-indices"), "NationalIndicesDashboard", "Memuat Indeks Pembangunan Nasional...");
 
 export function createAnalyticsRoutes(parentRoute: AnyRoute) {
   return [

@@ -1,24 +1,26 @@
 import React from "react";
 import { createRoute, type AnyRoute } from "@tanstack/react-router";
 import { AppShell } from "@/app/app-shell";
-import { ValueTreatedPage } from "@/features/value-treated/ValueTreatedPage";
-import { WorkProductivityPage } from "@/features/work-productivity/WorkProductivityPage";
-import { PersonalLifePage } from "@/features/personal-life/PersonalLifePage";
-import {
-  BIZ_OPS_SUMMARY_DESC,
-  BusinessOperationsCustomersPage,
-} from "@/features/business-operations/BusinessOperationsCustomersPage";
-import { KnowledgeAndLearningPage } from "@/features/knowledge-learning/KnowledgeAndLearningPage";
-import { HomeLeisurePage } from "@/features/home-leisure/HomeLeisurePage";
-import { FamilyCommunityPage } from "@/features/family-community/FamilyCommunityPage";
-import { IslamicPrinciplesShariaValuesPage } from "@/features/syariah/IslamicPrinciplesShariaValuesPage";
-import { CreativeWorkspaceMediaPage } from "@/features/creative-workspace/CreativeWorkspaceMediaPage";
-import { ResearchFrameworksPage } from "@/features/research-frameworks/ResearchFrameworksPage";
-import { FamilyRecordsHouseholdPage } from "@/features/family-records/FamilyRecordsHouseholdPage";
-import { PublicRelationsPolicyAffairsPage } from "@/features/public-affairs/PublicRelationsPolicyAffairsPage";
-import { ContactDirectoryNetworksPage } from "@/features/social-networks/ContactDirectoryNetworksPage";
-import { FinancialWealthSection } from "@/features/launcher/FinancialWealthSection";
+import { lazyNamed } from "../lazyRoute";
 import { useFavorites } from "@/hooks/useFavorites";
+
+// Lazy loaded domain pages
+const ValueTreatedPage = lazyNamed(() => import("@/features/value-treated/ValueTreatedPage"), "ValueTreatedPage", "Memuat Applied Value Framework...");
+const WorkProductivityPage = lazyNamed(() => import("@/features/work-productivity/WorkProductivityPage"), "WorkProductivityPage", "Memuat Work Productivity...");
+const PersonalLifePage = lazyNamed(() => import("@/features/personal-life/PersonalLifePage"), "PersonalLifePage", "Memuat Personal Life...");
+const BusinessOperationsCustomersPage = lazyNamed(() => import("@/features/business-operations/BusinessOperationsCustomersPage"), "BusinessOperationsCustomersPage", "Memuat Business Operations...");
+const KnowledgeAndLearningPage = lazyNamed(() => import("@/features/knowledge-learning/KnowledgeAndLearningPage"), "KnowledgeAndLearningPage", "Memuat Knowledge and Learning...");
+const HomeLeisurePage = lazyNamed(() => import("@/features/home-leisure/HomeLeisurePage"), "HomeLeisurePage", "Memuat Home and Leisure...");
+const FamilyCommunityPage = lazyNamed(() => import("@/features/family-community/FamilyCommunityPage"), "FamilyCommunityPage", "Memuat Family and Community...");
+const IslamicPrinciplesShariaValuesPage = lazyNamed(() => import("@/features/syariah/IslamicPrinciplesShariaValuesPage"), "IslamicPrinciplesShariaValuesPage", "Memuat Prinsip Syariah...");
+const CreativeWorkspaceMediaPage = lazyNamed(() => import("@/features/creative-workspace/CreativeWorkspaceMediaPage"), "CreativeWorkspaceMediaPage", "Memuat Creative Workspace...");
+const ResearchFrameworksPage = lazyNamed(() => import("@/features/research-frameworks/ResearchFrameworksPage"), "ResearchFrameworksPage", "Memuat Research Frameworks...");
+const FamilyRecordsHouseholdPage = lazyNamed(() => import("@/features/family-records/FamilyRecordsHouseholdPage"), "FamilyRecordsHouseholdPage", "Memuat Family Records...");
+const PublicRelationsPolicyAffairsPage = lazyNamed(() => import("@/features/public-affairs/PublicRelationsPolicyAffairsPage"), "PublicRelationsPolicyAffairsPage", "Memuat Public Affairs...");
+const ContactDirectoryNetworksPage = lazyNamed(() => import("@/features/social-networks/ContactDirectoryNetworksPage"), "ContactDirectoryNetworksPage", "Memuat Contact Directory...");
+const FinancialWealthSection = lazyNamed(() => import("@/features/launcher/FinancialWealthSection"), "FinancialWealthSection", "Memuat Financial Planning...");
+
+const BIZ_OPS_SUMMARY_DESC = "Semua (9) · Customers (2) · Sales (2) · Marketing (2) · Inventory (1) · Operations (1) · Invoicing (1)";
 
 function WorkProductivityView() {
   return (

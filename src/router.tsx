@@ -10,15 +10,19 @@ import type { QueryClient } from "@tanstack/react-query";
 
 import { getCurrentSession } from "@/core/session";
 import { resolveAccess } from "@/core/routeAccess";
-import { Launcher } from "@/routes/index";
-
 import { RouteErrorBoundary, RouteNotFound } from "./router/errorBoundary";
+import { lazyComponent } from "./router/lazyRoute";
 import { createStandaloneRoutes } from "./router/routes/standaloneRoutes";
 import { createDomainHubRoutes } from "./router/routes/domainHubRoutes";
 import { createAdvisoryRoutes } from "./router/routes/advisoryRoutes";
 import { createAnalyticsRoutes } from "./router/routes/analyticsRoutes";
 import { createWiraRoutes } from "./router/routes/wiraRoutes";
 import { createDynamicRoutes } from "./router/routes/dynamicRoutes";
+
+const Launcher = lazyComponent(
+  () => import("@/routes/index"),
+  "Memuat All in One Workspace Launcher..."
+);
 
 // 1. Root route definition with session/access guard and error handling
 export const rootRoute = createRootRoute({

@@ -4,7 +4,7 @@ import { useLocalStorage } from "./hooks/useLocalStorage";
 import { AddItemForm } from "./components/AddItemForm";
 import { ItemCard } from "./components/ItemCard";
 import { calculateStatus, calculateTotalCost, formatCurrency } from "./utils";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { AlertOctagon, AlertTriangle, CheckCircle2, Plus, Search, Wallet } from "lucide-react";
 
 function Metrik({

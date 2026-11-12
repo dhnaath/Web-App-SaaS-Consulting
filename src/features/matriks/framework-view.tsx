@@ -19,7 +19,8 @@ import { AppShell } from "@/app/app-shell";
 import { ShellSections } from "@/app/shell-sections";
 import { Panel } from "@/app/ui-bits";
 import { VisualLayoutMockup } from "@/app/VisualMockups";
-import { getFrameworkData, FrameworkContent } from "@/frameworkData";
+import { getFrameworkData } from "@/frameworkData";
+import type { FrameworkContent } from "@/data/types/framework";
 
 interface FrameworkViewProps {
   frameworkName: string;

@@ -8,12 +8,9 @@ import {
 } from "@tanstack/react-router";
 import { AppShell } from "@/app/app-shell";
 import { ShellSections } from "@/app/shell-sections";
-import CreditApp from "@/features/credit/App";
-import CuratedApp from "@/features/curated/App";
 import { getFramework } from "@/frameworkData";
-import { Tools100Section } from "@/features/launcher/Tools100Section";
 import { useFavorites } from "@/hooks/useFavorites";
-import { FrameworkByNameView } from "@/features/nonWhiteApps/NonWhiteAppRenderer";
+import { lazyComponent, lazyNamed } from "../lazyRoute";
 import {
   ArrowLeft,
   ArrowRight,
@@ -23,6 +20,12 @@ import {
   Layers,
   Sparkles,
 } from "lucide-react";
+
+// Lazy-loaded advisory applications
+const CreditApp = lazyComponent(() => import("@/features/credit/App"), "Memuat Kredit & Utang...");
+const CuratedApp = lazyComponent(() => import("@/features/curated/App"), "Memuat Kurasi Pengetahuan Bisnis...");
+const Tools100Section = lazyNamed(() => import("@/features/launcher/Tools100Section"), "Tools100Section", "Memuat 100 Tools Mini MBA...");
+const FrameworkByNameView = lazyNamed(() => import("@/features/nonWhiteApps/NonWhiteAppRenderer"), "FrameworkByNameView", "Memuat Framework...");
 
 function KreditView() {
   return (
