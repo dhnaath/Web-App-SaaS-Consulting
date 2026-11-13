@@ -1389,7 +1389,6 @@ function ModeSectionContent({
         {/* Title (Matching MBA Page Header Style) */}
         <div className="text-center mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground/90 tracking-tight flex items-center justify-center gap-2.5">
-            <Icon className="size-7 text-primary" />
             <span>{config.label}</span>
           </h2>
         </div>

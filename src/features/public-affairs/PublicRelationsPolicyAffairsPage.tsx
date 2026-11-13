@@ -220,10 +220,9 @@ export function PublicRelationsPolicyAffairsPage({
         />
       </ShellHeader>
 
-      <div className="w-full mx-auto pt-3 sm:pt-4 space-y-4">
-        <div className="text-center mb-4">
+      <div className="w-full mx-auto pt-3 sm:pt-4 space-y-3 sm:space-y-4">
+        <div className="text-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground/90 tracking-tight flex items-center justify-center gap-2.5">
-            <Landmark className="size-7 text-primary" />
             <span>Public Affairs and Relations</span>
           </h1>
         </div>

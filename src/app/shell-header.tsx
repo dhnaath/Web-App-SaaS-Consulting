@@ -341,23 +341,6 @@ export function HeaderNavPills<T extends string | number = string>({
                     {item.count}
                   </span>
                 )}
-                {/* Ketika sedang minimize, tampilkan micro chevron halus di samping pilihan aktif */}
-                {isActive && items.length > 1 && (
-                  <motion.span
-                    initial={false}
-                    animate={{
-                      opacity: isMinimized ? 0.85 : 0,
-                      width: isMinimized ? "auto" : 0,
-                      scale: isMinimized ? 1 : 0.5,
-                      marginLeft: isMinimized ? 3 : 0,
-                    }}
-                    transition={springTransition}
-                    className="relative z-10 text-[9px] inline-flex items-center pointer-events-none"
-                    aria-hidden="true"
-                  >
-                    ▼
-                  </motion.span>
-                )}
               </motion.button>
             );
           })}

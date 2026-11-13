@@ -167,7 +167,12 @@ export function runRawStorageVerificationSuite(
       console.warn = originalWarn;
     }
 
-    const expectedWarnObserved = import.meta.env.DEV
+    const isDev = Boolean(
+      import.meta.env?.DEV ||
+        (typeof process !== "undefined" &&
+          (process.env?.NODE_ENV === "development" || process.env?.NODE_ENV === "test")),
+    );
+    const expectedWarnObserved = isDev
       ? warnMessages.some((m) => m.includes("[rawStorage]"))
       : true;
 

@@ -3,12 +3,6 @@ import {
   type PersistStorage,
   type StateStorage,
 } from "zustand/middleware";
-import { getCurrentSession } from "./session";
-import {
-  DEFAULT_WORKSPACE_ID,
-  buildStorageKey,
-  resolveLegacyKeyTarget,
-} from "./storage";
 
 /**
  * CATATAN ARSITEKTUR PENTING (Wajib dibaca sebelum memodifikasi adaptor ini):
@@ -38,9 +32,10 @@ import {
  */
 
 import {
-  getSafeLocalStorage,
+  executeWorkspaceRead,
+  executeWorkspaceRemove,
+  executeWorkspaceWrite,
   resolveSessionWorkspaceId,
-  resolveLockedPhysicalKey,
 } from "./storageHelpers";
 
 /**
@@ -54,77 +49,14 @@ function createLockedWorkspaceStateStorage(
   lockedWorkspaceId: string,
 ): StateStorage {
   return {
-    getItem: (name: string): string | null => {
-      try {
-        const storage = getSafeLocalStorage();
-        if (!storage) return null;
+    getItem: (name: string): string | null =>
+      executeWorkspaceRead(name, lockedWorkspaceId),
 
-        const physicalKey = resolveLockedPhysicalKey(name, lockedWorkspaceId);
+    setItem: (name: string, value: string): void =>
+      executeWorkspaceWrite(name, value, lockedWorkspaceId, "persistStorage"),
 
-        // 1 & 2. Baca kunci ber-namespace workspace terkunci terlebih dahulu (mis. `ws-main:approvals.ecosystem_v1`)
-        const workspaceValue = storage.getItem(physicalKey);
-        if (workspaceValue !== null) {
-          return workspaceValue;
-        }
-
-        // 3. Fallback ke kunci LAMA `name` tanpa menulis apa pun saat membaca
-        //    (dibatasi ke DEFAULT_WORKSPACE_ID agar data lama tidak bocor ke workspace lain)
-        if (lockedWorkspaceId === DEFAULT_WORKSPACE_ID) {
-          const legacyValue = storage.getItem(name);
-          if (legacyValue !== null) {
-            return legacyValue;
-          }
-        }
-
-        // 4. Kembalikan null bila keduanya belum ada
-        return null;
-      } catch {
-        return null;
-      }
-    },
-
-    setItem: (name: string, value: string): void => {
-      try {
-        const storage = getSafeLocalStorage();
-        if (!storage) return;
-
-        // Bandingkan workspaceId terkunci dengan getCurrentSession()?.workspaceId.
-        // Bila sesi aktif memuat workspaceId eksplisit yang berbeda dari lockedWorkspaceId,
-        // batalkan penulisan (no-op) agar state workspace lama tidak bocor lintas-tenant.
-        const currentSessionWorkspaceId =
-          getCurrentSession()?.workspaceId?.trim();
-        if (
-          currentSessionWorkspaceId &&
-          currentSessionWorkspaceId !== lockedWorkspaceId
-        ) {
-          if (import.meta.env.DEV) {
-            console.warn(
-              `[persistStorage] Penulisan "${name}" dibatalkan (no-op): store terkunci ke workspace "${lockedWorkspaceId}", sedangkan sesi saat ini berada di "${currentSessionWorkspaceId}". Pergantian workspace saat runtime harus dilakukan lewat muat ulang halaman penuh.`,
-            );
-          }
-          return;
-        }
-
-        const physicalKey = resolveLockedPhysicalKey(name, lockedWorkspaceId);
-        // Tulis HANYA ke kunci baru ber-prefix workspace terkunci; kunci lama tidak pernah disentuh
-        storage.setItem(physicalKey, value);
-      } catch {
-        // Tangkap semua error storage (mis. QuotaExceededError / SecurityError) tanpa melempar keluar
-      }
-    },
-
-    removeItem: (name: string): void => {
-      try {
-        const storage = getSafeLocalStorage();
-        if (!storage) return;
-
-        const physicalKey = resolveLockedPhysicalKey(name, lockedWorkspaceId);
-        // Hapus HANYA kunci baru ber-prefix workspace terkunci; kunci lama tidak pernah dihapus
-        storage.removeItem(physicalKey);
-      } catch {
-        // Jangan pernah melempar error keluar
-      }
-    },
+    removeItem: (name: string): void =>
+      executeWorkspaceRemove(name, lockedWorkspaceId),
   };
 }
 
