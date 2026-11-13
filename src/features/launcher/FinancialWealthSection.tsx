@@ -1258,7 +1258,7 @@ export function FinancialWealthSection({
       </ShellHeader>
 
       {/* Title */}
-      <div className="text-center mb-4 sm:mb-6">
+      <div className="text-center mb-3 sm:mb-4">
         <h3 className="text-2xl sm:text-3xl font-bold text-foreground/90 tracking-tight flex items-center justify-center gap-2">
           <span>Financial Planning and Wealth Management</span>
         </h3>

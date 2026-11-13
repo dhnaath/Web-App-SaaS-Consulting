@@ -33,6 +33,7 @@ import { TopPanelControlHub } from "./shell/TopPanelControlHub";
 import { useMenuSettings } from "@/hooks/useMenuSettings";
 import { useFavorites } from "@/hooks/useFavorites";
 import { HeaderNavControls } from "./HeaderNavControls";
+import { HeaderExtraControls } from "./HeaderExtraControls";
 import { useCustomNav } from "@/hooks/useCustomNav";
 import { navKonsultan, navAllSidebar, type NavItem, type NavGroup as NavGroupType } from "@/config/nav";
 import { ProgressiveBlur } from "@/components/ProgressiveBlur";
@@ -580,6 +581,15 @@ export function AppShell({
               {/* Pill 2: Panah Kiri, Refresh & Panah Kanan */}
               <div className="pointer-events-auto flex items-center p-1 rounded-full liquid-glass-header-pill">
                 <HeaderNavControls />
+              </div>
+
+              {/* Pill 3: Info, Sortir & Gear Setting (Sementara) */}
+              <div className="pointer-events-auto flex items-center p-1 rounded-full liquid-glass-header-pill">
+                <HeaderExtraControls
+                  isTopPanelOpen={isTopPanelOpen}
+                  onToggleTopPanel={() => setIsTopPanelOpen((prev) => !prev)}
+                  onOpenInfo={() => setIsShortcutOpen(true)}
+                />
               </div>
             </div>
 

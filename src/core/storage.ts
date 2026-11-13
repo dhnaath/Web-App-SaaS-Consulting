@@ -244,7 +244,7 @@ export interface MigrationResult {
   readonly reason?: "already_migrated" | "storage_unavailable" | "completed";
 }
 
-function getBrowserStorage(): Storage | null {
+export function getSafeLocalStorage(): Storage | null {
   try {
     if (typeof window === "undefined" || !window.localStorage) {
       return null;
@@ -254,6 +254,8 @@ function getBrowserStorage(): Storage | null {
     return null;
   }
 }
+
+const getBrowserStorage = getSafeLocalStorage;
 
 function assertNonEmptySegment(value: string, label: string): string {
   const trimmed = value.trim();

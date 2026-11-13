@@ -235,11 +235,10 @@ export function HomeLeisurePage({
       </ShellHeader>
 
       {/* Main Page Container */}
-      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 space-y-4">
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 space-y-3 sm:space-y-4">
         {/* Title (Matching MBA Page Header Style) */}
-        <div className="text-center mb-4">
+        <div className="text-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground/90 tracking-tight flex items-center justify-center gap-2.5">
-            <Home className="size-7 text-primary" />
             <span>Home and Leisure</span>
           </h1>
         </div>

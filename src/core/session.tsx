@@ -91,7 +91,11 @@ export interface SessionContextValue {
   readonly dev: DevSessionControls;
 }
 
-const isDevEnvironment: boolean = Boolean(import.meta.env?.DEV);
+const isDevEnvironment: boolean = Boolean(
+  import.meta.env?.DEV ||
+    (typeof process !== "undefined" &&
+      (process.env?.NODE_ENV === "development" || process.env?.NODE_ENV === "test")),
+);
 
 const noopSwitchRole = (): void => {
   // Sengaja kosong di luar mode DEV.
