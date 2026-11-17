@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "@tanstack/react-router";
 import {
@@ -73,8 +73,9 @@ export function MacExpandStack({
 }: MacExpandStackProps) {
   const navigate = useNavigate();
   const { favorites } = useFavorites();
+  const cardRef = useRef<HTMLDivElement>(null);
 
-  // Close on Escape
+  // Close on Escape or outside click (including areas above z-40 like dock gaps)
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -82,8 +83,21 @@ export function MacExpandStack({
         onClose();
       }
     };
+    const handlePointerDownOutside = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      if (cardRef.current?.contains(target)) return;
+      if (target.closest('[data-expand-trigger="true"]')) return;
+      onClose();
+    };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener("mousedown", handlePointerDownOutside);
+    document.addEventListener("touchstart", handlePointerDownOutside);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handlePointerDownOutside);
+      document.removeEventListener("touchstart", handlePointerDownOutside);
+    };
   }, [isOpen, onClose]);
 
   // Compute up to 5 apps (favoring user favorites, then defaults)
@@ -136,6 +150,7 @@ export function MacExpandStack({
             }}
           >
             <motion.div
+              ref={cardRef}
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}

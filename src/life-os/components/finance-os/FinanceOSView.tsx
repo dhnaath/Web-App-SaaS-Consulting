@@ -7,6 +7,18 @@ import { GroupedIncomesList } from './GroupedIncomesList';
 import { AccountsGrid } from './AccountsGrid';
 import { CircularProgress } from '../common/CircularProgress';
 import {
+  aggregateFinanceItemsByCategory,
+  FINANCE_REPORT_MONTH_KEY,
+  FINANCE_REPORT_MONTH_LABEL,
+  FINANCE_REPORT_YEAR,
+  formatFinanceAmount,
+  getExpenseItemsForMonth,
+  getFinanceMonthLabelsForYear,
+  getIncomeItemsForMonth,
+  getMonthKeyFromLabel,
+  sumFinanceItems,
+} from './financeData';
+import {
   Wallet,
   ArrowDownLeft,
   ArrowUpRight,
@@ -54,6 +66,22 @@ export const FinanceOSView: React.FC = () => {
 
   const [financeSubTab, setFinanceSubTab] = useState<'overview' | 'subscriptions' | 'savings' | 'debts'>('overview');
   const [showGuideModal, setShowGuideModal] = useState(false);
+
+  const reportIncomeItems = getIncomeItemsForMonth(FINANCE_REPORT_MONTH_LABEL);
+  const reportExpenseItems = getExpenseItemsForMonth(FINANCE_REPORT_MONTH_KEY);
+  const reportIncomeCategories = aggregateFinanceItemsByCategory(reportIncomeItems);
+  const reportExpenseCategories = aggregateFinanceItemsByCategory(reportExpenseItems);
+  const reportTotalIncome = sumFinanceItems(reportIncomeItems);
+  const reportTotalExpense = sumFinanceItems(reportExpenseItems);
+  const reportNetCashflow = reportTotalIncome - reportTotalExpense;
+
+  const yearlyReport = getFinanceMonthLabelsForYear(FINANCE_REPORT_YEAR).map((month) => ({
+    month,
+    income: sumFinanceItems(getIncomeItemsForMonth(month)),
+    expense: sumFinanceItems(getExpenseItemsForMonth(getMonthKeyFromLabel(month))),
+  }));
+  const yearlyTotalIncome = yearlyReport.reduce((total, month) => total + month.income, 0);
+  const yearlyTotalExpense = yearlyReport.reduce((total, month) => total + month.expense, 0);
 
   const navItems = [
     { id: 'overview', label: 'Accounts & Ledger', icon: Landmark },
@@ -174,34 +202,37 @@ export const FinanceOSView: React.FC = () => {
 
               <div className="space-y-1 text-neutral-600 font-mono-nums">
                 <div className="text-[10px] uppercase font-bold text-rose-600 font-sans">Expenses:</div>
-                <div className="flex justify-between"><span>Food & Dining:</span><span>$385</span></div>
-                <div className="flex justify-between"><span>Shopping:</span><span>$629</span></div>
-                <div className="flex justify-between"><span>Transportation:</span><span>$98</span></div>
-                <div className="flex justify-between"><span>Groceries:</span><span>$146</span></div>
-                <div className="flex justify-between"><span>Bills & Utilities:</span><span>$1,224</span></div>
-                <div className="flex justify-between"><span>Healthcare:</span><span>$390</span></div>
+                {reportExpenseCategories.map((item) => (
+                  <div key={item.category} className="flex justify-between">
+                    <span>{item.category}:</span>
+                    <span>{formatFinanceAmount(item.amount)}</span>
+                  </div>
+                ))}
                 <div className="border-t border-neutral-200 pt-0.5 flex justify-between font-semibold text-neutral-900">
                   <span>Total Expenses:</span>
-                  <span>$5,071</span>
+                  <span>{formatFinanceAmount(reportTotalExpense)}</span>
                 </div>
               </div>
 
               <div className="space-y-1 text-neutral-600 font-mono-nums pt-1 border-t border-neutral-100">
                 <div className="text-[10px] uppercase font-bold text-emerald-600 font-sans">Incomes:</div>
-                <div className="flex justify-between"><span>Digital Products:</span><span>$37,400</span></div>
-                <div className="flex justify-between"><span>Salary:</span><span>$95,420</span></div>
-                <div className="flex justify-between"><span>Affiliates:</span><span>$26,100</span></div>
-                <div className="flex justify-between"><span>Ecommerce:</span><span>$59,500</span></div>
-                <div className="flex justify-between"><span>Real Estate:</span><span>$24,500</span></div>
+                {reportIncomeCategories.map((item) => (
+                  <div key={item.category} className="flex justify-between">
+                    <span>{item.category}:</span>
+                    <span>{formatFinanceAmount(item.amount)}</span>
+                  </div>
+                ))}
                 <div className="border-t border-neutral-200 pt-0.5 flex justify-between font-semibold text-neutral-900">
                   <span>Total Incomes:</span>
-                  <span>$242,920</span>
+                  <span>{formatFinanceAmount(reportTotalIncome)}</span>
                 </div>
               </div>
 
               <div className="pt-2 border-t border-neutral-200 flex justify-between text-xs font-semibold text-neutral-900 font-mono-nums">
                 <span>Net Cashflow:</span>
-                <span className="text-emerald-700">+$237,849.01</span>
+                <span className={reportNetCashflow >= 0 ? 'text-emerald-700' : 'text-rose-700'}>
+                  {reportNetCashflow >= 0 ? '+' : '-'}{formatFinanceAmount(Math.abs(reportNetCashflow))}
+                </span>
               </div>
             </div>
           </div>
@@ -216,22 +247,23 @@ export const FinanceOSView: React.FC = () => {
             </div>
 
             <div className="text-[11px] font-mono-nums space-y-1 text-neutral-600">
-              <div className="font-semibold text-neutral-800 mb-1">2026 Fiscal Year</div>
-              <div className="flex justify-between">
-                <span>January:</span>
-                <span><span className="text-emerald-700">$6,800</span> / <span className="text-rose-600">$0</span></span>
-              </div>
-              <div className="flex justify-between">
-                <span>February:</span>
-                <span><span className="text-emerald-700">$7,300</span> / <span className="text-rose-600">$0</span></span>
-              </div>
-              <div className="flex justify-between">
-                <span>April:</span>
-                <span><span className="text-emerald-700">$242,920</span> / <span className="text-rose-600">$5,071</span></span>
-              </div>
+              <div className="font-semibold text-neutral-800 mb-1">{FINANCE_REPORT_YEAR} Fiscal Year</div>
+              {yearlyReport.map((month) => (
+                <div key={month.month} className="flex justify-between">
+                  <span>{month.month.split(' ')[0]}:</span>
+                  <span>
+                    <span className="text-emerald-700">{formatFinanceAmount(month.income)}</span>
+                    {' / '}
+                    <span className="text-rose-600">{formatFinanceAmount(month.expense)}</span>
+                  </span>
+                </div>
+              ))}
               <div className="pt-1.5 border-t border-neutral-200 flex justify-between text-xs font-semibold text-neutral-800">
                 <span>Annual Cashflow:</span>
-                <span className="text-emerald-700">$251,949</span>
+                <span className={yearlyTotalIncome >= yearlyTotalExpense ? 'text-emerald-700' : 'text-rose-700'}>
+                  {yearlyTotalIncome >= yearlyTotalExpense ? '' : '-'}
+                  {formatFinanceAmount(Math.abs(yearlyTotalIncome - yearlyTotalExpense))}
+                </span>
               </div>
             </div>
           </div>

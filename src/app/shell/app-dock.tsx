@@ -112,6 +112,7 @@ function DockIcon({
       <button
         ref={onMountElement}
         type="button"
+        data-expand-trigger={item.id === "expand" ? "true" : undefined}
         onClick={item.onClick}
         className="relative group outline-none bg-transparent border-0 p-0 m-0 leading-none flex flex-col items-center justify-end shrink-0 cursor-pointer z-10 hover:z-30 transition-transform"
         aria-label={item.label}
@@ -142,6 +143,7 @@ export function AppDock({
   onShortcut,
   onTerminal,
   onExpand,
+  onCloseExpand,
   onRecent,
   onTaskbar,
   onSearch,
@@ -151,12 +153,14 @@ export function AppDock({
   isExpandOpen: propIsExpandOpen,
   isRecentOpen,
   isTaskbarOpen,
+  isInfoOpen,
   sidebarShift = false,
 }: {
   onQuickCapture?: () => void;
   onShortcut?: () => void;
   onTerminal?: () => void;
   onExpand?: () => void;
+  onCloseExpand?: () => void;
   onRecent?: () => void;
   onTaskbar?: () => void;
   onSearch?: () => void;
@@ -166,6 +170,7 @@ export function AppDock({
   isExpandOpen?: boolean;
   isRecentOpen?: boolean;
   isTaskbarOpen?: boolean;
+  isInfoOpen?: boolean;
   sidebarShift?: boolean;
 }) {
   const mouseX = useMotionValue(Infinity);
@@ -192,7 +197,8 @@ export function AppDock({
     isTerminalOpen ||
     isExpandOpen ||
     isRecentOpen ||
-    isTaskbarOpen
+    isTaskbarOpen ||
+    isInfoOpen
   );
 
   const resetIdleTimer = useCallback(() => {
@@ -322,7 +328,9 @@ export function AppDock({
   };
 
   const handleCloseExpand = () => {
-    if (onExpand && propIsExpandOpen) {
+    if (onCloseExpand) {
+      onCloseExpand();
+    } else if (onExpand && propIsExpandOpen) {
       onExpand();
     } else {
       setInternalExpandOpen(false);
@@ -469,9 +477,16 @@ export function AppDock({
         strokeWidth: 2,
         isActive:
           pathname === "/value-treated" ||
+          pathname === "/valuetreated" ||
+          pathname === "/applied-value" ||
+          pathname === "/kurasi-wealth" ||
+          pathname === "/kurasi" ||
+          pathname.startsWith("/kurasi/") ||
           (pathname === "/" &&
             typeof window !== "undefined" &&
             (window.location.search.includes("valuetreated") ||
+              window.location.search.includes("value-treated") ||
+              window.location.search.includes("value_treated") ||
               window.location.search.includes("applied"))),
       },
       {
@@ -695,8 +710,8 @@ export function AppDock({
           aria-label="Arahkan kursor atau klik untuk membuka Dock"
           title="Arahkan kursor ke garis untuk membuka Dock"
         >
-          {/* Garis tipis khas iPhone Home Bar dengan visual liquid-glass beradaptasi dark / light */}
-          <div className="w-36 sm:w-44 h-[5px] rounded-full bg-neutral-900/40 dark:bg-white/45 backdrop-blur-md shadow-xs transition-all duration-300 ease-out group-hover:scale-x-115 group-hover:h-[6px] group-hover:bg-neutral-950/85 dark:group-hover:bg-white/90 group-hover:shadow-[0_0_14px_rgba(0,0,0,0.22)] dark:group-hover:shadow-[0_0_14px_rgba(255,255,255,0.45)] ring-1 ring-black/5 dark:ring-white/10" />
+          {/* Garis tipis khas iPhone Home Bar dengan warna selaras ikon header (muted-foreground / foreground) pada mode terang & gelap */}
+          <div className="w-36 sm:w-44 h-[4px] rounded-full bg-muted-foreground backdrop-blur-md shadow-xs transition-all duration-300 ease-out group-hover:scale-x-115 group-hover:h-[5px] group-hover:bg-foreground group-hover:shadow-[0_0_14px_rgba(0,0,0,0.22)] dark:group-hover:shadow-[0_0_14px_rgba(255,255,255,0.45)] ring-1 ring-black/5 dark:ring-white/10" />
         </motion.div>
       </div>
 

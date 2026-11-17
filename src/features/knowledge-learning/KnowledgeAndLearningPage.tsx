@@ -1,7 +1,11 @@
 import React, { useState, useMemo } from "react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { HeaderNavPills, ShellHeader } from "@/app/shell-header";
-import { MBACard } from "@/components/common/MBACard";
+import {
+  MBACard,
+  buildModuleCategoryGroups,
+  type ModuleComponentCategory,
+} from "@/components/common/MBACard";
 import { MovedCardsGridItems } from "@/components/common/MovedCardsGridItems";
 import {
   LauncherPageProvider,
@@ -27,6 +31,7 @@ export interface KnowledgeSubMenu {
   id: string;
   label: string;
   to: string;
+  componentCategory: ModuleComponentCategory;
 }
 
 export interface KnowledgeAppItem {
@@ -64,10 +69,10 @@ export const KNOWLEDGE_APPS: KnowledgeAppItem[] = [
     badgeBg: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
     badgeText: "Documents",
     subMenus: [
-      { id: "notes", label: "Notes", to: "/notes" },
-      { id: "quick-notes", label: "Quick Notes", to: "/catatan" },
-      { id: "documents", label: "Documents", to: "/documents" },
-      { id: "database", label: "Database", to: "/database" },
+      { id: "notes", label: "Notes", to: "/notes", componentCategory: "Features" },
+      { id: "quick-notes", label: "Quick Notes", to: "/catatan", componentCategory: "Tools" },
+      { id: "documents", label: "Documents", to: "/documents", componentCategory: "Records" },
+      { id: "database", label: "Database", to: "/database", componentCategory: "Records" },
     ],
   },
   {
@@ -85,10 +90,10 @@ export const KNOWLEDGE_APPS: KnowledgeAppItem[] = [
     badgeBg: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
     badgeText: "Documents",
     subMenus: [
-      { id: "knowledge-base", label: "Knowledge Base", to: "/knowledge-base" },
-      { id: "wiki", label: "Wiki Engine", to: "/wiki" },
-      { id: "bookmarks", label: "Bookmark Manager", to: "/bookmarks" },
-      { id: "incoterms", label: "Incoterms Guide", to: "/incoterms" },
+      { id: "knowledge-base", label: "Knowledge Base", to: "/knowledge-base", componentCategory: "Features" },
+      { id: "wiki", label: "Wiki Engine", to: "/wiki", componentCategory: "Guides" },
+      { id: "bookmarks", label: "Bookmark Manager", to: "/bookmarks", componentCategory: "Records" },
+      { id: "incoterms", label: "Incoterms Guide", to: "/incoterms", componentCategory: "Guides" },
     ],
   },
   {
@@ -106,9 +111,9 @@ export const KNOWLEDGE_APPS: KnowledgeAppItem[] = [
     badgeBg: "bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30",
     badgeText: "Documents",
     subMenus: [
-      { id: "research-manager", label: "Research Manager", to: "/research-manager" },
-      { id: "web-clipper", label: "Web Clipper", to: "/web-clipper" },
-      { id: "reading-list", label: "Reading List MVP", to: "/reading" },
+      { id: "research-manager", label: "Research Manager", to: "/research-manager", componentCategory: "Features" },
+      { id: "web-clipper", label: "Web Clipper", to: "/web-clipper", componentCategory: "Tools" },
+      { id: "reading-list", label: "Reading List MVP", to: "/reading", componentCategory: "Records" },
     ],
   },
 
@@ -130,9 +135,9 @@ export const KNOWLEDGE_APPS: KnowledgeAppItem[] = [
     badgeBg: "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30",
     badgeText: "Learning",
     subMenus: [
-      { id: "courses", label: "Courses", to: "/courses" },
-      { id: "flashcards", label: "Flashcards", to: "/flashcards" },
-      { id: "exams", label: "Exams", to: "/exams" },
+      { id: "courses", label: "Courses", to: "/courses", componentCategory: "Guides" },
+      { id: "flashcards", label: "Flashcards", to: "/flashcards", componentCategory: "Tools" },
+      { id: "exams", label: "Exams", to: "/exams", componentCategory: "Analytics" },
     ],
   },
   {
@@ -150,9 +155,9 @@ export const KNOWLEDGE_APPS: KnowledgeAppItem[] = [
     badgeBg: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30",
     badgeText: "Learning",
     subMenus: [
-      { id: "languages", label: "Languages", to: "/languages" },
-      { id: "training-track", label: "Training Track", to: "/lainnya?app=training-track" },
-      { id: "certificate-tracker", label: "Sertifikat & Dokumen Legal", to: "/life/certificate-tracker" },
+      { id: "languages", label: "Languages", to: "/languages", componentCategory: "Guides" },
+      { id: "training-track", label: "Training Track", to: "/lainnya?app=training-track", componentCategory: "Workflows" },
+      { id: "certificate-tracker", label: "Sertifikat & Dokumen Legal", to: "/life/certificate-tracker", componentCategory: "Records" },
     ],
   },
 
@@ -174,9 +179,9 @@ export const KNOWLEDGE_APPS: KnowledgeAppItem[] = [
     badgeBg: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
     badgeText: "Creative",
     subMenus: [
-      { id: "ideas-board", label: "Ideas Board", to: "/ideas" },
-      { id: "design-studio", label: "Design Studio", to: "/design" },
-      { id: "photography", label: "Photography", to: "/photography" },
+      { id: "ideas-board", label: "Ideas Board", to: "/ideas", componentCategory: "Tools" },
+      { id: "design-studio", label: "Design Studio", to: "/design", componentCategory: "Features" },
+      { id: "photography", label: "Photography", to: "/photography", componentCategory: "Records" },
     ],
   },
   {
@@ -194,9 +199,9 @@ export const KNOWLEDGE_APPS: KnowledgeAppItem[] = [
     badgeBg: "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30",
     badgeText: "Creative",
     subMenus: [
-      { id: "writing-editor", label: "Writing Editor", to: "/writing" },
-      { id: "code-dev", label: "Code Dev", to: "/code" },
-      { id: "ip-licenses", label: "Hak Cipta & Aset Digital", to: "/peh/ip-licenses" },
+      { id: "writing-editor", label: "Writing Editor", to: "/writing", componentCategory: "Features" },
+      { id: "code-dev", label: "Code Dev", to: "/code", componentCategory: "Tools" },
+      { id: "ip-licenses", label: "Hak Cipta & Aset Digital", to: "/peh/ip-licenses", componentCategory: "Settings" },
     ],
   },
 ];
@@ -258,7 +263,7 @@ export function KnowledgeAndLearningPage({
         {/* Title (Matching MBA Page Header Style) */}
         <div className="text-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground/90 tracking-tight flex items-center justify-center gap-2.5">
-            <span>Knowledge and Learning</span>
+            <span>Knowledge <span className="font-normal">and</span> Learning</span>
           </h1>
         </div>
 
@@ -277,6 +282,7 @@ export function KnowledgeAndLearningPage({
                 title: sub.label,
                 to: sub.to || app.to,
               }))}
+              categoryGroups={buildModuleCategoryGroups(app.subMenus, app.to)}
               isFav={isFavorite(app.to)}
               toggleFavorite={toggleFavorite}
             />

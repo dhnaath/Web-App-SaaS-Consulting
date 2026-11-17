@@ -1,9 +1,14 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useKembaliButtonClass } from "@/hooks/useKembaliButtonClass";
 import { CardMoreMenu } from "@/components/common/CardMoreMenu";
+import {
+  buildModuleCategoryGroups,
+  getComponentCategoryIcon,
+  type ModuleComponentCategory,
+} from "@/components/common/MBACard";
 import { MovedCardsGridItems } from "@/components/common/MovedCardsGridItems";
 import { useCardIconColor, resolveIconBg } from "@/hooks/useCardIconColor";
 import {
@@ -21,6 +26,7 @@ import { ResearchFrameworksPage } from "../research-frameworks/ResearchFramework
 import { FamilyRecordsHouseholdPage } from "../family-records/FamilyRecordsHouseholdPage";
 import { PublicRelationsPolicyAffairsPage } from "../public-affairs/PublicRelationsPolicyAffairsPage";
 import { ContactDirectoryNetworksPage } from "../social-networks/ContactDirectoryNetworksPage";
+import { PhaseSidePage } from "../phase-side/PhaseSidePage";
 import {
   User,
   GraduationCap,
@@ -66,7 +72,7 @@ export interface ModeAppCard {
   icon: any;
   to: string;
   badge?: string;
-  subMenus?: { id: string; label: string }[];
+  subMenus?: { id: string; label: string; componentCategory?: ModuleComponentCategory }[];
   accentColor?: string;
 }
 
@@ -101,9 +107,9 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/habits",
         badge: "Inti PEH",
         subMenus: [
-          { id: "today", label: "Agenda Hari Ini" },
-          { id: "all", label: "Daftar Kebiasaan" },
-          { id: "analytics", label: "Statistik & Streak" },
+          { id: "today", label: "Agenda Hari Ini", componentCategory: "Workflows" },
+          { id: "all", label: "Daftar Kebiasaan", componentCategory: "Records" },
+          { id: "analytics", label: "Statistik & Streak", componentCategory: "Analytics" },
         ],
       },
       {
@@ -114,9 +120,9 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/journal",
         badge: "Refleksi",
         subMenus: [
-          { id: "timeline", label: "Lini Masa Entri" },
-          { id: "mood", label: "Peta Suasana Hati" },
-          { id: "topics", label: "Tag & Topik" },
+          { id: "timeline", label: "Lini Masa Entri", componentCategory: "Records" },
+          { id: "mood", label: "Peta Suasana Hati", componentCategory: "Dashboards" },
+          { id: "topics", label: "Tag & Topik", componentCategory: "Settings" },
         ],
       },
       {
@@ -127,9 +133,9 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/goals",
         badge: "Roadmap",
         subMenus: [
-          { id: "active", label: "Sasaran Aktif" },
-          { id: "milestones", label: "Tahapan Checkpoint" },
-          { id: "archive", label: "Arsip Sasaran" },
+          { id: "active", label: "Sasaran Aktif", componentCategory: "Dashboards" },
+          { id: "milestones", label: "Tahapan Checkpoint", componentCategory: "Workflows" },
+          { id: "archive", label: "Arsip Sasaran", componentCategory: "Records" },
         ],
       },
       {
@@ -140,9 +146,9 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/reading",
         badge: "Pustaka",
         subMenus: [
-          { id: "shelf", label: "Rak Buku Saya" },
-          { id: "reading", label: "Sedang Dibaca" },
-          { id: "quotes", label: "Kutipan Penting" },
+          { id: "shelf", label: "Rak Buku Saya", componentCategory: "Records" },
+          { id: "reading", label: "Sedang Dibaca", componentCategory: "Workflows" },
+          { id: "quotes", label: "Kutipan Penting", componentCategory: "Records" },
         ],
       },
       {
@@ -153,9 +159,9 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/fitness",
         badge: "Fisik",
         subMenus: [
-          { id: "log", label: "Log Latihan" },
-          { id: "calc", label: "Kalkulator 1RM" },
-          { id: "history", label: "Riwayat Konsistensi" },
+          { id: "log", label: "Log Latihan", componentCategory: "Records" },
+          { id: "calc", label: "Kalkulator 1RM", componentCategory: "Tools" },
+          { id: "history", label: "Riwayat Konsistensi", componentCategory: "Analytics" },
         ],
       },
       {
@@ -166,9 +172,9 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/sleep",
         badge: "Recovery",
         subMenus: [
-          { id: "log", label: "Log Tidur" },
-          { id: "debt", label: "Hutang Tidur" },
-          { id: "trends", label: "Tren Istirahat" },
+          { id: "log", label: "Log Tidur", componentCategory: "Records" },
+          { id: "debt", label: "Hutang Tidur", componentCategory: "Tools" },
+          { id: "trends", label: "Tren Istirahat", componentCategory: "Analytics" },
         ],
       },
       {
@@ -179,8 +185,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/life/wishlist",
         badge: "Mindful",
         subMenus: [
-          { id: "must-have", label: "Must Have" },
-          { id: "saving", label: "Celengan Impian" },
+          { id: "must-have", label: "Must Have", componentCategory: "Features" },
+          { id: "saving", label: "Celengan Impian", componentCategory: "Dashboards" },
         ],
       },
       {
@@ -191,8 +197,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/life/life-planner",
         badge: "Master Hub",
         subMenus: [
-          { id: "goals", label: "Papan Sasaran" },
-          { id: "metrics", label: "Metrik Bulanan" },
+          { id: "goals", label: "Papan Sasaran", componentCategory: "Dashboards" },
+          { id: "metrics", label: "Metrik Bulanan", componentCategory: "Analytics" },
         ],
       },
       {
@@ -203,8 +209,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/life/notes",
         badge: "Notebook",
         subMenus: [
-          { id: "personal", label: "Pribadi & Hidup" },
-          { id: "ideas", label: "Ide & Inspirasi" },
+          { id: "personal", label: "Pribadi & Hidup", componentCategory: "Records" },
+          { id: "ideas", label: "Ide & Inspirasi", componentCategory: "Features" },
         ],
       },
     ],
@@ -228,9 +234,9 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/reading",
         badge: "Riset",
         subMenus: [
-          { id: "shelf", label: "Pustaka Materi" },
-          { id: "reading", label: "Sedang Dipelajari" },
-          { id: "notes", label: "Catatan Kritis" },
+          { id: "shelf", label: "Pustaka Materi", componentCategory: "Records" },
+          { id: "reading", label: "Sedang Dipelajari", componentCategory: "Workflows" },
+          { id: "notes", label: "Catatan Kritis", componentCategory: "Records" },
         ],
       },
       {
@@ -241,8 +247,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/life/certificate-tracker",
         badge: "Kredensial",
         subMenus: [
-          { id: "certs", label: "Sertifikasi Profesi" },
-          { id: "edu", label: "Pendidikan & Ijazah" },
+          { id: "certs", label: "Sertifikasi Profesi", componentCategory: "Records" },
+          { id: "edu", label: "Pendidikan & Ijazah", componentCategory: "Records" },
         ],
       },
       {
@@ -253,8 +259,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/knowledge",
         badge: "Playbook",
         subMenus: [
-          { id: "sops", label: "Materi Terstruktur" },
-          { id: "templates", label: "Format Ringkasan" },
+          { id: "sops", label: "Materi Terstruktur", componentCategory: "Guides" },
+          { id: "templates", label: "Format Ringkasan", componentCategory: "Templates" },
         ],
       },
       {
@@ -265,8 +271,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/life/notes",
         badge: "Catatan",
         subMenus: [
-          { id: "books", label: "Buku & Materi" },
-          { id: "tech", label: "Teknologi" },
+          { id: "books", label: "Buku & Materi", componentCategory: "Records" },
+          { id: "tech", label: "Teknologi", componentCategory: "Records" },
         ],
       },
       {
@@ -277,8 +283,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/time-audit",
         badge: "Fokus",
         subMenus: [
-          { id: "blocks", label: "Sesi Deep Work" },
-          { id: "ratio", label: "Rasio Fokus vs Distraksi" },
+          { id: "blocks", label: "Sesi Deep Work", componentCategory: "Workflows" },
+          { id: "ratio", label: "Rasio Fokus vs Distraksi", componentCategory: "Analytics" },
         ],
       },
       {
@@ -289,8 +295,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/goals",
         badge: "Target",
         subMenus: [
-          { id: "active", label: "Target Semester" },
-          { id: "milestones", label: "Jadwal Ujian" },
+          { id: "active", label: "Target Semester", componentCategory: "Dashboards" },
+          { id: "milestones", label: "Jadwal Ujian", componentCategory: "Workflows" },
         ],
       },
     ],
@@ -314,8 +320,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/journal",
         badge: "Inkubasi",
         subMenus: [
-          { id: "entries", label: "Koleksi Konsep" },
-          { id: "tags", label: "Topik & Kategori" },
+          { id: "entries", label: "Koleksi Konsep", componentCategory: "Records" },
+          { id: "tags", label: "Topik & Kategori", componentCategory: "Settings" },
         ],
       },
       {
@@ -326,8 +332,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/projects",
         badge: "Pipeline",
         subMenus: [
-          { id: "active", label: "Konten Berjalan" },
-          { id: "done", label: "Rilis Publikasi" },
+          { id: "active", label: "Konten Berjalan", componentCategory: "Workflows" },
+          { id: "done", label: "Rilis Publikasi", componentCategory: "Dashboards" },
         ],
       },
       {
@@ -338,8 +344,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/workflows",
         badge: "Standar",
         subMenus: [
-          { id: "pipelines", label: "Alur Kerja Aktif" },
-          { id: "templates", label: "Template Distribusi" },
+          { id: "pipelines", label: "Alur Kerja Aktif", componentCategory: "Workflows" },
+          { id: "templates", label: "Template Distribusi", componentCategory: "Templates" },
         ],
       },
       {
@@ -350,8 +356,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/ip-licenses",
         badge: "Proteksi",
         subMenus: [
-          { id: "licenses", label: "Lisensi Musik/Font" },
-          { id: "domains", label: "Domain & Channel" },
+          { id: "licenses", label: "Lisensi Musik/Font", componentCategory: "Records" },
+          { id: "domains", label: "Domain & Channel", componentCategory: "Settings" },
         ],
       },
     ],
@@ -375,8 +381,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/fitness",
         badge: "Fisik",
         subMenus: [
-          { id: "log", label: "Sesi Latihan" },
-          { id: "history", label: "Riwayat & Evaluasi" },
+          { id: "log", label: "Sesi Latihan", componentCategory: "Records" },
+          { id: "history", label: "Riwayat & Evaluasi", componentCategory: "Analytics" },
         ],
       },
       {
@@ -387,8 +393,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/sleep",
         badge: "Istirahat",
         subMenus: [
-          { id: "log", label: "Catatan Jam Tidur" },
-          { id: "trends", label: "Kualitas Istirahat" },
+          { id: "log", label: "Catatan Jam Tidur", componentCategory: "Records" },
+          { id: "trends", label: "Kualitas Istirahat", componentCategory: "Analytics" },
         ],
       },
       {
@@ -399,8 +405,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/family-health",
         badge: "Medis",
         subMenus: [
-          { id: "profiles", label: "Profil Alergi & Darah" },
-          { id: "meds", label: "Suplemen & Obat" },
+          { id: "profiles", label: "Profil Alergi & Darah", componentCategory: "Records" },
+          { id: "meds", label: "Suplemen & Obat", componentCategory: "Workflows" },
         ],
       },
       {
@@ -411,8 +417,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/habits",
         badge: "Rutinitas",
         subMenus: [
-          { id: "today", label: "Checklist Hidup Sehat" },
-          { id: "streak", label: "Konsistensi Kebiasaan" },
+          { id: "today", label: "Checklist Hidup Sehat", componentCategory: "Workflows" },
+          { id: "streak", label: "Konsistensi Kebiasaan", componentCategory: "Analytics" },
         ],
       },
       {
@@ -423,8 +429,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/life/doctor-consultation",
         badge: "Medis",
         subMenus: [
-          { id: "consult", label: "Jadwal Konsultasi" },
-          { id: "rx", label: "Resep Obat Aktif" },
+          { id: "consult", label: "Jadwal Konsultasi", componentCategory: "Workflows" },
+          { id: "rx", label: "Resep Obat Aktif", componentCategory: "Records" },
         ],
       },
       {
@@ -435,8 +441,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/life/weight-tracker",
         badge: "Metrik Fisik",
         subMenus: [
-          { id: "log", label: "Log Berat & BMI" },
-          { id: "target", label: "Target Body Goal" },
+          { id: "log", label: "Log Berat & BMI", componentCategory: "Records" },
+          { id: "target", label: "Target Body Goal", componentCategory: "Dashboards" },
         ],
       },
     ],
@@ -460,8 +466,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/life/movie-tracker",
         badge: "Watchlist",
         subMenus: [
-          { id: "watching", label: "Sedang Ditonton" },
-          { id: "completed", label: "Riwayat Selesai" },
+          { id: "watching", label: "Sedang Ditonton", componentCategory: "Dashboards" },
+          { id: "completed", label: "Riwayat Selesai", componentCategory: "Records" },
         ],
       },
       {
@@ -472,8 +478,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/life/travel-backpack",
         badge: "Trip Liburan",
         subMenus: [
-          { id: "cabin", label: "Bagasi Kabin" },
-          { id: "checked", label: "Bagasi Terdaftar" },
+          { id: "cabin", label: "Bagasi Kabin", componentCategory: "Templates" },
+          { id: "checked", label: "Bagasi Terdaftar", componentCategory: "Templates" },
         ],
       },
       {
@@ -484,8 +490,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/life/recipe-book",
         badge: "Kuliner",
         subMenus: [
-          { id: "recipes", label: "Daftar Resep" },
-          { id: "scaler", label: "Kalkulator Porsi" },
+          { id: "recipes", label: "Daftar Resep", componentCategory: "Records" },
+          { id: "scaler", label: "Kalkulator Porsi", componentCategory: "Tools" },
         ],
       },
       {
@@ -496,8 +502,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/reading",
         badge: "Buku",
         subMenus: [
-          { id: "shelf", label: "Koleksi Santai" },
-          { id: "quotes", label: "Kutipan Favorit" },
+          { id: "shelf", label: "Koleksi Santai", componentCategory: "Records" },
+          { id: "quotes", label: "Kutipan Favorit", componentCategory: "Records" },
         ],
       },
       {
@@ -508,8 +514,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/traditions",
         badge: "Acara",
         subMenus: [
-          { id: "events", label: "Kalender Acara" },
-          { id: "treasury", label: "Kas Rekreasi" },
+          { id: "events", label: "Kalender Acara", componentCategory: "Dashboards" },
+          { id: "treasury", label: "Kas Rekreasi", componentCategory: "Records" },
         ],
       },
       {
@@ -520,8 +526,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/pet-care",
         badge: "Anabul",
         subMenus: [
-          { id: "pets", label: "Profil Anabul" },
-          { id: "weight", label: "Catatan Kebugaran" },
+          { id: "pets", label: "Profil Anabul", componentCategory: "Records" },
+          { id: "weight", label: "Catatan Kebugaran", componentCategory: "Analytics" },
         ],
       },
     ],
@@ -545,8 +551,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/chores",
         badge: "Piket",
         subMenus: [
-          { id: "today", label: "Tugas Hari Ini" },
-          { id: "zones", label: "Area Ruangan" },
+          { id: "today", label: "Tugas Hari Ini", componentCategory: "Workflows" },
+          { id: "zones", label: "Area Ruangan", componentCategory: "Settings" },
         ],
       },
       {
@@ -557,8 +563,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/maintenance",
         badge: "Hunian",
         subMenus: [
-          { id: "schedule", label: "Jadwal Servis AC" },
-          { id: "logs", label: "Log Perbaikan" },
+          { id: "schedule", label: "Jadwal Servis AC", componentCategory: "Workflows" },
+          { id: "logs", label: "Log Perbaikan", componentCategory: "Records" },
         ],
       },
       {
@@ -569,8 +575,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/pantry",
         badge: "Logistik",
         subMenus: [
-          { id: "inventory", label: "Stok Bahan Pokok" },
-          { id: "expiry", label: "Radar Kedaluwarsa" },
+          { id: "inventory", label: "Stok Bahan Pokok", componentCategory: "Records" },
+          { id: "expiry", label: "Radar Kedaluwarsa", componentCategory: "Automations" },
         ],
       },
       {
@@ -581,8 +587,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/plants",
         badge: "Kebun",
         subMenus: [
-          { id: "schedule", label: "Jadwal Siram" },
-          { id: "fertilizer", label: "Pupuk & Repotting" },
+          { id: "schedule", label: "Jadwal Siram", componentCategory: "Workflows" },
+          { id: "fertilizer", label: "Pupuk & Repotting", componentCategory: "Guides" },
         ],
       },
       {
@@ -593,8 +599,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/vehicles",
         badge: "Otomotif",
         subMenus: [
-          { id: "service", label: "Jadwal Servis & Oli" },
-          { id: "tax", label: "Pajak STNK & Polis" },
+          { id: "service", label: "Jadwal Servis & Oli", componentCategory: "Workflows" },
+          { id: "tax", label: "Pajak STNK & Polis", componentCategory: "Records" },
         ],
       },
       {
@@ -605,8 +611,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/budget",
         badge: "Kas Rumah",
         subMenus: [
-          { id: "monthly", label: "Pos Belanja Bulanan" },
-          { id: "bills", label: "Tagihan Utilitas" },
+          { id: "monthly", label: "Pos Belanja Bulanan", componentCategory: "Templates" },
+          { id: "bills", label: "Tagihan Utilitas", componentCategory: "Records" },
         ],
       },
       {
@@ -617,8 +623,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/life/household-tracker",
         badge: "Perabotan",
         subMenus: [
-          { id: "rooms", label: "Ruang & Lokasi" },
-          { id: "warranty", label: "Status Garansi" },
+          { id: "rooms", label: "Ruang & Lokasi", componentCategory: "Settings" },
+          { id: "warranty", label: "Status Garansi", componentCategory: "Records" },
         ],
       },
       {
@@ -629,8 +635,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/life/grocery-list",
         badge: "Sembako",
         subMenus: [
-          { id: "need-buy", label: "Perlu Dibeli" },
-          { id: "in-cart", label: "Keranjang Belanja" },
+          { id: "need-buy", label: "Perlu Dibeli", componentCategory: "Workflows" },
+          { id: "in-cart", label: "Keranjang Belanja", componentCategory: "Features" },
         ],
       },
     ],
@@ -654,8 +660,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/family-tree",
         badge: "Genealogi",
         subMenus: [
-          { id: "tree", label: "Bagan Silsilah" },
-          { id: "directory", label: "Kontak & Alamat Trah" },
+          { id: "tree", label: "Bagan Silsilah", componentCategory: "Dashboards" },
+          { id: "directory", label: "Kontak & Alamat Trah", componentCategory: "Records" },
         ],
       },
       {
@@ -666,8 +672,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/family-health",
         badge: "Medis",
         subMenus: [
-          { id: "profiles", label: "Profil Darah & Alergi" },
-          { id: "emergency", label: "Kartu Kontak Darurat" },
+          { id: "profiles", label: "Profil Darah & Alergi", componentCategory: "Records" },
+          { id: "emergency", label: "Kartu Kontak Darurat", componentCategory: "Features" },
         ],
       },
       {
@@ -678,8 +684,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/traditions",
         badge: "Tradisi",
         subMenus: [
-          { id: "events", label: "Jadwal Reuni & Acara" },
-          { id: "treasury", label: "Kas & Anggaran Acara" },
+          { id: "events", label: "Jadwal Reuni & Acara", componentCategory: "Dashboards" },
+          { id: "treasury", label: "Kas & Anggaran Acara", componentCategory: "Records" },
         ],
       },
       {
@@ -690,8 +696,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/family-recipes",
         badge: "Resep Khas",
         subMenus: [
-          { id: "recipes", label: "Koleksi Resep Warisan" },
-          { id: "scaler", label: "Kalkulator Porsi" },
+          { id: "recipes", label: "Koleksi Resep Warisan", componentCategory: "Records" },
+          { id: "scaler", label: "Kalkulator Porsi", componentCategory: "Tools" },
         ],
       },
       {
@@ -702,8 +708,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/family-budget",
         badge: "Dana Terarah",
         subMenus: [
-          { id: "funds", label: "Pos Dana Bersama" },
-          { id: "education", label: "Simulasi Dana Pendidikan" },
+          { id: "funds", label: "Pos Dana Bersama", componentCategory: "Dashboards" },
+          { id: "education", label: "Simulasi Dana Pendidikan", componentCategory: "Tools" },
         ],
       },
       {
@@ -714,8 +720,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/pet-care",
         badge: "Anabul",
         subMenus: [
-          { id: "pets", label: "Profil Anabul" },
-          { id: "vet", label: "Jadwal Vaksinasi & Vet" },
+          { id: "pets", label: "Profil Anabul", componentCategory: "Records" },
+          { id: "vet", label: "Jadwal Vaksinasi & Vet", componentCategory: "Workflows" },
         ],
       },
     ],
@@ -739,8 +745,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/workflows",
         badge: "Pipeline",
         subMenus: [
-          { id: "active", label: "Pipeline Berjalan" },
-          { id: "templates", label: "Template Standard" },
+          { id: "active", label: "Pipeline Berjalan", componentCategory: "Workflows" },
+          { id: "templates", label: "Template Standard", componentCategory: "Templates" },
         ],
       },
       {
@@ -751,8 +757,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/vendors",
         badge: "Rekanan",
         subMenus: [
-          { id: "directory", label: "Direktori Vendor" },
-          { id: "slas", label: "Evaluasi Skor SLA" },
+          { id: "directory", label: "Direktori Vendor", componentCategory: "Records" },
+          { id: "slas", label: "Evaluasi Skor SLA", componentCategory: "Analytics" },
         ],
       },
       {
@@ -763,8 +769,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/incidents",
         badge: "RCA Masalah",
         subMenus: [
-          { id: "open", label: "Insiden Terbuka" },
-          { id: "postmortem", label: "Analisis Akar Masalah" },
+          { id: "open", label: "Insiden Terbuka", componentCategory: "Dashboards" },
+          { id: "postmortem", label: "Analisis Akar Masalah", componentCategory: "Analytics" },
         ],
       },
       {
@@ -775,8 +781,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/procurement",
         badge: "PO Belanja",
         subMenus: [
-          { id: "orders", label: "Daftar PO Aktif" },
-          { id: "matrix", label: "Matriks Otorisasi" },
+          { id: "orders", label: "Daftar PO Aktif", componentCategory: "Records" },
+          { id: "matrix", label: "Matriks Otorisasi", componentCategory: "Settings" },
         ],
       },
       {
@@ -787,8 +793,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/compliance",
         badge: "Audit & Izin",
         subMenus: [
-          { id: "audit", label: "Skor Kesiapan Audit" },
-          { id: "expiry", label: "Radar Jatuh Tempo Izin" },
+          { id: "audit", label: "Skor Kesiapan Audit", componentCategory: "Analytics" },
+          { id: "expiry", label: "Radar Jatuh Tempo Izin", componentCategory: "Automations" },
         ],
       },
       {
@@ -799,8 +805,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/meetings",
         badge: "Notulensi",
         subMenus: [
-          { id: "notes", label: "Daftar Notulensi" },
-          { id: "decisions", label: "Log Keputusan Final" },
+          { id: "notes", label: "Daftar Notulensi", componentCategory: "Records" },
+          { id: "decisions", label: "Log Keputusan Final", componentCategory: "Records" },
         ],
       },
       {
@@ -811,8 +817,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/life/certificate-tracker",
         badge: "Keahlian",
         subMenus: [
-          { id: "pro", label: "Sertifikasi Ahli" },
-          { id: "status", label: "Jatuh Tempo" },
+          { id: "pro", label: "Sertifikasi Ahli", componentCategory: "Records" },
+          { id: "status", label: "Jatuh Tempo", componentCategory: "Automations" },
         ],
       },
       {
@@ -823,8 +829,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/life/budget-tracker",
         badge: "Alokasi",
         subMenus: [
-          { id: "needs", label: "Needs 50%" },
-          { id: "wants", label: "Wants 30%" },
+          { id: "needs", label: "Needs 50%", componentCategory: "Templates" },
+          { id: "wants", label: "Wants 30%", componentCategory: "Templates" },
         ],
       },
     ],
@@ -848,8 +854,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/life/finance-os",
         badge: "Treasury OS",
         subMenus: [
-          { id: "accounts", label: "Akun Bank & Kas" },
-          { id: "trend", label: "Tren Arus Kas" },
+          { id: "accounts", label: "Akun Bank & Kas", componentCategory: "Records" },
+          { id: "trend", label: "Tren Arus Kas", componentCategory: "Analytics" },
         ],
       },
       {
@@ -860,8 +866,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/life/assets",
         badge: "Aset Rinci",
         subMenus: [
-          { id: "list", label: "Daftar Aset" },
-          { id: "valuation", label: "Total Nilai Pasar" },
+          { id: "list", label: "Daftar Aset", componentCategory: "Records" },
+          { id: "valuation", label: "Total Nilai Pasar", componentCategory: "Analytics" },
         ],
       },
       {
@@ -872,8 +878,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/assets",
         badge: "Inventaris Modal",
         subMenus: [
-          { id: "inventory", label: "Daftar Aset Modal" },
-          { id: "valuation", label: "Valuasi Nilai Pasar" },
+          { id: "inventory", label: "Daftar Aset Modal", componentCategory: "Records" },
+          { id: "valuation", label: "Valuasi Nilai Pasar", componentCategory: "Analytics" },
         ],
       },
       {
@@ -884,8 +890,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/ip-licenses",
         badge: "Aset Intelektual",
         subMenus: [
-          { id: "licenses", label: "Semua Hak Cipta & IP" },
-          { id: "domains", label: "Domain & Hosting" },
+          { id: "licenses", label: "Semua Hak Cipta & IP", componentCategory: "Records" },
+          { id: "domains", label: "Domain & Hosting", componentCategory: "Settings" },
         ],
       },
       {
@@ -896,8 +902,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/cap-table",
         badge: "Ekuitas Usaha",
         subMenus: [
-          { id: "stakeholders", label: "Pemegang Saham" },
-          { id: "vesting", label: "Perjanjian & Vesting" },
+          { id: "stakeholders", label: "Pemegang Saham", componentCategory: "Records" },
+          { id: "vesting", label: "Perjanjian & Vesting", componentCategory: "Workflows" },
         ],
       },
       {
@@ -908,8 +914,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/investments",
         badge: "Treasury",
         subMenus: [
-          { id: "portfolio", label: "Portofolio Aset" },
-          { id: "yield", label: "Kalkulator Imbal Hasil" },
+          { id: "portfolio", label: "Portofolio Aset", componentCategory: "Dashboards" },
+          { id: "yield", label: "Kalkulator Imbal Hasil", componentCategory: "Tools" },
         ],
       },
       {
@@ -920,8 +926,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/real-estate",
         badge: "Properti",
         subMenus: [
-          { id: "properties", label: "Daftar Properti & Ruko" },
-          { id: "caprate", label: "Kalkulator Rental Yield" },
+          { id: "properties", label: "Daftar Properti & Ruko", componentCategory: "Records" },
+          { id: "caprate", label: "Kalkulator Rental Yield", componentCategory: "Tools" },
         ],
       },
       {
@@ -932,8 +938,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/valuasi",
         badge: "Valuasi",
         subMenus: [
-          { id: "dcf", label: "Metode DCF" },
-          { id: "multiple", label: "Multiple EBITDA" },
+          { id: "dcf", label: "Metode DCF", componentCategory: "Tools" },
+          { id: "multiple", label: "Multiple EBITDA", componentCategory: "Analytics" },
         ],
       },
     ],
@@ -957,8 +963,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/civic",
         badge: "Lingkungan",
         subMenus: [
-          { id: "directory", label: "Pengurus & Kontak Sipil" },
-          { id: "emergency", label: "Kontak Darurat Wilayah" },
+          { id: "directory", label: "Pengurus & Kontak Sipil", componentCategory: "Records" },
+          { id: "emergency", label: "Kontak Darurat Wilayah", componentCategory: "Features" },
         ],
       },
       {
@@ -969,8 +975,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/volunteering",
         badge: "Relawan",
         subMenus: [
-          { id: "initiatives", label: "Aksi & Organisasi" },
-          { id: "hours", label: "Log Jam Kontribusi" },
+          { id: "initiatives", label: "Aksi & Organisasi", componentCategory: "Features" },
+          { id: "hours", label: "Log Jam Kontribusi", componentCategory: "Records" },
         ],
       },
       {
@@ -981,8 +987,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/charity",
         badge: "Filantropi",
         subMenus: [
-          { id: "donations", label: "Catatan Donasi" },
-          { id: "pledges", label: "Komitmen Zakat" },
+          { id: "donations", label: "Catatan Donasi", componentCategory: "Records" },
+          { id: "pledges", label: "Komitmen Zakat", componentCategory: "Workflows" },
         ],
       },
       {
@@ -993,8 +999,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/community-events",
         badge: "Agenda",
         subMenus: [
-          { id: "board", label: "Papan Agenda Warga" },
-          { id: "budget", label: "Kas Panitia Acara" },
+          { id: "board", label: "Papan Agenda Warga", componentCategory: "Dashboards" },
+          { id: "budget", label: "Kas Panitia Acara", componentCategory: "Records" },
         ],
       },
       {
@@ -1005,8 +1011,8 @@ export const MODE_CONFIGS: Record<string, ModeDefinition> = {
         to: "/peh/advocacy",
         badge: "Fasilitas Umum",
         subMenus: [
-          { id: "issues", label: "Daftar Laporan Warga" },
-          { id: "urgency", label: "Matriks Urgensi Publik" },
+          { id: "issues", label: "Daftar Laporan Warga", componentCategory: "Records" },
+          { id: "urgency", label: "Matriks Urgensi Publik", componentCategory: "Analytics" },
         ],
       },
     ],
@@ -1052,6 +1058,7 @@ export const ModeFlipCard = ({
   const kembaliBtnClass = useKembaliButtonClass();
   const currentPageId = useCurrentLauncherPage();
   const { isCardMovedOut } = useCardPageMover();
+  const wasFlippedRef = useRef(false);
   const [interactionConfig, setInteractionConfig] = useState(() => ({
     axis: Math.random() > 0.5 ? "x" : "y",
     dir: Math.random() > 0.5 ? 1 : -1,
@@ -1060,16 +1067,12 @@ export const ModeFlipCard = ({
   const handleFlip = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setInteractionConfig((prev) => {
-      let nextAxis = prev.axis;
-      let nextDir = prev.dir;
-      while (nextAxis === prev.axis && nextDir === prev.dir) {
-        nextAxis = Math.random() > 0.5 ? "x" : "y";
-        nextDir = Math.random() > 0.5 ? 1 : -1;
+    setIsFlipped((prev) => {
+      if (!prev) {
+        wasFlippedRef.current = true;
       }
-      return { axis: nextAxis, dir: nextDir };
+      return !prev;
     });
-    setIsFlipped((prev) => !prev);
   };
 
   const AppIcon = app.icon;
@@ -1078,6 +1081,8 @@ export const ModeFlipCard = ({
   const iconBg = resolveIconBg(customColor, cardGradient);
   const { isPinned, togglePin } = usePinnedCards(currentPageId);
   const isCardPinned = isPinned(app.to || app.name, currentPageId);
+
+  const categoryGroups = buildModuleCategoryGroups(app.subMenus, app.to);
 
   if (currentPageId && isCardMovedOut(currentPageId, app.to, app.name)) {
     return null;
@@ -1092,9 +1097,32 @@ export const ModeFlipCard = ({
           rotateY: isFlipped && interactionConfig.axis === "y" ? 180 * interactionConfig.dir : 0,
         }}
         transition={{ duration: 0.6, type: "spring", stiffness: 80, damping: 15 }}
+        onAnimationComplete={() => {
+          if (!isFlipped && wasFlippedRef.current) {
+            wasFlippedRef.current = false;
+            setInteractionConfig((prev) => {
+              let nextAxis = prev.axis;
+              let nextDir = prev.dir;
+              while (nextAxis === prev.axis && nextDir === prev.dir) {
+                nextAxis = Math.random() > 0.5 ? "x" : "y";
+                nextDir = Math.random() > 0.5 ? 1 : -1;
+              }
+              return { axis: nextAxis, dir: nextDir };
+            });
+          }
+        }}
       >
         {/* Front Face - Mengikuti gaya bersih kotak Tools 100 */}
-        <div className="w-full h-full rounded-[28px] border border-border bg-card p-4 sm:p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-3 group [backface-visibility:hidden]">
+        <div
+          className={`w-full h-full rounded-[28px] border border-border bg-card p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between gap-3 group ${
+            isFlipped ? "pointer-events-none" : ""
+          }`}
+          style={{
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+            transform: "rotateY(0deg)",
+          }}
+        >
           <div>
             <div className="flex items-start justify-between gap-3">
               <Link
@@ -1157,6 +1185,16 @@ export const ModeFlipCard = ({
                           title: sub.label,
                           to: app.to,
                         })),
+                        categoryGroups: categoryGroups?.map((g) => ({
+                          id: g.id,
+                          categoryNumber: g.categoryNumber,
+                          name: g.name,
+                          items: g.items.map((item) => ({
+                            title: item.title,
+                            to: item.to,
+                            desc: item.desc,
+                          })),
+                        })),
                       }
                     : undefined
                 }
@@ -1165,51 +1203,59 @@ export const ModeFlipCard = ({
             </div>
 
             {/* Submenu Fitur Chips */}
-            {app.subMenus && app.subMenus.length > 0 && (
+            {categoryGroups && categoryGroups.length > 0 && (
               <div className="mt-3 pt-2.5 border-t border-border/60">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-normal tracking-wider text-muted-foreground">
-                    Features ({app.subMenus.length}):
-                  </span>
-                </div>
-
-                <div className="max-h-[140px] overflow-y-auto no-scrollbar pr-0.5">
-                  <div className="flex flex-wrap justify-center gap-1.5">
-                    {app.subMenus.map((sub, idx) => (
-                      <Link
-                        key={idx}
-                        to={app.to as any}
-                        title={sub.label}
-                        className="min-w-[calc((100%-0.75rem)/3)] max-w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-full bg-muted/60 hover:bg-primary/10 hover:text-primary text-[11px] font-medium text-foreground transition-all cursor-pointer border border-border/40 hover:border-primary/30 group/chip"
-                      >
-                        <AppIcon size={12} className="text-primary shrink-0 group-hover/chip:scale-110 transition-transform" />
-                        <span className="text-center leading-snug whitespace-normal">{sub.label}</span>
-                      </Link>
-                    ))}
-                  </div>
+                <div className="max-h-[140px] overflow-y-auto no-scrollbar pr-0.5 space-y-3">
+                  {categoryGroups.map((group) => {
+                    const CategoryIcon = getComponentCategoryIcon(group.name);
+                    return (
+                      <div key={group.id} className="flex flex-col">
+                        <span className="inline-flex items-center justify-center gap-1 text-[10px] font-normal tracking-wider text-muted-foreground mb-1.5 text-center shrink-0">
+                          {CategoryIcon && <CategoryIcon size={11} className="shrink-0" />}
+                          <span>{group.name} ({group.items.length}):</span>
+                        </span>
+                      <div className="flex flex-wrap justify-center gap-1.5">
+                        {group.items.map((item, idx) => (
+                          <Link
+                            key={idx}
+                            to={item.to as any}
+                            title={item.title}
+                            className="w-auto max-w-full inline-flex items-center justify-center px-[6px] py-[6px] rounded-full bg-muted/60 hover:bg-primary/10 hover:text-primary text-[11px] font-medium text-foreground transition-all cursor-pointer border border-border/40 hover:border-primary/30 group/chip text-center"
+                          >
+                            <span className="module-chip-label whitespace-normal">{item.title}</span>
+                          </Link>
+                        ))}
+                      </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Action Bottom Bar - Clean justify-end with only Related button like Tools 100 */}
-          <div className="border-t border-border/50 pt-3 flex items-center justify-end text-xs">
+          {/* Action Bottom Bar - Icon panah saja selaras MBACard */}
+          <div className="pt-2 flex items-center justify-end text-xs shrink-0">
             <button
               type="button"
               onClick={handleFlip}
-              className="px-3 py-1 rounded-full border border-border/70 hover:bg-muted text-muted-foreground hover:text-foreground text-xs font-medium flex items-center gap-1 cursor-pointer transition-colors shadow-2xs group/btn"
+              className="p-1.5 rounded-xl border border-border/60 hover:border-border hover:bg-muted/60 text-muted-foreground hover:text-foreground transition-all cursor-pointer active:scale-95 shrink-0 flex items-center justify-center group/btn"
               title="Lihat Related"
+              aria-label="Lihat Related"
             >
-              <span className="text-[11px]">Related</span>
-              <ArrowRight size={12} className="group-hover/btn:translate-x-0.5 transition-transform" />
+              <ArrowRight className="size-4 group-hover/btn:translate-x-0.5 transition-transform" />
             </button>
           </div>
         </div>
 
         {/* Back Face (Warna icon app + tombol kembali di ujung bawah kanan persis Tools 100) */}
         <div
-          className={`absolute inset-0 w-full h-full rounded-[28px] ${cardGradient} p-4 shadow-lg border border-white/20 flex flex-col justify-end items-end overflow-hidden [backface-visibility:hidden]`}
+          className={`absolute inset-0 w-full h-full rounded-[28px] ${cardGradient} p-4 shadow-lg border border-white/20 flex flex-col justify-end items-end overflow-hidden ${
+            isFlipped ? "pointer-events-auto" : "pointer-events-none"
+          }`}
           style={{
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
             transform:
               interactionConfig.axis === "x"
                 ? `rotateX(${180 * interactionConfig.dir}deg)`
@@ -1309,6 +1355,7 @@ export function ModeSectionView({
     modeId === "family_records" ||
     modeId === "family-records" ||
     modeId === "family-records-and-household-planning" ||
+    modeId === "household-planning-and-family-records" ||
     modeId === "mode_household" ||
     modeId === "household" ||
     modeId === "home-leisure"
@@ -1323,7 +1370,8 @@ export function ModeSectionView({
     modeId === "mode_public" ||
     modeId === "public" ||
     modeId === "policy" ||
-    modeId === "public-relations-and-policy-affairs"
+    modeId === "public-relations-and-policy-affairs" ||
+    modeId === "policy-affairs-and-public-relations"
   ) {
     return <PublicRelationsPolicyAffairsPage isEmbedded={true} />;
   }
@@ -1352,6 +1400,15 @@ export function ModeSectionView({
     modeId === "islamic_principles"
   ) {
     return <IslamicPrinciplesShariaValuesPage isEmbedded={true} />;
+  }
+
+  if (
+    modeId === "mode_phase_side" ||
+    modeId === "phase_side" ||
+    modeId === "phase-side" ||
+    modeId === "phase-mutual-self-organization"
+  ) {
+    return <PhaseSidePage isEmbedded={true} />;
   }
 
   const config = MODE_CONFIGS[modeId];

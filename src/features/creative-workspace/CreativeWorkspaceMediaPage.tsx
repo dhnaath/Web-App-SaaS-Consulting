@@ -1,11 +1,16 @@
 import React, { useState, useMemo } from "react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { HeaderNavPills, ShellHeader } from "@/app/shell-header";
-import { MBACard } from "@/components/common/MBACard";
+import {
+  MBACard,
+  buildModuleCategoryGroups,
+  type ModuleComponentCategory,
+} from "@/components/common/MBACard";
 import { MovedCardsGridItems } from "@/components/common/MovedCardsGridItems";
 import {
   LauncherPageProvider,
   adjustCategoryTabsCount,
+  syncLauncherPageBadge,
   useCardPageMover,
   useCurrentLauncherPage,
 } from "@/hooks/useCardPageMover";
@@ -26,6 +31,7 @@ export interface CreativeSubMenu {
   id: string;
   label: string;
   to: string;
+  componentCategory: ModuleComponentCategory;
 }
 
 export interface CreativeAppItem {
@@ -60,10 +66,10 @@ export const CREATIVE_APPS: CreativeAppItem[] = [
     badgeBg: "bg-pink-500/15 text-pink-600 dark:text-pink-400 border-pink-500/30",
     badgeText: "Design",
     subMenus: [
-      { id: "design-canvas", label: "Design Workspace", to: "/design" },
-      { id: "ideas-board", label: "Creative Ideas", to: "/ideas" },
-      { id: "brand-assets", label: "Brand Asset Library", to: "/lainnya?app=design-assets" },
-      { id: "moodboards", label: "Visual Moodboards", to: "/ideas" },
+      { id: "design-canvas", label: "Design Workspace", to: "/design", componentCategory: "Features" },
+      { id: "ideas-board", label: "Creative Ideas", to: "/ideas", componentCategory: "Tools" },
+      { id: "brand-assets", label: "Brand Asset Library", to: "/lainnya?app=design-assets", componentCategory: "Records" },
+      { id: "moodboards", label: "Visual Moodboards", to: "/ideas", componentCategory: "Templates" },
     ],
   },
   {
@@ -81,9 +87,9 @@ export const CREATIVE_APPS: CreativeAppItem[] = [
     badgeBg: "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30",
     badgeText: "Production",
     subMenus: [
-      { id: "film-catalog", label: "Film Library", to: "/movies" },
-      { id: "video-projects", label: "Video Projects", to: "/lainnya?app=film-video" },
-      { id: "storyboard-notes", label: "Storyboards", to: "/notes" },
+      { id: "film-catalog", label: "Film Library", to: "/movies", componentCategory: "Records" },
+      { id: "video-projects", label: "Video Projects", to: "/lainnya?app=film-video", componentCategory: "Workflows" },
+      { id: "storyboard-notes", label: "Storyboards", to: "/notes", componentCategory: "Templates" },
     ],
   },
   {
@@ -101,9 +107,9 @@ export const CREATIVE_APPS: CreativeAppItem[] = [
     badgeBg: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
     badgeText: "Publishing",
     subMenus: [
-      { id: "writing-editor", label: "Writing Workspace", to: "/writing" },
-      { id: "quick-notes", label: "Quick Notes", to: "/catatan" },
-      { id: "editorial-drafts", label: "Editorial Drafts", to: "/documents" },
+      { id: "writing-editor", label: "Writing Workspace", to: "/writing", componentCategory: "Features" },
+      { id: "quick-notes", label: "Quick Notes", to: "/catatan", componentCategory: "Tools" },
+      { id: "editorial-drafts", label: "Editorial Drafts", to: "/documents", componentCategory: "Workflows" },
     ],
   },
   {
@@ -121,9 +127,9 @@ export const CREATIVE_APPS: CreativeAppItem[] = [
     badgeBg: "bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30",
     badgeText: "Production",
     subMenus: [
-      { id: "podcast-episodes", label: "Podcast Episodes", to: "/podcasts" },
-      { id: "music-library", label: "Music Library", to: "/music" },
-      { id: "audio-scripts", label: "Voice Scripts", to: "/notes" },
+      { id: "podcast-episodes", label: "Podcast Episodes", to: "/podcasts", componentCategory: "Workflows" },
+      { id: "music-library", label: "Music Library", to: "/music", componentCategory: "Records" },
+      { id: "audio-scripts", label: "Voice Scripts", to: "/notes", componentCategory: "Templates" },
     ],
   },
   {
@@ -141,8 +147,8 @@ export const CREATIVE_APPS: CreativeAppItem[] = [
     badgeBg: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30",
     badgeText: "Production",
     subMenus: [
-      { id: "photo-gallery", label: "Photo Gallery", to: "/photography" },
-      { id: "shot-lists", label: "Shot Lists", to: "/notes" },
+      { id: "photo-gallery", label: "Photo Gallery", to: "/photography", componentCategory: "Records" },
+      { id: "shot-lists", label: "Shot Lists", to: "/notes", componentCategory: "Guides" },
     ],
   },
   {
@@ -160,9 +166,9 @@ export const CREATIVE_APPS: CreativeAppItem[] = [
     badgeBg: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30",
     badgeText: "Interactive",
     subMenus: [
-      { id: "interactive-games", label: "Interactive Games", to: "/games" },
-      { id: "game-mechanics", label: "Game Mechanics", to: "/notes" },
-      { id: "interactive-sims", label: "Simulation Hub", to: "/peh/innovations-hub" },
+      { id: "interactive-games", label: "Interactive Games", to: "/games", componentCategory: "Features" },
+      { id: "game-mechanics", label: "Game Mechanics", to: "/notes", componentCategory: "Guides" },
+      { id: "interactive-sims", label: "Simulation Hub", to: "/peh/innovations-hub", componentCategory: "Tools" },
     ],
   },
 ];
@@ -172,12 +178,27 @@ export const CREATIVE_CATEGORY_TABS: {
   label: string;
   count: number;
 }[] = [
-  { id: "all", label: "Semua", count: 6 },
-  { id: "design", label: "Design", count: 1 },
-  { id: "publishing", label: "Publishing", count: 1 },
-  { id: "production", label: "Production", count: 3 },
-  { id: "interactive", label: "Interactive", count: 1 },
+  { id: "all", label: "Semua", count: CREATIVE_APPS.length },
+  { id: "design", label: "Design", count: CREATIVE_APPS.filter((a) => a.category === "design").length },
+  { id: "publishing", label: "Publishing", count: CREATIVE_APPS.filter((a) => a.category === "publishing").length },
+  { id: "production", label: "Production", count: CREATIVE_APPS.filter((a) => a.category === "production").length },
+  { id: "interactive", label: "Interactive", count: CREATIVE_APPS.filter((a) => a.category === "interactive").length },
 ];
+
+export const CREATIVE_TOTAL_MODULES = CREATIVE_APPS.length;
+export const CREATIVE_TOOLS_COUNT = CREATIVE_APPS.reduce(
+  (sum, app) => sum + app.subMenus.filter((s) => s.componentCategory === "Tools").length,
+  0
+);
+export const CREATIVE_FEATURES_COUNT = CREATIVE_APPS.reduce(
+  (sum, app) => sum + app.subMenus.filter((s) => s.componentCategory !== "Tools").length,
+  0
+);
+export const CREATIVE_TOTAL_BADGE = `${CREATIVE_TOTAL_MODULES} Modul • ${CREATIVE_FEATURES_COUNT} Features • ${CREATIVE_TOOLS_COUNT} Tools`;
+syncLauncherPageBadge("mode_creative", CREATIVE_TOTAL_BADGE);
+export const CREATIVE_SUMMARY_DESC = CREATIVE_CATEGORY_TABS.map(
+  (t) => `${t.label} (${t.count})`
+).join(" · ");
 
 export function CreativeWorkspaceMediaPage({
   isEmbedded = false,
@@ -222,7 +243,7 @@ export function CreativeWorkspaceMediaPage({
       <div className="w-full mx-auto pt-3 sm:pt-4 space-y-3 sm:space-y-4">
         <div className="text-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground/90 tracking-tight flex items-center justify-center gap-2.5">
-            <span>Creative Workspace and Media Production</span>
+            <span>Creative Workspace <span className="font-normal">and</span> Media Production</span>
           </h1>
         </div>
 
@@ -240,6 +261,7 @@ export function CreativeWorkspaceMediaPage({
                 title: sub.label,
                 to: sub.to || app.to,
               }))}
+              categoryGroups={buildModuleCategoryGroups(app.subMenus, app.to)}
               isFav={isFavorite(app.to)}
               toggleFavorite={toggleFavorite}
             />

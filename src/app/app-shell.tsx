@@ -1,6 +1,6 @@
 import { AppDock } from "./shell/app-dock";
 import { ShellSidebarProvider } from "./shell-sidebar";
-import { ShellHeaderProvider } from "./shell-header";
+import { ShellHeaderProvider, type HeaderNavPillItem } from "./shell-header";
 import {
   ShellSectionsProvider,
   type ShellSection,
@@ -9,13 +9,21 @@ import {
   WindowPositionLeftIcon,
   WindowPositionRightIcon,
 } from "@/components/icons/WindowPositionIcons";
-import { useState, useEffect, useMemo, useRef, useCallback, useLayoutEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  useLayoutEffect,
+} from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   CheckCircle2,
-  Settings,
+  Star,
   Home,
-  X,
   type LucideIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -26,9 +34,9 @@ import { ShortcutModal } from "@/app/ShortcutModal";
 import { TerminalModal } from "@/app/TerminalModal";
 import { RecentModal } from "@/app/RecentModal";
 import { TaskbarModal } from "@/app/TaskbarModal";
+import { InfoModal } from "@/app/InfoModal";
 import { useRecentApps } from "@/hooks/useRecentApps";
 import { recordActiveApp } from "@/utils/launcherCategoryMapper";
-import { SettingsModal } from "./wira-settings";
 import { TopPanelControlHub } from "./shell/TopPanelControlHub";
 import { useMenuSettings } from "@/hooks/useMenuSettings";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -57,7 +65,26 @@ import { ShellRightDrawer } from "./shell/ShellRightDrawer";
 export type { AppModeId, ModeItem };
 export { APP_MODES, SUPER_CATEGORIES };
 
-export function AppShell({
+const InsideAppShellContext = createContext(false);
+
+export function AppShell(props: {
+  title: string;
+  subtitle?: string;
+  actions?: ReactNode;
+  children: ReactNode;
+}) {
+  const isNested = useContext(InsideAppShellContext);
+  if (isNested) {
+    return <>{props.children}</>;
+  }
+  return (
+    <InsideAppShellContext.Provider value={true}>
+      <AppShellInner {...props} />
+    </InsideAppShellContext.Provider>
+  );
+}
+
+function AppShellInner({
   title,
   actions,
   children,
@@ -157,7 +184,11 @@ export function AppShell({
 
   // Whether the currently-open app registered its own header via <ShellHeader>.
   const [hasAppHeader, setHasAppHeader] = useState(false);
-  const shellHeaderCtx = useMemo(() => ({ setHasAppHeader }), []);
+  const [headerCategories, setHeaderCategories] = useState<readonly HeaderNavPillItem<any>[]>([]);
+  const shellHeaderCtx = useMemo(
+    () => ({ setHasAppHeader, setHeaderCategories }),
+    [],
+  );
 
   // Sections published by the open app via useShellSections().
   const sectionsRef = useRef<ShellSection[]>([]);
@@ -172,6 +203,33 @@ export function AppShell({
   const headerRef = useRef<HTMLElement | null>(null);
   const [headerHeight, setHeaderHeight] = useState(60);
   const [isTopPanelOpen, setIsTopPanelOpen] = useState(false);
+  const topPanelRef = useRef<HTMLDivElement | null>(null);
+  const [topPanelHeight, setTopPanelHeight] = useState(0);
+  const [isTopPanelAnimating, setIsTopPanelAnimating] = useState(false);
+
+  useLayoutEffect(() => {
+    const el = topPanelRef.current;
+    if (!el) return;
+    const update = () => {
+      const h = el.offsetHeight || 0;
+      setTopPanelHeight((prev) => (prev !== h ? h : prev));
+    };
+    update();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(update) : null;
+    ro?.observe(el);
+    return () => ro?.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (isTopPanelOpen) {
+      setIsTopPanelAnimating(true);
+      return;
+    }
+    if (!isTopPanelAnimating) return;
+    const fallbackTimer = setTimeout(() => setIsTopPanelAnimating(false), 550);
+    return () => clearTimeout(fallbackTimer);
+  }, [isTopPanelOpen, isTopPanelAnimating]);
+
   useLayoutEffect(() => {
     const el = headerRef.current;
     if (!el) return;
@@ -193,7 +251,7 @@ export function AppShell({
       if (rafId !== null) cancelAnimationFrame(rafId);
       ro?.disconnect();
     };
-  }, [hasAppHeader, pathname, isTopPanelOpen]);
+  }, [hasAppHeader, pathname]);
 
   const [currentMode, setCurrentMode] = useState<AppModeId>(() => {
     try {
@@ -229,9 +287,8 @@ export function AppShell({
     else if (pathname.includes("family")) setCurrentMode("family");
     else if (pathname.includes("public")) setCurrentMode("public_affairs");
     else if (pathname.includes("network") || pathname.includes("social") || pathname.includes("contact")) setCurrentMode("networks");
+    else if (pathname.includes("phase")) setCurrentMode("phase_side");
   }, [pathname]);
-
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const toggleLeftSidebar75 = () => {
     setIsLeftSidebar75((prev) => {
@@ -254,7 +311,6 @@ export function AppShell({
     }
   }, [isLeftSidebar75]);
 
-  const [activeSettingsTab, setActiveSettingsTab] = useState("general");
   const { favorites, toggleFavorite } = useFavorites();
 
   const favItems = favorites.map((route) => {
@@ -301,6 +357,7 @@ export function AppShell({
   const [_isExpandOpen, setIsExpandOpen] = useState(false);
   const [isRecentOpen, setIsRecentOpen] = useState(false);
   const [isTaskbarOpen, setIsTaskbarOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Auto-record visited navigation into Recent
@@ -312,6 +369,23 @@ export function AppShell({
     );
     if (match) {
       addRecentApp({ to: match.to, label: match.label });
+    } else if (
+      pathname === "/value-treated" ||
+      pathname === "/valuetreated" ||
+      pathname === "/applied-value" ||
+      pathname === "/kurasi-wealth"
+    ) {
+      addRecentApp({
+        to: "/value-treated",
+        label: "Applied Value Framework",
+        category: "Value Treated",
+      });
+    } else if (pathname === "/kurasi") {
+      addRecentApp({
+        to: "/kurasi",
+        label: "Kurasi Pengetahuan Bisnis",
+        category: "Value Treated",
+      });
     } else if (pathname === "/") {
       addRecentApp({ to: "/", label: "Launcher Modul", category: "Navigasi" });
     } else if (pathname === "/home") {
@@ -336,6 +410,7 @@ export function AppShell({
         setIsExpandOpen(false);
         setIsRecentOpen(false);
         setIsTaskbarOpen(false);
+        setIsInfoOpen(false);
       } else if (e.key === "Escape") {
         setIsQuickCaptureOpen(false);
         setIsShortcutOpen(false);
@@ -343,6 +418,7 @@ export function AppShell({
         setIsExpandOpen(false);
         setIsRecentOpen(false);
         setIsTaskbarOpen(false);
+        setIsInfoOpen(false);
       }
     };
 
@@ -353,6 +429,7 @@ export function AppShell({
       setIsExpandOpen(false);
       setIsRecentOpen(false);
       setIsTaskbarOpen(false);
+      setIsInfoOpen(false);
     };
 
     const handleOpenShortcut = () => {
@@ -362,6 +439,7 @@ export function AppShell({
       setIsExpandOpen(false);
       setIsRecentOpen(false);
       setIsTaskbarOpen(false);
+      setIsInfoOpen(false);
     };
 
     const handleOpenTerminal = () => {
@@ -371,6 +449,7 @@ export function AppShell({
       setIsExpandOpen(false);
       setIsRecentOpen(false);
       setIsTaskbarOpen(false);
+      setIsInfoOpen(false);
     };
 
     const handleOpenExpand = () => {
@@ -380,6 +459,7 @@ export function AppShell({
       setIsTerminalOpen(false);
       setIsRecentOpen(false);
       setIsTaskbarOpen(false);
+      setIsInfoOpen(false);
     };
 
     const handleOpenRecent = () => {
@@ -389,6 +469,7 @@ export function AppShell({
       setIsShortcutOpen(false);
       setIsTerminalOpen(false);
       setIsExpandOpen(false);
+      setIsInfoOpen(false);
     };
 
     const handleOpenTaskbar = () => {
@@ -398,6 +479,7 @@ export function AppShell({
       setIsShortcutOpen(false);
       setIsTerminalOpen(false);
       setIsExpandOpen(false);
+      setIsInfoOpen(false);
     };
 
     const handleOpenSearch = () => {
@@ -434,21 +516,11 @@ export function AppShell({
     };
   }, []);
 
-  const handleOpenSettings = (tab = "general") => {
-    setActiveSettingsTab(tab);
-    setIsSettingsOpen(true);
-  };
-
   return (
     <ShellSidebarProvider value={shellSidebarCtx}>
     <ShellHeaderProvider value={shellHeaderCtx}>
     <ShellSectionsProvider value={shellSectionsCtx}>
-    <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        initialTab={activeSettingsTab}
-      />
+    <div className="relative flex h-screen w-full overflow-hidden bg-background text-foreground">
 
       {/* Sidenav Kiri */}
       <ShellLeftSidebar
@@ -479,6 +551,51 @@ export function AppShell({
         blurConfig={blurConfig}
       />
 
+      {/* Panel Bar Atas (Gear Setting) — Reveal Style: diam di layer bawah, terungkap saat pusher utama bergeser turun */}
+      <div
+        ref={topPanelRef}
+        id="top-panel-container"
+        aria-hidden={!isTopPanelOpen}
+        className={`fixed top-0 right-0 z-10 flex flex-col bg-primary border-b border-white/20 dark:border-white/10 shadow-2xl overflow-hidden transition-[left] duration-300 ease-in-out ${
+          isTopPanelOpen
+            ? "visible pointer-events-auto"
+            : isTopPanelAnimating
+              ? "visible pointer-events-none"
+              : "invisible pointer-events-none"
+        }`}
+        style={{
+          backgroundColor: "hsl(var(--primary))",
+          left: isLeftOpen && isLeftSidebar75 ? "75px" : "0px",
+        }}
+      >
+        <div className="max-h-[80vh] overflow-y-auto no-scrollbar scrollbar-none">
+          <TopPanelControlHub
+            onClose={() => setIsTopPanelOpen(false)}
+          />
+        </div>
+      </div>
+
+      {/* Pusher Utama (Codrops Reveal st-effect-2): menutupi panel atas saat tertutup dan bergeser turun saat terbuka */}
+      <div
+        className={`relative z-20 flex flex-1 h-full w-full bg-background transition-transform duration-500 ${
+          isTopPanelOpen || isTopPanelAnimating
+            ? "shadow-[0_-12px_36px_rgba(0,0,0,0.22)]"
+            : ""
+        }`}
+        style={{
+          transform: isTopPanelOpen
+            ? `translate3d(0, ${topPanelHeight}px, 0)`
+            : isTopPanelAnimating
+              ? "translate3d(0, 0, 0)"
+              : undefined,
+          transitionTimingFunction: "cubic-bezier(0.7, 0, 0.3, 1)",
+        }}
+        onTransitionEnd={(e) => {
+          if (e.target === e.currentTarget && e.propertyName === "transform" && !isTopPanelOpen) {
+            setIsTopPanelAnimating(false);
+          }
+        }}
+      >
       <main
         id="mainContent"
         className={`relative flex flex-1 flex-col overflow-hidden transition-[margin,width] duration-300 ease-in-out ${
@@ -489,7 +606,7 @@ export function AppShell({
       >
         {(isTopPanelOpen || isRightOpen || (isLeftOpen && !isLeftSidebar75)) && (
           <div
-            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-xs cursor-default transition-opacity"
+            className="fixed inset-0 z-40 bg-transparent cursor-default"
             onClick={() => {
               setIsTopPanelOpen(false);
               setIsRightOpen(false);
@@ -500,46 +617,6 @@ export function AppShell({
           />
         )}
         <header ref={headerRef as any} className={`absolute top-0 inset-x-0 ${isTopPanelOpen ? "z-50" : "z-20"} pointer-events-none transition-all duration-300`}>
-          {/* Panel Bar Atas (Gear Setting): Full Panel Atas Kotak Full */}
-          {isTopPanelOpen && (
-            <div className="pointer-events-auto w-full">
-              <div
-                id="top-panel-container"
-                className="w-full flex flex-col bg-primary border-b border-white/20 dark:border-white/10 shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300"
-                style={{ backgroundColor: "hsl(var(--primary))" }}
-              >
-                {/* Top Bar Header Panel Atas */}
-                <div className="w-full h-[60px] sidebar-top-glass shrink-0 flex items-center justify-between px-4 sm:px-6 border-b border-white/20 dark:border-white/10 text-white">
-                  <div className="flex items-center gap-2.5">
-                    <div className="size-8 rounded-xl bg-white/15 text-white flex items-center justify-center shadow-xs">
-                      <Settings size={18} className="shrink-0" />
-                    </div>
-                    <span className="font-bold text-sm tracking-wide text-white">
-                      Panel Pengaturan & Preferensi Sistem
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    className="size-9 rounded-full aspect-square text-white/90 hover:text-white hover:bg-white/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center shrink-0"
-                    onClick={() => setIsTopPanelOpen(false)}
-                    title="Tutup Panel Pengaturan Atas"
-                    aria-label="Tutup panel atas"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
-
-                {/* Konten TopPanelControlHub */}
-                <div className="max-h-[80vh] overflow-y-auto no-scrollbar scrollbar-none">
-                  <TopPanelControlHub
-                    onClose={() => setIsTopPanelOpen(false)}
-                    onOpenSettings={handleOpenSettings}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
           <div className="flex items-center justify-between gap-3 px-3 py-3 sm:px-5 pointer-events-none">
             {/* Bagian Kiri Header: 2 Floating Pills */}
             <div className="flex items-center gap-2">
@@ -547,7 +624,7 @@ export function AppShell({
               <div className="pointer-events-auto flex items-center gap-1 p-1 rounded-full liquid-glass-header-pill">
                 <button
                   type="button"
-                  className={`relative z-10 size-9 rounded-full aspect-square shrink-0 transition-colors flex items-center justify-center cursor-pointer ${
+                  className={`group relative z-10 size-9 rounded-full aspect-square shrink-0 transition-colors flex items-center justify-center cursor-pointer ${
                     isLeftOpen
                       ? "bg-primary text-primary-foreground font-bold shadow-2xs"
                       : "text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -556,6 +633,7 @@ export function AppShell({
                     if (isLeftOpen) {
                       setIsLeftOpen(false);
                     } else {
+                      setIsTopPanelOpen(false);
                       setIsLeftOpen(true);
                       if (!isLeftSidebar75) {
                         setIsRightOpen(false);
@@ -565,16 +643,21 @@ export function AppShell({
                   title={isLeftOpen ? "Sembunyikan Navigasi" : "Tampilkan Navigasi"}
                   aria-label="Toggle sidebar kiri"
                 >
-                  <WindowPositionLeftIcon size={24} />
+                  <WindowPositionLeftIcon
+                    size={24}
+                    showArrow={false}
+                    data-anim={isLeftOpen ? "true" : undefined}
+                    className="header-anim-panel-left transition-transform duration-300"
+                  />
                 </button>
 
                 <Link
                   to="/"
-                  className="relative z-10 size-9 rounded-full aspect-square shrink-0 transition-colors flex items-center justify-center cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent"
+                  className="group relative z-10 size-9 rounded-full aspect-square shrink-0 transition-colors flex items-center justify-center cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent"
                   title="Beranda (Home)"
                   aria-label="Beranda"
                 >
-                  <Home size={20} className="shrink-0" />
+                  <Home size={20} className="shrink-0 header-anim-home transition-transform duration-200" />
                 </Link>
               </div>
 
@@ -582,18 +665,9 @@ export function AppShell({
               <div className="pointer-events-auto flex items-center p-1 rounded-full liquid-glass-header-pill">
                 <HeaderNavControls />
               </div>
-
-              {/* Pill 3: Info, Sortir & Gear Setting (Sementara) */}
-              <div className="pointer-events-auto flex items-center p-1 rounded-full liquid-glass-header-pill">
-                <HeaderExtraControls
-                  isTopPanelOpen={isTopPanelOpen}
-                  onToggleTopPanel={() => setIsTopPanelOpen((prev) => !prev)}
-                  onOpenInfo={() => setIsShortcutOpen(true)}
-                />
-              </div>
             </div>
 
-            {/* Bagian Kanan Header: 2 Floating Pills */}
+            {/* Bagian Kanan Header: 3 Floating Pills */}
             <div className="flex items-center gap-2 min-w-0">
               {/* Pill Shape Wadah Utama tempat elemen aksi, modul, & portal disiapkan */}
               <div
@@ -620,25 +694,52 @@ export function AppShell({
                 />
               </div>
 
-              {/* Pill 2: Pengaturan (Panel Atas) & Sidebar Kanan (Control Center) */}
-              <div className="pointer-events-auto flex items-center gap-1 p-1 rounded-full liquid-glass-header-pill">
+              {/* Pill 2: Info, Sortir & Gear Setting (di sebelah kiri Bintang) */}
+              <div className="pointer-events-auto flex items-center p-1 rounded-full liquid-glass-header-pill shrink-0">
+                <HeaderExtraControls
+                  isTopPanelOpen={isTopPanelOpen}
+                  onToggleTopPanel={() => {
+                    setIsTopPanelOpen((prev) => {
+                      const next = !prev;
+                      if (next) {
+                        setIsRightOpen(false);
+                        if (!isLeftSidebar75) {
+                          setIsLeftOpen(false);
+                        }
+                      }
+                      return next;
+                    });
+                  }}
+                  isInfoOpen={isInfoOpen}
+                  onOpenInfo={() => {
+                    setIsInfoOpen((prev) => !prev);
+                    setIsQuickCaptureOpen(false);
+                    setIsShortcutOpen(false);
+                    setIsTerminalOpen(false);
+                    setIsExpandOpen(false);
+                    setIsRecentOpen(false);
+                    setIsTaskbarOpen(false);
+                  }}
+                />
+              </div>
+
+              {/* Pill 3: Bintang (Placeholder) & Sidebar Kanan (Control Center) */}
+              <div className="pointer-events-auto flex items-center gap-1 p-1 rounded-full liquid-glass-header-pill shrink-0">
                 <button
                   type="button"
-                  className={`relative z-10 size-9 rounded-full aspect-square shrink-0 transition-colors flex items-center justify-center cursor-pointer ${
-                    isTopPanelOpen
-                      ? "bg-primary text-primary-foreground font-bold shadow-2xs"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                  }`}
-                  onClick={() => setIsTopPanelOpen((prev) => !prev)}
-                  title={isTopPanelOpen ? "Tutup Panel Pengaturan Atas" : "Pengaturan (Akun, Tema & Preferensi)"}
-                  aria-label="Toggle panel bar atas"
+                  className="group relative z-10 size-9 rounded-full aspect-square shrink-0 transition-colors flex items-center justify-center cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent"
+                  title="Bintang"
+                  aria-label="Bintang"
                 >
-                  <Settings size={20} className="shrink-0" />
+                  <Star
+                    size={20}
+                    className="shrink-0 header-anim-star transition-transform duration-200"
+                  />
                 </button>
 
                 <button
                   type="button"
-                  className={`relative z-10 size-9 rounded-full aspect-square shrink-0 transition-colors flex items-center justify-center cursor-pointer ${
+                  className={`group relative z-10 size-9 rounded-full aspect-square shrink-0 transition-colors flex items-center justify-center cursor-pointer ${
                     isRightOpen
                       ? "bg-primary text-primary-foreground font-bold shadow-2xs"
                       : "text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -647,6 +748,7 @@ export function AppShell({
                     if (isRightOpen) {
                       setIsRightOpen(false);
                     } else {
+                      setIsTopPanelOpen(false);
                       setIsRightOpen(true);
                       if (!isLeftSidebar75) {
                         setIsLeftOpen(false);
@@ -656,7 +758,12 @@ export function AppShell({
                   title={isRightOpen ? "Sembunyikan Control Center" : "Tampilkan Control Center (Sidebar Kanan)"}
                   aria-label="Toggle sidebar kanan"
                 >
-                  <WindowPositionRightIcon size={24} />
+                  <WindowPositionRightIcon
+                    size={24}
+                    showArrow={false}
+                    data-anim={isRightOpen ? "true" : undefined}
+                    className="header-anim-panel-right transition-transform duration-300"
+                  />
                 </button>
               </div>
             </div>
@@ -700,7 +807,16 @@ export function AppShell({
         </div>
         <AppDock
           sidebarShift={isLeftOpen && isLeftSidebar75}
-          onSearch={() => setIsCommandPaletteOpen(true)}
+          onSearch={() => {
+            setIsCommandPaletteOpen(true);
+            setIsExpandOpen(false);
+            setIsQuickCaptureOpen(false);
+            setIsShortcutOpen(false);
+            setIsTerminalOpen(false);
+            setIsRecentOpen(false);
+            setIsTaskbarOpen(false);
+            setIsInfoOpen(false);
+          }}
           onQuickCapture={() => {
             setIsQuickCaptureOpen((prev) => !prev);
             setIsShortcutOpen(false);
@@ -708,6 +824,7 @@ export function AppShell({
             setIsExpandOpen(false);
             setIsRecentOpen(false);
             setIsTaskbarOpen(false);
+            setIsInfoOpen(false);
           }}
           onShortcut={() => {
             setIsShortcutOpen((prev) => !prev);
@@ -716,6 +833,7 @@ export function AppShell({
             setIsExpandOpen(false);
             setIsRecentOpen(false);
             setIsTaskbarOpen(false);
+            setIsInfoOpen(false);
           }}
           onTerminal={() => {
             setIsTerminalOpen((prev) => !prev);
@@ -724,15 +842,18 @@ export function AppShell({
             setIsExpandOpen(false);
             setIsRecentOpen(false);
             setIsTaskbarOpen(false);
+            setIsInfoOpen(false);
           }}
           onExpand={() => {
-            setIsExpandOpen(true);
+            setIsExpandOpen((prev) => !prev);
             setIsQuickCaptureOpen(false);
             setIsShortcutOpen(false);
             setIsTerminalOpen(false);
             setIsRecentOpen(false);
             setIsTaskbarOpen(false);
+            setIsInfoOpen(false);
           }}
+          onCloseExpand={() => setIsExpandOpen(false)}
           onRecent={() => {
             setIsRecentOpen((prev) => !prev);
             setIsTaskbarOpen(false);
@@ -740,6 +861,7 @@ export function AppShell({
             setIsShortcutOpen(false);
             setIsTerminalOpen(false);
             setIsExpandOpen(false);
+            setIsInfoOpen(false);
           }}
           onTaskbar={() => {
             setIsTaskbarOpen((prev) => !prev);
@@ -748,6 +870,7 @@ export function AppShell({
             setIsShortcutOpen(false);
             setIsTerminalOpen(false);
             setIsExpandOpen(false);
+            setIsInfoOpen(false);
           }}
           isQuickCaptureOpen={isQuickCaptureOpen}
           isShortcutOpen={isShortcutOpen}
@@ -755,6 +878,7 @@ export function AppShell({
           isExpandOpen={_isExpandOpen}
           isRecentOpen={isRecentOpen}
           isTaskbarOpen={isTaskbarOpen}
+          isInfoOpen={isInfoOpen}
         />
 
         {/* Global Modals */}
@@ -787,6 +911,11 @@ export function AppShell({
           isOpen={isTaskbarOpen}
           onClose={() => setIsTaskbarOpen(false)}
         />
+        <InfoModal
+          isOpen={isInfoOpen}
+          onClose={() => setIsInfoOpen(false)}
+          categories={headerCategories}
+        />
 
         {/* Notification Toast */}
         {toastMessage && (
@@ -796,6 +925,7 @@ export function AppShell({
           </div>
         )}
       </main>
+      </div>
     </div>
     </ShellSectionsProvider>
     </ShellHeaderProvider>

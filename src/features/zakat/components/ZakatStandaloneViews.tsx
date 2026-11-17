@@ -8,13 +8,11 @@ import {
   Calculator,
   Sparkles,
   BookOpen,
-  ArrowLeft,
   Coins,
   HelpCircle,
   CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Link } from "@tanstack/react-router";
 import { useAuth } from "../../syariah/lib/AuthContext";
 import { useSaveCalculation } from "../../syariah/lib/useSaveCalculation";
 
@@ -186,7 +184,7 @@ interface StandaloneZakatAppProps {
 
 export function StandaloneZakatApp({
   zakatId,
-  onNavigateZakat,
+  onNavigateZakat: _onNavigateZakat,
 }: StandaloneZakatAppProps) {
   const data = ZAKAT_DATA[zakatId] || ZAKAT_DATA.penghasilan;
   const { user } = useAuth();
@@ -225,55 +223,10 @@ export function StandaloneZakatApp({
     }).format(val);
   };
 
-  const handleSwitchApp = (id: ZakatType) => {
-    if (onNavigateZakat) {
-      onNavigateZakat(id);
-    }
-  };
-
   const IconComponent = data.icon;
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-8 animate-in fade-in duration-300 pb-16">
-      {/* Top Navigation & Breadcrumbs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/60">
-        <div className="flex items-center gap-3">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1.5 rounded-lg hover:bg-muted/70 border border-border/40"
-          >
-            <ArrowLeft size={14} />
-            <span>Kembali ke Launcher</span>
-          </Link>
-          <span className="text-muted-foreground/50">/</span>
-          <span className="text-xs font-semibold text-primary px-2.5 py-1 rounded-md bg-primary/10">
-            Kategori: Zakat
-          </span>
-        </div>
-
-        {/* Quick App Switcher */}
-        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-border/60 self-start sm:self-auto overflow-x-auto">
-          {(["penghasilan", "maal", "fitrah"] as ZakatType[]).map((typeKey) => {
-            const item = ZAKAT_DATA[typeKey];
-            const isActive = zakatId === typeKey;
-            return (
-              <button
-                key={typeKey}
-                onClick={() => handleSwitchApp(typeKey)}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap flex items-center gap-1.5",
-                  isActive
-                    ? "bg-background text-foreground shadow-sm font-semibold border border-border/80"
-                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
-                )}
-              >
-                <span>{item.title}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Hero Header Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card to-secondary/30 border border-border/80 p-6 sm:p-8 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">

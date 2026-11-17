@@ -1,4 +1,4 @@
-import type { FrameworkContent } from "@/data/types/framework";
+import type { FrameworkContent } from "@/core/frameworkTypes";
 
 export const sustainabilityAndHRFrameworks: Record<string, FrameworkContent> = {
   "ESG Materiality Matrix": {

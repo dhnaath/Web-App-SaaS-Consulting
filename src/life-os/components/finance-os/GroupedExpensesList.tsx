@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
+import { expenseGroups, sumFinanceItems } from './financeData';
 import { useLifeOS } from '../../context/LifeOSContext';
-import { TransactionItem } from '../../types';
 import {
   ChevronDown,
   ChevronRight,
   Filter,
   ArrowUpDown,
-  Search,
   Plus,
-  Trash2,
   UtensilsCrossed,
   Home,
   Car,
@@ -30,61 +28,11 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
 };
 
 export const GroupedExpensesList: React.FC = () => {
-  const { transactions, deleteTransaction, openModal } = useLifeOS();
+  const { openModal } = useLifeOS();
   const [activeTab, setActiveTab] = useState<'weekly' | 'month' | 'chart'>('weekly');
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
 
-  const expenses = transactions.filter((t) => t.type === 'expense');
-
-  // Group by week
-  const groupedWeeks: { title: string; total: number; items: TransactionItem[] }[] = [
-    {
-      title: 'Apr 26 – May 2 2026',
-      total: 145.5,
-      items: [
-        { id: 'gw-1', type: 'expense', name: 'Grocery Shopping', amount: 146.0, date: '2026-04-28', category: 'Groceries' },
-      ],
-    },
-    {
-      title: 'Apr 19 – 25 2026',
-      total: 725.0,
-      items: [
-        { id: 'gw-2', type: 'expense', name: 'Online Shopping', amount: 100.0, date: '2026-04-23', category: 'Shopping' },
-        { id: 'gw-3', type: 'expense', name: 'Home supplies', amount: 560.0, date: '2026-04-20', category: 'Bills & Utilities' },
-        { id: 'gw-4', type: 'expense', name: 'Gas Station', amount: 65.0, date: '2026-04-19', category: 'Transportation' },
-      ],
-    },
-    {
-      title: 'Apr 12 – 18 2026',
-      total: 1053.99,
-      items: [
-        { id: 'gw-5', type: 'expense', name: 'Online order', amount: 379.0, date: '2026-04-18', category: 'Shopping' },
-        { id: 'gw-6', type: 'expense', name: 'Internet Bill', amount: 80.0, date: '2026-04-17', category: 'Bills & Utilities' },
-        { id: 'gw-7', type: 'expense', name: 'Pharmacy purchase', amount: 340.0, date: '2026-04-15', category: 'Healthcare' },
-        { id: 'gw-8', type: 'expense', name: 'Electricity Bill', amount: 85.0, date: '2026-04-14', category: 'Bills & Utilities' },
-        { id: 'gw-9', type: 'expense', name: 'Doctor Visit', amount: 50.0, date: '2026-04-13', category: 'Healthcare' },
-        { id: 'gw-10', type: 'expense', name: 'Dining out', amount: 120.0, date: '2026-04-12', category: 'Food & Dining' },
-      ],
-    },
-    {
-      title: 'Apr 5 – 11 2026',
-      total: 766.5,
-      items: [
-        { id: 'gw-11', type: 'expense', name: 'Restaurant Dinner', amount: 85.0, date: '2026-04-10', category: 'Food & Dining' },
-        { id: 'gw-12', type: 'expense', name: 'Uber Ride', amount: 33.0, date: '2026-04-09', category: 'Transportation' },
-        { id: 'gw-13', type: 'expense', name: 'Mobile recharge', amount: 499.0, date: '2026-04-07', category: 'Bills & Utilities' },
-        { id: 'gw-14', type: 'expense', name: 'Movie tickets', amount: 150.0, date: '2026-04-05', category: 'Shopping' },
-      ],
-    },
-    {
-      title: 'Mar 29 – Apr 4 2026',
-      total: 2380.0,
-      items: [
-        { id: 'gw-15', type: 'expense', name: 'Fuel refill', amount: 2200.0, date: '2026-04-02', category: 'Transportation' },
-        { id: 'gw-16', type: 'expense', name: 'Coffee & snack', amount: 180.0, date: '2026-04-01', category: 'Food & Dining' },
-      ],
-    },
-  ];
+  const groupedWeeks = expenseGroups;
 
   const toggleGroup = (title: string) => {
     setCollapsedGroups((prev) => ({
@@ -154,6 +102,7 @@ export const GroupedExpensesList: React.FC = () => {
       {/* Grouped Weeks */}
       <div className="space-y-3">
         {groupedWeeks.map((week) => {
+          const total = sumFinanceItems(week.items);
           const isCollapsed = collapsedGroups[week.title];
 
           return (
@@ -172,7 +121,7 @@ export const GroupedExpensesList: React.FC = () => {
                   <span>{week.title}</span>
                 </div>
                 <span className="text-xs font-mono-nums font-semibold text-neutral-700">
-                  ${week.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </button>
 

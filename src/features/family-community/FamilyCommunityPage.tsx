@@ -1,7 +1,11 @@
 import React, { useState, useMemo } from "react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { HeaderNavPills, ShellHeader } from "@/app/shell-header";
-import { MBACard } from "@/components/common/MBACard";
+import {
+  MBACard,
+  buildModuleCategoryGroups,
+  type ModuleComponentCategory,
+} from "@/components/common/MBACard";
 import { MovedCardsGridItems } from "@/components/common/MovedCardsGridItems";
 import {
   LauncherPageProvider,
@@ -34,6 +38,7 @@ export interface FamilyCommunitySubMenu {
   id: string;
   label: string;
   to: string;
+  componentCategory: ModuleComponentCategory;
 }
 
 export interface FamilyCommunityAppItem {
@@ -71,10 +76,10 @@ export const FAMILY_COMMUNITY_APPS: FamilyCommunityAppItem[] = [
     badgeBg: "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30",
     badgeText: "Family",
     subMenus: [
-      { id: "family-tree", label: "Family Tree", to: "/lainnya?app=family-tree" },
-      { id: "family-archive", label: "Family Archive", to: "/lainnya?app=family-archive" },
-      { id: "house-rules", label: "House Rules", to: "/lainnya?app=family-rules" },
-      { id: "resep-warisan", label: "Resep Warisan Keluarga", to: "/peh/family-recipes" },
+      { id: "family-tree", label: "Family Tree", to: "/lainnya?app=family-tree", componentCategory: "Features" },
+      { id: "family-archive", label: "Family Archive", to: "/lainnya?app=family-archive", componentCategory: "Records" },
+      { id: "house-rules", label: "House Rules", to: "/lainnya?app=family-rules", componentCategory: "Settings" },
+      { id: "resep-warisan", label: "Resep Warisan Keluarga", to: "/peh/family-recipes", componentCategory: "Templates" },
     ],
   },
   {
@@ -92,9 +97,9 @@ export const FAMILY_COMMUNITY_APPS: FamilyCommunityAppItem[] = [
     badgeBg: "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30",
     badgeText: "Family",
     subMenus: [
-      { id: "medical-profile", label: "Medical Profile", to: "/lainnya?app=medical-family" },
-      { id: "disaster-prep", label: "Disaster Prep", to: "/lainnya?app=disaster-prep" },
-      { id: "emergency-contacts", label: "Emergency Contacts", to: "/lainnya?app=emergency-hub" },
+      { id: "medical-profile", label: "Medical Profile", to: "/lainnya?app=medical-family", componentCategory: "Records" },
+      { id: "disaster-prep", label: "Disaster Prep", to: "/lainnya?app=disaster-prep", componentCategory: "Guides" },
+      { id: "emergency-contacts", label: "Emergency Contacts", to: "/lainnya?app=emergency-hub", componentCategory: "Records" },
     ],
   },
   {
@@ -112,9 +117,9 @@ export const FAMILY_COMMUNITY_APPS: FamilyCommunityAppItem[] = [
     badgeBg: "bg-pink-500/15 text-pink-600 dark:text-pink-400 border-pink-500/30",
     badgeText: "Family",
     subMenus: [
-      { id: "tabungan-dana", label: "Tabungan & Dana Bersama", to: "/peh/family-budget" },
-      { id: "carpool-plan", label: "Carpool Plan", to: "/lainnya?app=carpool-plan" },
-      { id: "bermain-anabul", label: "Bermain dengan Anabul", to: "/peh/pet-care" },
+      { id: "tabungan-dana", label: "Tabungan & Dana Bersama", to: "/peh/family-budget", componentCategory: "Tools" },
+      { id: "carpool-plan", label: "Carpool Plan", to: "/lainnya?app=carpool-plan", componentCategory: "Workflows" },
+      { id: "bermain-anabul", label: "Bermain dengan Anabul", to: "/peh/pet-care", componentCategory: "Features" },
     ],
   },
 
@@ -136,10 +141,10 @@ export const FAMILY_COMMUNITY_APPS: FamilyCommunityAppItem[] = [
     badgeBg: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30",
     badgeText: "Relationships",
     subMenus: [
-      { id: "relation-circles", label: "Relation Circles", to: "/lainnya?app=circle-groups" },
-      { id: "catchup-reminder", label: "Catchup Reminder", to: "/lainnya?app=catchup-cadence" },
-      { id: "meeting-timeline", label: "Meeting Timeline", to: "/lainnya?app=meeting-timeline" },
-      { id: "borrow-log", label: "Borrow Log MVP", to: "/lainnya?app=borrowed-items" },
+      { id: "relation-circles", label: "Relation Circles", to: "/lainnya?app=circle-groups", componentCategory: "Dashboards" },
+      { id: "catchup-reminder", label: "Catchup Reminder", to: "/lainnya?app=catchup-cadence", componentCategory: "Automations" },
+      { id: "meeting-timeline", label: "Meeting Timeline", to: "/lainnya?app=meeting-timeline", componentCategory: "Records" },
+      { id: "borrow-log", label: "Borrow Log MVP", to: "/lainnya?app=borrowed-items", componentCategory: "Records" },
     ],
   },
   {
@@ -157,9 +162,9 @@ export const FAMILY_COMMUNITY_APPS: FamilyCommunityAppItem[] = [
     badgeBg: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
     badgeText: "Relationships",
     subMenus: [
-      { id: "gift-tracker", label: "Gift Tracker", to: "/lainnya?app=gift-tracker" },
-      { id: "reunion-planner", label: "Reunion Planner", to: "/lainnya?app=reunion-planner" },
-      { id: "anniversary-tracker", label: "Anniversary Tracker", to: "/lainnya?app=family-anniversary" },
+      { id: "gift-tracker", label: "Gift Tracker", to: "/lainnya?app=gift-tracker", componentCategory: "Records" },
+      { id: "reunion-planner", label: "Reunion Planner", to: "/lainnya?app=reunion-planner", componentCategory: "Workflows" },
+      { id: "anniversary-tracker", label: "Anniversary Tracker", to: "/lainnya?app=family-anniversary", componentCategory: "Automations" },
     ],
   },
 
@@ -181,10 +186,10 @@ export const FAMILY_COMMUNITY_APPS: FamilyCommunityAppItem[] = [
     badgeBg: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
     badgeText: "Neighborhood",
     subMenus: [
-      { id: "neighbor-directory", label: "Neighbor Directory", to: "/lainnya?app=rt-rw-directory" },
-      { id: "neighbor-community", label: "Neighbor Community", to: "/komunitas-warga" },
-      { id: "community-board", label: "Community Board", to: "/lainnya?app=community-announcements" },
-      { id: "membership-card", label: "Membership Card", to: "/lainnya?app=membership-card" },
+      { id: "neighbor-directory", label: "Neighbor Directory", to: "/lainnya?app=rt-rw-directory", componentCategory: "Records" },
+      { id: "neighbor-community", label: "Neighbor Community", to: "/komunitas-warga", componentCategory: "Features" },
+      { id: "community-board", label: "Community Board", to: "/lainnya?app=community-announcements", componentCategory: "Dashboards" },
+      { id: "membership-card", label: "Membership Card", to: "/lainnya?app=membership-card", componentCategory: "Features" },
     ],
   },
   {
@@ -202,11 +207,11 @@ export const FAMILY_COMMUNITY_APPS: FamilyCommunityAppItem[] = [
     badgeBg: "bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30",
     badgeText: "Neighborhood",
     subMenus: [
-      { id: "services-guide", label: "Services Guide", to: "/lainnya?app=public-services-guide" },
-      { id: "civil-registry", label: "Civil Registry", to: "/lainnya?app=civil-registry" },
-      { id: "civic-tax", label: "Civic Tax", to: "/lainnya?app=tax-civic" },
-      { id: "civic-compliance", label: "Civic Compliance", to: "/peh/civic" },
-      { id: "aspirasi-fasum", label: "Aspirasi & Laporan Fasum", to: "/komunitas-warga?tab=aspirasi" },
+      { id: "services-guide", label: "Services Guide", to: "/lainnya?app=public-services-guide", componentCategory: "Guides" },
+      { id: "civil-registry", label: "Civil Registry", to: "/lainnya?app=civil-registry", componentCategory: "Records" },
+      { id: "civic-tax", label: "Civic Tax", to: "/lainnya?app=tax-civic", componentCategory: "Tools" },
+      { id: "civic-compliance", label: "Civic Compliance", to: "/peh/civic", componentCategory: "Settings" },
+      { id: "aspirasi-fasum", label: "Aspirasi & Laporan Fasum", to: "/komunitas-warga?tab=aspirasi", componentCategory: "Workflows" },
     ],
   },
   {
@@ -224,8 +229,8 @@ export const FAMILY_COMMUNITY_APPS: FamilyCommunityAppItem[] = [
     badgeBg: "bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30",
     badgeText: "Neighborhood",
     subMenus: [
-      { id: "civic-calendar", label: "Civic Calendar", to: "/lainnya?app=civic-calendar" },
-      { id: "meeting-resolutions", label: "Meeting Resolutions", to: "/lainnya?app=meeting-resolutions" },
+      { id: "civic-calendar", label: "Civic Calendar", to: "/lainnya?app=civic-calendar", componentCategory: "Dashboards" },
+      { id: "meeting-resolutions", label: "Meeting Resolutions", to: "/lainnya?app=meeting-resolutions", componentCategory: "Records" },
     ],
   },
 
@@ -247,10 +252,10 @@ export const FAMILY_COMMUNITY_APPS: FamilyCommunityAppItem[] = [
     badgeBg: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
     badgeText: "Giving",
     subMenus: [
-      { id: "giving", label: "Giving", to: "/zakat" },
-      { id: "donation-log", label: "Donation Log MVP", to: "/lainnya?app=donation-tracker" },
-      { id: "volunteer-log", label: "Volunteer Log MVP", to: "/lainnya?app=volunteer-log" },
-      { id: "social-impact", label: "Social Impact", to: "/peh/charity" },
+      { id: "giving", label: "Giving", to: "/zakat", componentCategory: "Features" },
+      { id: "donation-log", label: "Donation Log MVP", to: "/lainnya?app=donation-tracker", componentCategory: "Records" },
+      { id: "volunteer-log", label: "Volunteer Log MVP", to: "/lainnya?app=volunteer-log", componentCategory: "Records" },
+      { id: "social-impact", label: "Social Impact", to: "/peh/charity", componentCategory: "Analytics" },
     ],
   },
 ];
@@ -314,7 +319,7 @@ export function FamilyCommunityPage({
         {/* Title (Matching MBA Page Header Style) */}
         <div className="text-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground/90 tracking-tight flex items-center justify-center gap-2.5">
-            <span>Family and Community</span>
+            <span>Family <span className="font-normal">and</span> Community</span>
           </h1>
         </div>
 
@@ -333,6 +338,7 @@ export function FamilyCommunityPage({
                 title: sub.label,
                 to: sub.to || app.to,
               }))}
+              categoryGroups={buildModuleCategoryGroups(app.subMenus, app.to)}
               isFav={isFavorite(app.to)}
               toggleFavorite={toggleFavorite}
             />

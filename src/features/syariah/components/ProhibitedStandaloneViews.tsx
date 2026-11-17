@@ -3,7 +3,6 @@ import {
   AlertOctagon,
   ShieldAlert,
   Dice5,
-  ArrowLeft,
   CheckCircle2,
   AlertTriangle,
   BookOpen,
@@ -12,7 +11,6 @@ import {
   XCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Link } from "@tanstack/react-router";
 
 export type ProhibitedType = "riba" | "gharar" | "maysir";
 
@@ -243,8 +241,8 @@ export const PROHIBITED_DATA: Record<ProhibitedType, ProhibitedDetailInfo> = {
 
 export function StandaloneProhibitedApp({
   prohibitedId,
-  onBack,
-  onSelectProhibited,
+  onBack: _onBack,
+  onSelectProhibited: _onSelectProhibited,
 }: {
   prohibitedId: ProhibitedType;
   onBack?: () => void;
@@ -285,68 +283,14 @@ export function StandaloneProhibitedApp({
 
   return (
     <div className="w-full flex flex-col gap-6 animate-in fade-in duration-300">
-      {/* Top Header & Breadcrumb */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/40 pb-5">
-        <div className="flex items-center gap-3">
-          {onBack ? (
-            <button
-              onClick={onBack}
-              className="p-2 rounded-xl bg-card border border-border/50 hover:bg-secondary text-muted-foreground hover:text-foreground transition-all cursor-pointer shadow-xs"
-              title="Kembali ke Semua Larangan"
-            >
-              <ArrowLeft size={18} />
-            </button>
-          ) : (
-            <Link to="/"
-              className="p-2 rounded-xl bg-card border border-border/50 hover:bg-secondary text-muted-foreground hover:text-foreground transition-all cursor-pointer shadow-xs"
-              title="Kembali ke Semua Larangan"
-            >
-              <ArrowLeft size={18} />
-            </Link>
-          )}
-
-          <div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <span className="font-semibold text-rose-500">Sharia Finance</span>
-              <span>•</span>
-              <span>Larangan Muamalah</span>
-              <span>•</span>
-              <span className="font-medium text-foreground">{data.badge}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-                {data.title}
-              </h1>
-              <span className="text-sm font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-                {data.arabicName}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Switch Pills between Riba, Gharar, Maysir */}
-        <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 sm:pb-0 scrollbar-hide">
-          {(Object.keys(PROHIBITED_DATA) as ProhibitedType[]).map((key) => {
-            const item = PROHIBITED_DATA[key];
-            const isActive = key === prohibitedId;
-            return (
-              <button
-                key={key}
-                onClick={() => {
-                  if (onSelectProhibited) onSelectProhibited(key);
-                }}
-                className={cn(
-                  "px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer",
-                  isActive
-                    ? "bg-rose-500 text-white shadow-xs"
-                    : "bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-              >
-                {item.title}
-              </button>
-            );
-          })}
-        </div>
+      {/* Clean Page Title */}
+      <div className="flex items-center gap-3 border-b border-border/40 pb-5">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+          {data.title}
+        </h1>
+        <span className="text-sm font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+          {data.arabicName}
+        </span>
       </div>
 
       {/* Main Grid */}

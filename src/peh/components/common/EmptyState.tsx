@@ -1,7 +1,7 @@
-import React from 'react';
-import { Icon } from './Icon';
+import React from "react";
+import { Icon } from "./Icon";
 
-interface EmptyStateProps {
+export interface EmptyStateProps {
   iconName: string;
   title: string;
   description: string;
@@ -21,34 +21,36 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   onSecondaryAction,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-neutral-300 rounded-xl bg-neutral-50/50 my-6">
-      <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-neutral-100 text-neutral-600 mb-4 border border-neutral-200">
-        <Icon name={iconName} size={22} className="stroke-[1.75]" />
+    <div className="rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700 bg-white/60 dark:bg-neutral-900/40 p-10 text-center space-y-3">
+      <div className="size-11 rounded-2xl bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 flex items-center justify-center mx-auto">
+        <Icon name={iconName} size={20} />
       </div>
-      <h3 className="text-base font-semibold text-neutral-900 mb-1">{title}</h3>
-      <p className="text-sm text-neutral-500 max-w-md mb-6 leading-relaxed">{description}</p>
-      
-      <div className="flex items-center gap-3">
-        {actionLabel && onAction && (
-          <button
-            type="button"
-            onClick={onAction}
-            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-white bg-neutral-900 rounded-lg hover:bg-neutral-800 transition-colors shadow-xs"
-          >
-            <Icon name="Plus" size={14} />
-            <span>{actionLabel}</span>
-          </button>
-        )}
-        {secondaryLabel && onSecondaryAction && (
-          <button
-            type="button"
-            onClick={onSecondaryAction}
-            className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-neutral-700 bg-white border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors"
-          >
-            <span>{secondaryLabel}</span>
-          </button>
-        )}
-      </div>
+      <h3 className="text-sm font-bold text-neutral-900 dark:text-white">{title}</h3>
+      <p className="text-xs text-neutral-500 dark:text-neutral-400 max-w-md mx-auto leading-relaxed">
+        {description}
+      </p>
+      {(actionLabel || secondaryLabel) && (
+        <div className="flex items-center justify-center gap-2 pt-2">
+          {actionLabel && onAction && (
+            <button
+              type="button"
+              onClick={onAction}
+              className="px-4 py-2 rounded-lg bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+            >
+              {actionLabel}
+            </button>
+          )}
+          {secondaryLabel && onSecondaryAction && (
+            <button
+              type="button"
+              onClick={onSecondaryAction}
+              className="px-3.5 py-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            >
+              {secondaryLabel}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

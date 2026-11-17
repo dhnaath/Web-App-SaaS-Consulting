@@ -816,7 +816,7 @@ export function AppModuleSection({
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <Link
-            to={"/work-productivity" as any}
+            to={"/productivity-workspace-and-workflow-systems" as any}
             className="flex flex-col p-3 rounded-2xl bg-card hover:bg-muted/60 border border-border/70 hover:border-primary/40 transition-all group shadow-2xs"
           >
             <div className="flex items-center gap-2 mb-1.5">
@@ -829,7 +829,7 @@ export function AppModuleSection({
           </Link>
 
           <Link
-            to={"/business-operations" as any}
+            to={"/business-administration-and-operations-management" as any}
             className="flex flex-col p-3 rounded-2xl bg-card hover:bg-muted/60 border border-border/70 hover:border-primary/40 transition-all group shadow-2xs"
           >
             <div className="flex items-center gap-2 mb-1.5">
@@ -855,7 +855,7 @@ export function AppModuleSection({
           </Link>
 
           <Link
-            to={"/personal-life" as any}
+            to={"/personal-life-management" as any}
             className="flex flex-col p-3 rounded-2xl bg-card hover:bg-muted/60 border border-border/70 hover:border-primary/40 transition-all group shadow-2xs"
           >
             <div className="flex items-center gap-2 mb-1.5">
@@ -864,7 +864,7 @@ export function AppModuleSection({
               </div>
               <span className="text-xs font-bold text-foreground truncate">Personal Life</span>
             </div>
-            <span className="text-[10.5px] text-muted-foreground truncate">5 Modul • Mind & Health</span>
+            <span className="text-[10.5px] text-muted-foreground truncate">24 Modul • Life & Wellbeing</span>
           </Link>
 
           <Link

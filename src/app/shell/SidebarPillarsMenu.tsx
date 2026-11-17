@@ -4,22 +4,32 @@ import {
   ChevronRight,
   Search,
   X,
-  MoreHorizontal,
   CheckCircle2,
-  Workflow,
   type LucideIcon,
 } from "lucide-react";
 import { getRaw, setRaw } from "@/core/rawStorage";
 import { getLastLauncherPage } from "@/utils/launcherCategoryMapper";
 import {
   WORKSPACE_PAGES,
+  getModuleCategory,
+  findWorkspaceForRoute,
   type WorkspacePageDef,
   type WorkspaceModuleItem,
   type WorkspaceFeatureItem,
 } from "@/config/workspacePages";
+import {
+  getUnifiedWorkspaces,
+  getUnifiedWorkspaceById,
+} from "@/core/unifiedTaxonomy";
+import {
+  getHierarchyPage,
+  getHierarchyModule,
+  type SubComponentKey,
+} from "@/core/hierarchyRegistry";
 
 export {
   WORKSPACE_PAGES,
+  getModuleCategory,
   type WorkspacePageDef,
   type WorkspaceModuleItem,
   type WorkspaceFeatureItem,
@@ -114,246 +124,6 @@ const WORKSPACE_THEMES: Record<
   },
 };
 
-export function getModuleCategory(mod: WorkspaceModuleItem, wsId?: string): string {
-  if (mod.categoryLabel) return mod.categoryLabel;
-
-  // mode_networks: "Direktori (2) | Relasi (2) | Jaringan (2)"
-  if (wsId === "mode_networks" || mod.id.startsWith("net-")) {
-    if (mod.id === "net-people" || mod.id === "net-vault") return "Direktori";
-    if (mod.id === "net-relations" || mod.id === "net-groups") return "Relasi";
-    if (mod.id === "net-mentorship" || mod.id === "net-gifts") return "Jaringan";
-  }
-
-  // mode_business: "Operations", "Customers", "Administration", "Strategy", "Organization"
-  if (wsId === "mode_business" || mod.id.startsWith("biz-")) {
-    if (["biz-procurement", "biz-inventory", "biz-quality"].includes(mod.id)) return "Operations";
-    if (["biz-client", "biz-customer", "biz-service"].includes(mod.id)) return "Customers";
-    if (["biz-expenses", "biz-documents", "biz-analytics"].includes(mod.id)) return "Administration";
-    if (["biz-performance", "biz-framework"].includes(mod.id)) return "Strategy";
-    if (["biz-workforce", "biz-governance"].includes(mod.id)) return "Organization";
-  }
-
-  // mode_employment: "Planning", "Workflow", "Resources", "Coordination", "Governance", "Ownership"
-  if (wsId === "mode_employment" || mod.id.startsWith("emp-")) {
-    if (mod.id === "emp-milestones") return "Planning";
-    if (["emp-workflows", "emp-projects"].includes(mod.id)) return "Workflow";
-    if (["emp-vendors", "emp-procurement"].includes(mod.id)) return "Resources";
-    if (mod.id === "emp-meetings") return "Coordination";
-    if (["emp-incidents", "emp-compliance"].includes(mod.id)) return "Governance";
-    if (mod.id === "emp-captable") return "Ownership";
-  }
-
-  // mode_creative: "Design", "Publishing", "Production", "Interactive"
-  if (wsId === "mode_creative" || mod.id.startsWith("cr-")) {
-    if (["cr-design"].includes(mod.id)) return "Design";
-    if (["cr-writing"].includes(mod.id)) return "Publishing";
-    if (["cr-movies", "cr-podcasts", "cr-photo"].includes(mod.id)) return "Production";
-    if (["cr-games"].includes(mod.id)) return "Interactive";
-  }
-
-  // mode_research: "Frameworks", "Reference", "Research"
-  if (wsId === "mode_research" || mod.id.startsWith("res-")) {
-    if (["res-frameworks", "res-valuation"].includes(mod.id)) return "Frameworks";
-    if (["res-kurasi", "res-wiki"].includes(mod.id)) return "Reference";
-    if (["res-manager", "res-courses"].includes(mod.id)) return "Research";
-  }
-
-  // mode_sharia: "Sosial", "Komersial", "Proteksi", "Simpanan", "Zakat", "Investasi", "Kepatuhan"
-  if (wsId === "mode_sharia" || mod.id.startsWith("sh-") || mod.id.startsWith("sha-")) {
-    if (["sh-tabarru", "sh-qardh", "sh-wakaf"].includes(mod.id)) return "Sosial";
-    if (["sh-mudharabah", "sh-musyarakah", "sh-murabahah", "sh-ijarah"].includes(mod.id)) return "Komersial";
-    if (["sh-takaful"].includes(mod.id)) return "Proteksi";
-    if (["sh-wadiah"].includes(mod.id)) return "Simpanan";
-    if (["sh-zakat-maal", "sh-zakat-profesi"].includes(mod.id)) return "Zakat";
-    if (["sh-saham"].includes(mod.id)) return "Investasi";
-    if (["sh-audit-riba"].includes(mod.id)) return "Kepatuhan";
-  }
-
-  // mode_personal: "Pengembangan", "Refleksi", "Kesehatan", "Utilitas"
-  if (wsId === "mode_personal" || mod.id.startsWith("per-")) {
-    if (["per-habits"].includes(mod.id)) return "Pengembangan";
-    if (["per-journal"].includes(mod.id)) return "Refleksi";
-    if (["per-health-fit", "per-health-rec", "per-health", "per-fitness"].includes(mod.id)) return "Kesehatan";
-    if (["per-tools", "per-utilities"].includes(mod.id)) return "Utilitas";
-  }
-
-  // mode_family: "Keluarga", "Rumah Tangga", "Kendaraan"
-  if (wsId === "mode_family" || mod.id.startsWith("fam-")) {
-    if (["fam-tree", "fam-safety", "fam-vault"].includes(mod.id)) return "Keluarga";
-    if (["fam-budget", "fam-chores", "fam-pantry", "fam-home"].includes(mod.id)) return "Rumah Tangga";
-    if (["fam-vehicles"].includes(mod.id)) return "Kendaraan";
-  }
-
-  // mode_public_affairs: "Community", "Public Services", "Policy", "Media"
-  if (wsId === "mode_public_affairs" || mod.id.startsWith("pub-")) {
-    if (["pub-community", "pub-calendar"].includes(mod.id)) return "Community";
-    if (["pub-services"].includes(mod.id)) return "Public Services";
-    if (["pub-advocacy", "pub-philanthropy"].includes(mod.id)) return "Policy";
-    if (["pub-media"].includes(mod.id)) return "Media";
-  }
-
-  return "Modul";
-}
-
-function findWorkspaceForRoute(pathname: string): WorkspacePageDef | undefined {
-  if (!pathname || pathname === "/") return undefined;
-
-  // 1. Direct path & feature match
-  for (const page of WORKSPACE_PAGES) {
-    for (const mod of page.modules) {
-      const modPath = mod.to.split("?")[0];
-      if (modPath === pathname) return page;
-      if (mod.features) {
-        for (const feat of mod.features) {
-          const featPath = feat.to.split("?")[0];
-          if (featPath === pathname) return page;
-        }
-      }
-    }
-  }
-
-  // 2. Route segment keyword fallback
-  const p = pathname.toLowerCase();
-  if (
-    p.includes("financial") ||
-    p.includes("wealth") ||
-    p.includes("budget") ||
-    p.includes("investment") ||
-    p.includes("cashflow") ||
-    p.includes("fire") ||
-    p.includes("audit") ||
-    p.includes("succession") ||
-    p.includes("property")
-  ) {
-    return WORKSPACE_PAGES.find((w) => w.id === "financial");
-  }
-  if (
-    p.includes("business") ||
-    p.includes("procurement") ||
-    p.includes("inventory") ||
-    p.includes("quality") ||
-    p.includes("klien") ||
-    p.includes("portal") ||
-    p.includes("expense") ||
-    p.includes("asset") ||
-    p.includes("statistic") ||
-    p.includes("100-framework") ||
-    p.includes("valuasi") ||
-    p.includes("pos") ||
-    p.includes("toko") ||
-    p.includes("katalog")
-  ) {
-    return WORKSPACE_PAGES.find((w) => w.id === "mode_business");
-  }
-  if (
-    p.includes("project") ||
-    p.includes("task") ||
-    p.includes("kanban") ||
-    p.includes("milestone") ||
-    p.includes("work") ||
-    p.includes("team") ||
-    p.includes("time") ||
-    p.includes("leave") ||
-    p.includes("sprint") ||
-    p.includes("employment")
-  ) {
-    return WORKSPACE_PAGES.find((w) => w.id === "mode_employment");
-  }
-  if (
-    p.includes("creative") ||
-    p.includes("studio") ||
-    p.includes("canvas") ||
-    p.includes("asset") ||
-    p.includes("media") ||
-    p.includes("photo") ||
-    p.includes("video") ||
-    p.includes("design") ||
-    p.includes("audio")
-  ) {
-    return WORKSPACE_PAGES.find((w) => w.id === "mode_creative");
-  }
-  if (
-    p.includes("research") ||
-    p.includes("academic") ||
-    p.includes("paper") ||
-    p.includes("framework") ||
-    p.includes("study") ||
-    p.includes("thesis")
-  ) {
-    return WORKSPACE_PAGES.find((w) => w.id === "mode_research");
-  }
-  if (
-    p.includes("sharia") ||
-    p.includes("syariah") ||
-    p.includes("zakat") ||
-    p.includes("infaq") ||
-    p.includes("wakaf") ||
-    p.includes("sedekah") ||
-    p.includes("halal") ||
-    p.includes("hijrah") ||
-    p.includes("faraidh")
-  ) {
-    return WORKSPACE_PAGES.find((w) => w.id === "mode_sharia");
-  }
-  if (
-    p.includes("personal") ||
-    p.includes("habit") ||
-    p.includes("journal") ||
-    p.includes("health") ||
-    p.includes("mood") ||
-    p.includes("diary")
-  ) {
-    return WORKSPACE_PAGES.find((w) => w.id === "mode_personal");
-  }
-  if (
-    p.includes("family") ||
-    p.includes("household") ||
-    p.includes("vehicle") ||
-    p.includes("child") ||
-    p.includes("parent") ||
-    p.includes("home")
-  ) {
-    return WORKSPACE_PAGES.find((w) => w.id === "mode_family");
-  }
-  if (
-    p.includes("public") ||
-    p.includes("civic") ||
-    p.includes("policy") ||
-    p.includes("government") ||
-    p.includes("community")
-  ) {
-    return WORKSPACE_PAGES.find((w) => w.id === "mode_public_affairs");
-  }
-  if (
-    p.includes("network") ||
-    p.includes("contact") ||
-    p.includes("social") ||
-    p.includes("directory") ||
-    p.includes("people") ||
-    p.includes("relation")
-  ) {
-    return WORKSPACE_PAGES.find((w) => w.id === "mode_networks");
-  }
-  if (
-    p.includes("reliance") ||
-    p.includes("sufficient") ||
-    p.includes("improvement") ||
-    p.includes("development") ||
-    p.includes("interact") ||
-    p.includes("interest") ||
-    p.includes("intersect") ||
-    p.includes("interdependence") ||
-    p.includes("insider") ||
-    p.includes("insight") ||
-    p.includes("outward") ||
-    p.includes("outlook")
-  ) {
-    return WORKSPACE_PAGES.find((w) => w.id === "mode_phase_side");
-  }
-
-  return undefined;
-}
-
 function getActiveLauncherWorkspaceId(): string {
   try {
     const rawMode = getRaw("aio_active_mode") || getRaw("client_os_active_mode");
@@ -386,6 +156,14 @@ export function SidebarPillarsMenu({
       );
       if (match) return match.id;
     }
+    if (pathname && pathname.startsWith("/w/")) {
+      const hp = getHierarchyPage(pathname.slice(3).split("/")[0]);
+      if (hp) return hp.id;
+    } else if (pathname && pathname !== "/") {
+      const firstSeg = pathname.replace(/^\/+/, "").split("/")[0];
+      const hp = getHierarchyPage(firstSeg);
+      if (hp) return hp.id;
+    }
     const fromRoute = findWorkspaceForRoute(pathname);
     if (fromRoute) return fromRoute.id;
     return getActiveLauncherWorkspaceId();
@@ -394,6 +172,20 @@ export function SidebarPillarsMenu({
   // Sinkronisasi otomatis dengan route saat ini
   useEffect(() => {
     if (pathname && pathname !== "/") {
+      if (pathname.startsWith("/w/")) {
+        const hp = getHierarchyPage(pathname.slice(3).split("/")[0]);
+        if (hp) {
+          setActiveWorkspaceId(hp.id);
+          return;
+        }
+      } else {
+        const firstSeg = pathname.replace(/^\/+/, "").split("/")[0];
+        const hp = getHierarchyPage(firstSeg);
+        if (hp) {
+          setActiveWorkspaceId(hp.id);
+          return;
+        }
+      }
       const fromRoute = findWorkspaceForRoute(pathname);
       if (fromRoute) {
         setActiveWorkspaceId(fromRoute.id);
@@ -492,6 +284,15 @@ export function SidebarPillarsMenu({
     );
   }, [activeWorkspaceId]);
 
+  const activeUnifiedWorkspace = useMemo(
+    () => getUnifiedWorkspaceById(activeWorkspace.id),
+    [activeWorkspace.id],
+  );
+
+  const unifiedWorkspacesMap = useMemo(() => {
+    return new Map(getUnifiedWorkspaces().map((ws) => [ws.id, ws]));
+  }, []);
+
   // Kelompokkan modul di dalam workspace aktif sesuai kategori
   const categoriesData = useMemo(() => {
     const map: Record<string, WorkspaceModuleItem[]> = {};
@@ -551,16 +352,18 @@ export function SidebarPillarsMenu({
     return (
       <div className="flex flex-col items-center gap-2 py-2">
         {WORKSPACE_PAGES.map((page) => {
-          const PageIcon = page.icon;
-          const theme = WORKSPACE_THEMES[page.id] || WORKSPACE_THEMES.financial;
+          const unified = unifiedWorkspacesMap.get(page.id as any);
+          const PageIcon = unified?.icon || page.icon;
+          const displayLabel = unified?.labelEn || page.label;
+          const displayDesc = unified?.description || page.desc;
           return (
             <button
               key={page.id}
               type="button"
               onClick={() => handleOpenLauncherTab(page.id, page.modeId)}
-              className={`size-11 rounded-xl ${theme.bg} ${theme.border} border flex items-center justify-center ${theme.text} shrink-0 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-xs`}
-              title={`${page.label}: ${page.desc} (${page.badge})`}
-              aria-label={page.label}
+              className="size-11 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center text-white/80 hover:text-white shrink-0 transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-xs"
+              title={`${displayLabel}: ${displayDesc} (${page.badge})`}
+              aria-label={displayLabel}
             >
               <PageIcon size={18} />
             </button>
@@ -575,8 +378,11 @@ export function SidebarPillarsMenu({
       {/* Keterangan Laman Aktif (Rata Tengah Full Sidebar, tanpa icon dan label tambahan) */}
       {!q && (
         <div className="w-full text-center px-1 py-0.5">
-          <span className="text-xs font-normal text-foreground text-center truncate block">
-            {activeWorkspace.label}
+          <span
+            className="text-xs font-normal text-foreground text-center truncate block"
+            title={activeUnifiedWorkspace?.labelId || activeWorkspace.label}
+          >
+            {activeUnifiedWorkspace?.labelEn || activeWorkspace.label}
           </span>
         </div>
       )}
@@ -650,20 +456,11 @@ export function SidebarPillarsMenu({
                       toggleCategory(cat.name);
                     }
                   }}
-                  className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-muted/50 transition-colors cursor-pointer group select-none"
+                  className="w-full flex items-center justify-center px-3 py-2.5 text-center hover:bg-muted/50 transition-colors cursor-pointer group select-none"
                 >
-                  <div className="flex items-center min-w-0 flex-1 pr-2">
-                    <span className="text-xs font-normal text-foreground group-hover:text-primary transition-colors truncate">
+                  <div className="flex items-center justify-center min-w-0 flex-1">
+                    <span className="text-xs font-normal text-foreground group-hover:text-primary transition-colors truncate text-center">
                       {cat.name}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center shrink-0">
-                    <span className="size-6 rounded-md flex items-center justify-center text-muted-foreground group-hover:text-foreground hover:bg-accent transition-colors">
-                      <MoreHorizontal
-                        size={14}
-                        className="shrink-0 text-muted-foreground group-hover:text-foreground transition-colors"
-                      />
                     </span>
                   </div>
                 </div>
@@ -674,10 +471,17 @@ export function SidebarPillarsMenu({
                     <div className="space-y-2.5">
                       {visibleModules.map((mod) => {
                         const ModIcon = mod.icon || CheckCircle2;
-                        const pathOnly = mod.to.split("?")[0];
-                        const searchParams = mod.to.includes("?")
-                          ? Object.fromEntries(new URLSearchParams(mod.to.split("?")[1]))
+                        const hPage = getHierarchyPage(activeWorkspace.id);
+                        const hMod = hPage
+                          ? getHierarchyModule(hPage.slug, cat.name, mod.id)
                           : undefined;
+                        const pathOnly = hMod
+                          ? `${hMod.routePath}/${hMod.defaultComponentKey}`
+                          : mod.to.split("?")[0];
+                        const searchParams =
+                          !hMod && mod.to.includes("?")
+                            ? Object.fromEntries(new URLSearchParams(mod.to.split("?")[1]))
+                            : undefined;
                         const isSubOpen = q ? true : !!openModuleFeatures[mod.id];
                         const hasFeatures = mod.features && mod.features.length > 0;
 
@@ -725,6 +529,43 @@ export function SidebarPillarsMenu({
                               <div className="px-2.5 pb-2.5 pt-1 space-y-1 bg-muted/20 dark:bg-muted/10 animate-in fade-in duration-150">
                                 {mod.features!.map((feat, fIdx) => {
                                   const FeatIcon = feat.icon || CheckCircle2;
+                                  const compKey = (
+                                    feat.componentCategory || "Features"
+                                  ).toLowerCase() as SubComponentKey;
+
+                                  if (hMod) {
+                                    const targetRoute = `${hMod.routePath}/${compKey}`;
+                                    const featSearch = feat.to
+                                      ? { item: feat.to.split("?")[0] }
+                                      : undefined;
+                                    return (
+                                      <Link
+                                        key={fIdx}
+                                        to={targetRoute as any}
+                                        search={featSearch as any}
+                                        onClick={onNavigate}
+                                        className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-[11px] font-normal text-muted-foreground hover:text-primary hover:bg-background transition-colors group/feat"
+                                        title={feat.desc || feat.title}
+                                      >
+                                        <FeatIcon size={12} className="shrink-0 text-muted-foreground group-hover/feat:text-primary transition-colors" />
+                                        <span className="truncate">{feat.title}</span>
+                                      </Link>
+                                    );
+                                  }
+
+                                  if (!feat.to) {
+                                    return (
+                                      <div
+                                        key={fIdx}
+                                        className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-[11px] font-normal text-muted-foreground/80 cursor-default select-none"
+                                        title={feat.desc || feat.title}
+                                      >
+                                        <FeatIcon size={12} className="shrink-0 text-muted-foreground/70" />
+                                        <span className="truncate">{feat.title}</span>
+                                      </div>
+                                    );
+                                  }
+
                                   const fPath = feat.to.split("?")[0];
                                   const fSearch = feat.to.includes("?")
                                     ? Object.fromEntries(new URLSearchParams(feat.to.split("?")[1]))

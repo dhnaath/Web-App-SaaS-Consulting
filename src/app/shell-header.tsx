@@ -15,11 +15,30 @@ import { Maximize2, Minimize2 } from "lucide-react";
 
 type ShellHeaderCtxValue = {
   setHasAppHeader: (has: boolean) => void;
+  setHeaderCategories?: (cats: readonly HeaderNavPillItem<any>[]) => void;
 };
 
 const ShellHeaderCtx = createContext<ShellHeaderCtxValue | null>(null);
 
 export const ShellHeaderProvider = ShellHeaderCtx.Provider;
+
+const ShellHeaderActiveCtx = createContext<boolean>(true);
+export const ShellHeaderActiveProvider = ShellHeaderActiveCtx.Provider;
+
+/**
+ * Registers active header presence with AppShell without taking over portal rendering.
+ */
+export function useShellHeaderPresence(active = true) {
+  const ctx = useContext(ShellHeaderCtx);
+  const isActive = useContext(ShellHeaderActiveCtx);
+  useEffect(() => {
+    if (!active || !isActive) return;
+    ctx?.setHasAppHeader(true);
+    return () => {
+      ctx?.setHasAppHeader(false);
+    };
+  }, [ctx, active, isActive]);
+}
 
 /**
  * ShellHeader — Portals interactive actions, view switchers, tabs, and toolbars
@@ -28,9 +47,14 @@ export const ShellHeaderProvider = ShellHeaderCtx.Provider;
  */
 export function ShellHeader({ children }: { children: ReactNode }) {
   const ctx = useContext(ShellHeaderCtx);
+  const isActive = useContext(ShellHeaderActiveCtx);
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
+    if (!isActive) {
+      return;
+    }
+
     ctx?.setHasAppHeader(true);
 
     const checkTarget = () => {
@@ -47,9 +71,9 @@ export function ShellHeader({ children }: { children: ReactNode }) {
       clearTimeout(timer);
       ctx?.setHasAppHeader(false);
     };
-  }, [ctx]);
+  }, [ctx, isActive]);
 
-  if (!portalTarget) {
+  if (!isActive || !portalTarget) {
     return null;
   }
 
@@ -81,6 +105,23 @@ export function HeaderNavPills<T extends string | number = string>({
   activeId: string | number;
   onSelect: (id: T) => void;
 }) {
+  const ctx = useContext(ShellHeaderCtx);
+  const itemsRef = useRef(items);
+  itemsRef.current = items;
+  const itemsSignature = items
+    .map((item) => `${String(item.id)}:${item.label}:${item.count ?? ""}`)
+    .join("|");
+
+  useEffect(() => {
+    ctx?.setHeaderCategories?.(itemsRef.current);
+  }, [ctx, itemsSignature]);
+
+  useEffect(() => {
+    return () => {
+      ctx?.setHeaderCategories?.([]);
+    };
+  }, [ctx]);
+
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
   const groupId = useId();
   const pillBg =

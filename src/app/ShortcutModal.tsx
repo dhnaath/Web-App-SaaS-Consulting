@@ -34,6 +34,7 @@ import {
   BookOpen,
   FileCheck,
   Figma,
+  Gem,
 } from "lucide-react";
 
 interface ShortcutModalProps {
@@ -166,6 +167,15 @@ export function ShortcutModal({ isOpen, onClose, onOpenQuickCapture }: ShortcutM
         category: "nav",
         icon: Briefcase,
         to: "/proyek",
+      },
+      {
+        id: "value-treated",
+        title: "Applied Value (Value Treated)",
+        subtitle: "Kurasi 10 Bidang Value & 5 Jenjang SKS",
+        category: "nav",
+        icon: Gem,
+        to: "/value-treated",
+        badge: "5 Jenjang",
       },
       {
         id: "finance",

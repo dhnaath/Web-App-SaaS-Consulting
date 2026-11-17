@@ -66,6 +66,7 @@ export const SubscriptionTrackerView: React.FC = () => {
       if (filterStatus === 'active' && sub.status !== 'active') return false;
       if (filterStatus === 'paused' && sub.status !== 'paused') return false;
       if (filterStatus === 'renewal_soon') {
+        if (sub.status !== 'active') return false;
         const days = getDaysUntilBilling(sub.nextBilling);
         if (days > 7 || days < 0) return false;
       }

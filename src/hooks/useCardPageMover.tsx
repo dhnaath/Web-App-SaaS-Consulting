@@ -9,6 +9,7 @@ import React, {
 import {
   Briefcase,
   Coins,
+  Compass,
   GraduationCap,
   Heart,
   Home,
@@ -40,97 +41,121 @@ export const LAUNCHER_PAGE_OPTIONS: LauncherPageOption[] = [
     pageNumber: 1,
     label: "Financial Planning and Wealth Management",
     shortLabel: "Financial Planning",
-    badge: "25 Modul • 80 Features • 10 Tools",
+    badge: "25 Modul • 42 Features • 6 Tools",
     icon: Coins,
-    to: "/financial-wealth",
+    to: "/financial-planning-and-wealth-management",
   },
   {
     id: "mode_business",
     pageNumber: 2,
     label: "Business Administration and Operations Management",
     shortLabel: "Business Operations",
-    badge: "33 Modul • 44 Features • 100 Tools",
+    badge: "45 Modul • 58 Features • 100 Tools",
     icon: Store,
-    to: "/business-operations",
+    to: "/business-administration-and-operations-management",
   },
   {
     id: "mode_employment",
     pageNumber: 3,
     label: "Productivity Workspace and Workflow Systems",
     shortLabel: "Productivity Workspace",
-    badge: "9 Modul • 33 Features • 6 Tools",
+    badge: "9 Modul • 30 Features • 3 Tools",
     icon: Briefcase,
-    to: "/work-productivity",
+    to: "/productivity-workspace-and-workflow-systems",
   },
   {
     id: "mode_creative",
     pageNumber: 4,
     label: "Creative Workspace and Media Production",
     shortLabel: "Creative Workspace",
-    badge: "6 Modul • 18 Features • 6 Tools",
+    badge: "6 Modul • 15 Features • 3 Tools",
     icon: Palette,
-    to: "/creative-workspace",
+    to: "/creative-workspace-and-media-production",
   },
   {
     id: "mode_research",
     pageNumber: 5,
     label: "Research Foundations and Reference Frameworks",
     shortLabel: "Research Frameworks",
-    badge: "6 Modul • 20 Features • 12 Tools",
+    badge: "23 Modul • 58 Features • 13 Tools",
     icon: GraduationCap,
-    to: "/100-framework",
+    to: "/research-foundations-and-reference-frameworks",
   },
   {
     id: "mode_sharia",
     pageNumber: 6,
     label: "Islamic Principles and Sharia Values",
     shortLabel: "Islamic & Sharia",
-    badge: "16 Modul • 49 Features • 8 Tools",
+    badge: "20 Modul • 52 Features • 17 Tools",
     icon: Scale,
-    to: "/syariah",
+    to: "/islamic-principles-and-sharia-values",
   },
   {
     id: "mode_personal",
     pageNumber: 7,
     label: "Personal Life Management",
     shortLabel: "Personal Life",
-    badge: "5 Modul • 18 Features • 5 Tools",
+    badge: "24 Modul • 63 Features • 11 Tools",
     icon: Heart,
-    to: "/personal-life",
+    to: "/personal-life-management",
   },
   {
     id: "mode_family",
     pageNumber: 8,
-    label: "Family Records and Household Planning",
-    shortLabel: "Family Records",
-    badge: "6 Modul • 19 Features • 6 Tools",
+    label: "Household Planning and Family Records",
+    shortLabel: "Household Planning",
+    badge: "24 Modul • 37 Features • 2 Tools",
     icon: Home,
-    to: "/family-community",
+    to: "/household-planning-and-family-records",
   },
   {
     id: "mode_public_affairs",
     pageNumber: 9,
-    label: "Public Affairs and Relations",
-    shortLabel: "Public Affairs",
-    badge: "6 Modul • 18 Features • 6 Tools",
+    label: "Policy Affairs and Public Relations",
+    shortLabel: "Policy Affairs",
+    badge: "18 Modul • 36 Features • 2 Tools",
     icon: Landmark,
-    to: "/public-affairs",
+    to: "/policy-affairs-and-public-relations",
   },
   {
     id: "mode_networks",
     pageNumber: 10,
     label: "Contact Directory and Social Networks",
     shortLabel: "Contact Directory",
-    badge: "6 Modul • 18 Features • 6 Tools",
+    badge: "18 Modul • 35 Features • 3 Tools",
     icon: Users,
-    to: "/contact-directory",
+    to: "/contact-directory-and-social-networks",
+  },
+  {
+    id: "mode_phase_side",
+    pageNumber: 11,
+    label: "Phase: Mutual-Self-Organization",
+    shortLabel: "Phase: Mutual-Self",
+    badge: "12 Modules • 32 Features • 4 Tools",
+    icon: Compass,
+    to: "/phase-mutual-self-organization",
   },
 ];
+
+export function syncLauncherPageBadge(pageId: string, badge: string): void {
+  const option = LAUNCHER_PAGE_OPTIONS.find((p) => p.id === pageId);
+  if (option && badge) {
+    option.badge = badge;
+  }
+}
 
 export interface MovedCardFeatureSnapshot {
   title: string;
   to: string;
   desc?: string;
+  inverted?: boolean;
+}
+
+export interface MovedCardCategoryGroupSnapshot {
+  id: number;
+  categoryNumber: number;
+  name: string;
+  items: MovedCardFeatureSnapshot[];
 }
 
 export interface MovedCardRecord {
@@ -146,6 +171,7 @@ export interface MovedCardRecord {
   icon?: any;
   features?: MovedCardFeatureSnapshot[];
   tools?: MovedCardFeatureSnapshot[];
+  categoryGroups?: MovedCardCategoryGroupSnapshot[];
   movedAt: number;
 }
 
@@ -161,6 +187,7 @@ export interface MoveCardInput {
   icon?: React.ComponentType<{ className?: string; size?: number; strokeWidth?: number }>;
   features?: MovedCardFeatureSnapshot[];
   tools?: MovedCardFeatureSnapshot[];
+  categoryGroups?: MovedCardCategoryGroupSnapshot[];
 }
 
 // Session-level icon cache so exact card icons persist immediately on move
@@ -340,6 +367,8 @@ export function useCardPageMover() {
             gradient: input.gradient ?? existing?.gradient,
             accentGradient: input.accentGradient ?? existing?.accentGradient,
             features: input.features ?? existing?.features ?? [],
+            tools: input.tools ?? existing?.tools,
+            categoryGroups: input.categoryGroups ?? existing?.categoryGroups,
             movedAt: Date.now(),
           };
           next = [...prev.filter((c) => c.cardKey !== cardKey), record];
