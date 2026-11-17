@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useKembaliButtonClass } from "@/hooks/useKembaliButtonClass";
@@ -73,17 +73,24 @@ import {
   ChevronDown,
   ChevronUp,
   Pin,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 import { type NavItem } from "@/config/nav";
 import { CATEGORIES, MBA_PILLARS, getFrameworkData, slugify } from "@/frameworkData";
 import { usePinnedCards, sortCardsWithPinned } from "@/hooks/usePinnedCards";
+import {
+  buildModuleCategoryGroups,
+  getComponentCategoryIcon,
+  type ModuleComponentCategory,
+} from "@/components/common/MBACard";
 
 export interface MBASubFeature {
   title: string;
   to: string;
   icon: LucideIcon;
   desc?: string;
+  componentCategory?: ModuleComponentCategory;
 }
 
 export interface StandaloneMBAAppDef {
@@ -143,8 +150,11 @@ export function getPillarIcon(pillarName: string): LucideIcon {
 
 export function getCategoryIcon(cat: string): LucideIcon {
   switch (cat) {
+    case "Competitive Analysis":
     case "Strategic Analysis":
       return Compass;
+    case "Growth Strategy":
+      return TrendingUp;
     case "Business Design":
       return LayoutGrid;
     case "Marketing Management":
@@ -159,10 +169,16 @@ export function getCategoryIcon(cat: string): LucideIcon {
       return Target;
     case "Financial Analysis":
       return Calculator;
+    case "Feasibility Analysis":
+      return Scale;
+    case "Decision Frameworks":
     case "Decision Analysis":
       return CheckSquare;
+    case "Ideation Frameworks":
     case "Innovation Management":
       return Lightbulb;
+    case "Venture Validation":
+      return RefreshCw;
     case "Quality Management":
       return ShieldCheck;
     case "Change Management":
@@ -171,20 +187,32 @@ export function getCategoryIcon(cat: string): LucideIcon {
       return BookOpen;
     case "Quantitative Analysis":
       return LineChart;
+    case "Product Discovery":
     case "Product Management":
       return Layers;
+    case "Agile Delivery":
+      return FolderKanban;
     case "Risk Management":
       return ShieldAlert;
     case "Sustainability":
       return Sprout;
+    case "Talent Development":
     case "People Management":
       return Award;
+    case "Team Culture":
+      return HeartHandshake;
+    case "Sales Pipeline":
     case "Sales Revenue":
       return TrendingUp;
+    case "Pricing Economics":
+      return Calculator;
     case "Technology Futures":
       return Sparkles;
+    case "Brand Messaging":
     case "Corporate Communications":
       return Megaphone;
+    case "Stakeholder Relations":
+      return HeartHandshake;
     // Fallbacks
     case "Strategic Management":
       return Compass;
@@ -356,6 +384,10 @@ export const FRAMEWORK_ICONS: Record<string, LucideIcon> = {
 };
 
 const CATEGORY_DESCRIPTIONS: Record<string, string> = {
+  "Competitive Analysis":
+    "Pemetaan lanskap kompetitif internal dan eksternal melalui SWOT, TOWS, PESTEL, Porter's Five Forces, VRIO, dan Value Chain.",
+  "Growth Strategy":
+    "Perumusan portofolio bisnis dan arah ekspansi pasar lewat BCG Matrix, GE-McKinsey, Ansoff Matrix, Blue Ocean, dan Value Disciplines.",
   "Strategic Analysis":
     "Platform analisis strategi korporat dan posisi kompetitif jangka panjang melalui pemetaan lingkungan internal, eksternal, dan rantai nilai.",
   "Business Design":
@@ -372,8 +404,16 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
     "Pengukuran kinerja strategis organisasi menggunakan Balanced Scorecard (BSC), OKR Framework, dan kriteria SMART.",
   "Financial Analysis":
     "Analisis kelayakan investasi modal (NPV, IRR, ROI), rasio profitabilitas keuangan, dan kalkulasi titik impas (BEP).",
+  "Feasibility Analysis":
+    "Evaluasi kelayakan proyek dan imbal hasil investasi melalui Cost-Benefit Analysis (CBA), Business Case, Decision Tree, dan Pareto 80/20.",
+  "Decision Frameworks":
+    "Strukturisasi pengambilan keputusan multi-kriteria dan prioritas menggunakan Pugh Matrix, AHP, Eisenhower Matrix, dan Six Thinking Hats.",
   "Decision Analysis":
     "Mesin pengambilan keputusan analitis menggunakan Cost-Benefit Analysis (CBA), Business Case, Decision Tree, Pugh Matrix, AHP, Six Thinking Hats, Eisenhower Matrix, dan Pareto 80/20.",
+  "Ideation Frameworks":
+    "Eksplorasi ide dan terobosan inovasi melalui Design Thinking, Doblin 10 Types, SCAMPER Canvas, dan Open Innovation.",
+  "Venture Validation":
+    "Validasi model ventura dan produk baru secara iteratif melalui Lean Startup Loop, MVP Canvas, dan Value Proposition Testing.",
   "Innovation Management":
     "Akselerator inovasi dan kewirausahaan berbasis metodologi iteratif Lean Startup Loop, Design Thinking, Doblin 10 Types, SCAMPER, MVP Canvas, Open Innovation, dan Value Proposition Testing.",
   "Quality Management":
@@ -384,18 +424,34 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
     "Kerangka perumusan kebijakan publik terstruktur, pemetaan kuasa pemangku kepentingan (Power-Interest), dan Analisis Kebijakan Publik Dunn.",
   "Quantitative Analysis":
     "Analisis kuantitatif keseimbangan mikro-makro ekonomi, ekuilibrium supply-demand, matriks input-output multisektor, dan visualisasi spider chart.",
+  "Product Discovery":
+    "Perumusan visi produk, pemetaan peluang, dan prioritisasi backlog fitur menggunakan Kano, RICE, MoSCoW, dan Opportunity Solution Tree.",
+  "Agile Delivery":
+    "Eksekusi pengiriman produk digital tangkas dengan Scrum/Kanban Board, User Story Mapping, dan Dual-Track Agile Framework.",
   "Product Management":
     "Manajemen produk digital tangkas mulai dari Product Vision, prioritisasi backlog (Kano, RICE, MoSCoW), User Story Mapping, Opportunity Solution Tree, Dual-Track Agile, dan Scrum/Kanban.",
   "Risk Management":
     "Manajemen risiko perusahaan (ISO 31000, FMEA, BCP), dan matriks evaluasi risiko (Risk Assessment Matrix).",
   "Sustainability":
     "Praktik keberlanjutan dan ESG perusahaan: Materialitas ESG, Triple Bottom Line (TBL), Circular Economy (Butterfly), dan perhitungan Jejak Karbon Scope 1-3.",
+  "Talent Development":
+    "Pemetaan potensi talenta, umpan balik 360 derajat, evaluasi pelatihan Kirkpatrick, dan perancangan Employee Value Proposition (EVP).",
+  "Team Culture":
+    "Penguatan kepemimpinan situasional, keterbukaan tim (Johari Window), Culture Map, dan dinamika tim Lencioni.",
   "People Management":
     "Manajemen talenta dan kepemimpinan strategis melalui 9-Box Grid, kepemimpinan situasional, Johari Window, Culture Map, 5 Disfungsi Tim Lencioni, EVP Canvas, dan umpan balik 360 derajat.",
+  "Sales Pipeline":
+    "Eksekusi pipeline penjualan dan kualifikasi prospek enterprise melalui MEDDPICC, BANT, SPIN Selling, dan Flywheel Revenue Engine.",
+  "Pricing Economics":
+    "Strategi penetapan harga, Value-Based Pricing Canvas, serta evaluasi Unit Economics (CLV/CAC) dan Churn Analysis Matrix.",
   "Sales Revenue":
     "Operasi pendapatan enterprise, kualifikasi prospek (MEDDPICC, BANT, SPIN), strategi penetapan harga (Pricing Matrix), Flywheel Revenue Engine, Value-Based Pricing, Unit Economics (CLV/CAC), dan Churn Analysis.",
   "Technology Futures":
     "Pemindaian sinyal masa depan (Horizon Scanning), tingkat kesiapan teknologi (TRL), dan siklus ekspektasi Gartner Hype Cycle.",
+  "Brand Messaging":
+    "Penyusunan narasi strategis SCR Minto, Brand Archetypes, orkestrasi media PESO, dan kanvas Press Release.",
+  "Stakeholder Relations":
+    "Penanganan krisis SCCT, siklus isu, pelibatan pemangku kepentingan, dan tanggung jawab sosial korporat Carroll CSR Pyramid.",
   "Corporate Communications":
     "Manajemen komunikasi korporat dan krisis (SCCT), struktur piramida narasi SCR Minto, Brand Archetypes, model media PESO, Piramida CSR Carroll, siklus isu, dan kanvas press release.",
   // Legacy mappings for backward compatibility
@@ -435,7 +491,121 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
     "Komunikasi krisis korporat dan manajemen pemangku kepentingan.",
 };
 
-// 17 Standalone Apps (The 17 Categories) with all their sub-features inside them
+export const FRAMEWORK_COMPONENT_CATEGORIES: Record<string, ModuleComponentCategory> = {
+  // 1. Tools (23)
+  "SWOT Analysis": "Tools",
+  "TOWS Matrix": "Tools",
+  "Porter's Five Forces": "Tools",
+  "VRIO Framework": "Tools",
+  "Value Chain Analysis": "Tools",
+  "Blue Ocean Strategy (ERRC)": "Tools",
+  "Value Disciplines Model": "Tools",
+  "Ansoff Matrix": "Tools",
+  "Decision Tree Analysis": "Tools",
+  "Decision Matrix (Pugh)": "Tools",
+  "Eisenhower Matrix": "Tools",
+  "STP Framework": "Tools",
+  "4P/7P Marketing Mix": "Tools",
+  "MEDDPICC Framework": "Tools",
+  "BANT Framework": "Tools",
+  "Fishbone Diagram (Ishikawa)": "Tools",
+  "Johari Window": "Tools",
+  "McKinsey 7S Framework": "Tools",
+  "Doblin's 10 Types Innovation": "Tools",
+  "Doblin’s 10 Types Innovation": "Tools",
+  "Logical Framework Analysis": "Tools",
+  "PESO Model": "Tools",
+  "Opportunity Solution Tree": "Tools",
+  "Pricing Matrix": "Tools",
+
+  // 2. Analytics (35)
+  "PESTEL Analysis": "Analytics",
+  "BCG Matrix": "Analytics",
+  "GE-McKinsey Matrix": "Analytics",
+  "Cost-Benefit Analysis (CBA)": "Analytics",
+  "Business Case Analysis": "Analytics",
+  "Analytical Hierarchy Process (AHP)": "Analytics",
+  "Pareto Analysis (80/20)": "Analytics",
+  "Kano Model": "Analytics",
+  "Kano Feature Prioritization": "Analytics",
+  "RICE Scoring Model": "Analytics",
+  "MoSCoW Prioritization": "Analytics",
+  "Unit Economics (CLV/CAC)": "Analytics",
+  "Churn Analysis Matrix": "Analytics",
+  "Analisis Rasio Keuangan": "Analytics",
+  "Capital Budgeting (ROI, NPV, IRR)": "Analytics",
+  "Break-Even Analysis (BEP)": "Analytics",
+  "9-Box Talent Grid": "Analytics",
+  "360-Degree Feedback": "Analytics",
+  "Kirkpatrick 4-Level Model": "Analytics",
+  "Force Field Analysis": "Analytics",
+  "Balanced Scorecard (BSC)": "Analytics",
+  "OKR Framework": "Analytics",
+  "Technology Readiness (TRL)": "Analytics",
+  "Gartner Hype Cycle": "Analytics",
+  "ESG Materiality Matrix": "Analytics",
+  "Carbon Footprint (Scope 1-3)": "Analytics",
+  "Risk Assessment Matrix": "Analytics",
+  "FMEA Framework": "Analytics",
+  "Stakeholder Power-Interest": "Analytics",
+  "Analisis Kebijakan Public (Dunn)": "Analytics",
+  "Supply-Demand Analysis": "Analytics",
+  "Input-Output Analysis": "Analytics",
+  "Radar / Spider Chart": "Analytics",
+  "House of Quality (HOQ / QFD)": "Analytics",
+  "Value Proposition Testing": "Analytics",
+
+  // 3. Workflows (19)
+  "Product Life Cycle (PLC)": "Workflows",
+  "Customer Journey Map (CJM)": "Workflows",
+  "Scrum / Kanban Board": "Workflows",
+  "User Story Mapping": "Workflows",
+  "Dual-Track Agile Framework": "Workflows",
+  "Revenue Engine (Flywheel)": "Workflows",
+  "Six Sigma (DMAIC)": "Workflows",
+  "SIPOC Diagram": "Workflows",
+  "RACI Matrix": "Workflows",
+  "Gantt Chart": "Workflows",
+  "PDCA Cycle": "Workflows",
+  "Kotter's 8-Step Change": "Workflows",
+  "Lean Startup Loop": "Workflows",
+  "Design Thinking": "Workflows",
+  "Horizon Scanning (Futures)": "Workflows",
+  "Business Continuity Plan (BCP)": "Workflows",
+  "Crisis Communication (SCCT)": "Workflows",
+  "Issue Life Cycle": "Workflows",
+  "Stakeholder Engagement": "Workflows",
+
+  // 4. Templates (11)
+  "Business Model Canvas (BMC)": "Templates",
+  "Lean Canvas": "Templates",
+  "Value Proposition Canvas": "Templates",
+  "Empathy Map": "Templates",
+  "Product Vision Board": "Templates",
+  "Value-Based Pricing Canvas": "Templates",
+  "EVP Canvas": "Templates",
+  "SCAMPER Ideation Canvas": "Templates",
+  "MVP Canvas": "Templates",
+  "Press Release Canvas": "Templates",
+  "Culture Map": "Templates",
+
+  // 5. Guides (12)
+  "Six Thinking Hats": "Guides",
+  "Situational Leadership": "Guides",
+  "Lencioni's 5 Dysfunctions": "Guides",
+  "Lencioni’s 5 Dysfunctions": "Guides",
+  "Open Innovation Model": "Guides",
+  "Triple Bottom Line (TBL)": "Guides",
+  "Circular Economy (Butterfly)": "Guides",
+  "ISO 31000 Risk Management": "Guides",
+  "SCR Framework (Minto)": "Guides",
+  "Brand Archetypes": "Guides",
+  "Carroll's CSR Pyramid": "Guides",
+  "SPIN Selling Framework": "Guides",
+  "SMART Criteria": "Guides",
+};
+
+// 21 Standalone Apps (The 21 Categories) with all their sub-features inside them
 export const STANDALONE_MBA_APPS: StandaloneMBAAppDef[] = CATEGORIES.map((cat) => {
   const CatIcon = getCategoryIcon(cat.name);
   const slug = slugify(cat.name);
@@ -455,6 +625,7 @@ export const STANDALONE_MBA_APPS: StandaloneMBAAppDef[] = CATEGORIES.map((cat) =
       to: fwPath,
       icon: fwIcon,
       desc: fwData?.teori?.deskripsi,
+      componentCategory: FRAMEWORK_COMPONENT_CATEGORIES[fwName] || "Tools",
     };
   });
 
@@ -811,12 +982,12 @@ export const ToolsFlipCard = ({
   gradient?: string;
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
   const kembaliBtnClass = useKembaliButtonClass();
   const currentPageId = useCurrentLauncherPage("mode_business") || "mode_business";
   const { isCardMovedOut } = useCardPageMover();
   const { isPinned, togglePin } = usePinnedCards(currentPageId);
   const isCardPinned = isPinned(app.to || app.title, currentPageId);
+  const wasFlippedRef = useRef(false);
   const [interactionConfig, setInteractionConfig] = useState(() => ({
     axis: Math.random() > 0.5 ? "x" : "y",
     dir: Math.random() > 0.5 ? 1 : -1,
@@ -825,27 +996,22 @@ export const ToolsFlipCard = ({
   const handleFlip = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setInteractionConfig((prev) => {
-      let nextAxis = prev.axis;
-      let nextDir = prev.dir;
-      while (nextAxis === prev.axis && nextDir === prev.dir) {
-        nextAxis = Math.random() > 0.5 ? "x" : "y";
-        nextDir = Math.random() > 0.5 ? 1 : -1;
+    setIsFlipped((prev) => {
+      if (!prev) {
+        wasFlippedRef.current = true;
       }
-      return { axis: nextAxis, dir: nextDir };
+      return !prev;
     });
-    setIsFlipped((prev) => !prev);
   };
 
   const Icon = app.icon;
   const cardGradient = gradient || (app as any).gradient || "bg-linear-to-br from-primary to-indigo-700";
   const { customColor } = useCardIconColor(app.title, app.to);
   const iconBg = resolveIconBg(customColor, cardGradient);
-  const initialCount = 6;
-  const displayFeatures = isExpanded
-    ? app.features
-    : app.features.slice(0, initialCount);
-  const hasMore = app.features.length > initialCount;
+  const categoryGroups = useMemo(
+    () => buildModuleCategoryGroups(app.features, app.to),
+    [app.features, app.to]
+  );
 
   if (isCardMovedOut(currentPageId, app.to, app.title)) {
     return null;
@@ -860,9 +1026,32 @@ export const ToolsFlipCard = ({
           rotateY: isFlipped && interactionConfig.axis === "y" ? 180 * interactionConfig.dir : 0,
         }}
         transition={{ duration: 0.6, type: "spring", stiffness: 80, damping: 15 }}
+        onAnimationComplete={() => {
+          if (!isFlipped && wasFlippedRef.current) {
+            wasFlippedRef.current = false;
+            setInteractionConfig((prev) => {
+              let nextAxis = prev.axis;
+              let nextDir = prev.dir;
+              while (nextAxis === prev.axis && nextDir === prev.dir) {
+                nextAxis = Math.random() > 0.5 ? "x" : "y";
+                nextDir = Math.random() > 0.5 ? 1 : -1;
+              }
+              return { axis: nextAxis, dir: nextDir };
+            });
+          }
+        }}
       >
         {/* Front Face */}
-        <div className="w-full h-full rounded-[28px] border border-border bg-card p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-4 group [backface-visibility:hidden]">
+        <div
+          className={`w-full h-full rounded-[28px] border border-border bg-card p-5 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between gap-4 group ${
+            isFlipped ? "pointer-events-none" : ""
+          }`}
+          style={{
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+            transform: "rotateY(0deg)",
+          }}
+        >
           <div>
             <div className="flex items-start justify-between gap-3">
               <Link
@@ -919,84 +1108,80 @@ export const ToolsFlipCard = ({
                     to: f.to,
                     desc: f.desc,
                   })),
+                  categoryGroups: categoryGroups?.map((g) => ({
+                    id: g.id,
+                    categoryNumber: g.categoryNumber,
+                    name: g.name,
+                    items: g.items.map((item) => ({
+                      title: item.title,
+                      to: item.to,
+                      desc: item.desc,
+                    })),
+                  })),
                 }}
               />
               </div>
             </div>
 
-            <div className="mt-3 pt-1">
-              <div className="relative flex items-center justify-center mb-2">
-                <span className="text-[10px] font-normal tracking-wider text-muted-foreground text-center">
-                  Tools ({app.features.length}):
-                </span>
-                {hasMore && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setIsExpanded((prev) => !prev);
-                    }}
-                    className="absolute right-0 text-[10px] font-semibold text-primary hover:underline flex items-center gap-0.5 cursor-pointer transition-colors"
-                  >
-                    {isExpanded ? (
-                      <>
-                        <ChevronUp size={11} />
-                        <span>Ringkas</span>
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown size={11} />
-                        <span>+{app.features.length - initialCount} Semua</span>
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
-
-              <div className="flex flex-wrap justify-center gap-1.5 max-h-[195px] overflow-y-auto pr-0.5 [scrollbar-width:thin]">
-                {displayFeatures.map((feat, idx) => {
-                  const FeatIcon = feat.icon;
-                  const featPath = feat.to.split("?")[0];
-                  const featSearch = feat.to.includes("?")
-                    ? Object.fromEntries(new URLSearchParams(feat.to.split("?")[1]))
-                    : undefined;
-
+            {categoryGroups && categoryGroups.length > 0 ? (
+              <div className="mt-3 pt-1 flex flex-col flex-1 space-y-4">
+                {categoryGroups.map((group) => {
+                  const CategoryIcon = getComponentCategoryIcon(group.name);
                   return (
-                    <Link
-                      key={idx}
-                      to={featPath}
-                      search={featSearch as any}
-                      title={feat.desc || feat.title}
-                      className="min-w-[calc((100%-0.75rem)/3)] max-w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-full bg-muted/60 hover:bg-primary/10 hover:text-primary text-[11px] font-medium text-foreground transition-all cursor-pointer border border-border/40 hover:border-primary/30 group/chip"
-                    >
-                      <FeatIcon size={12} className="text-primary shrink-0 group-hover/chip:scale-110 transition-transform" />
-                      <span className="text-center leading-snug whitespace-normal">{feat.title}</span>
-                    </Link>
+                    <div key={group.id} className="flex flex-col">
+                      <span className="inline-flex items-center justify-center gap-1 text-[10px] font-normal tracking-wider text-muted-foreground mb-1.5 text-center shrink-0">
+                        {CategoryIcon && <CategoryIcon size={11} className="shrink-0" />}
+                        <span>{group.name} ({group.items.length}):</span>
+                      </span>
+                      <div className="flex flex-wrap justify-center content-start gap-1.5 w-full">
+                        {group.items.map((feat, idx) => {
+                          const featPath = feat.to.split("?")[0];
+                          const featSearch = feat.to.includes("?")
+                            ? Object.fromEntries(new URLSearchParams(feat.to.split("?")[1]))
+                            : undefined;
+
+                          return (
+                            <Link
+                              key={idx}
+                              to={featPath}
+                              search={featSearch as any}
+                              title={feat.desc || feat.title}
+                              className="w-auto max-w-full inline-flex items-center justify-center px-[6px] py-[6px] rounded-full bg-muted/60 hover:bg-primary/10 hover:text-primary text-[11px] font-medium text-foreground transition-all cursor-pointer border border-border/40 hover:border-primary/30 group/chip text-center"
+                            >
+                              <span className="module-chip-label whitespace-normal">{feat.title}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
                   );
                 })}
               </div>
-            </div>
+            ) : null}
           </div>
 
-          <div className="pt-1 flex items-center justify-end text-xs">
+          <div className="pt-1 flex items-center justify-end text-xs shrink-0">
             <button
               type="button"
               onClick={handleFlip}
-              className="px-3 py-1 rounded-full border border-border/70 hover:bg-muted text-muted-foreground hover:text-foreground text-xs font-medium flex items-center gap-1 cursor-pointer transition-colors shadow-2xs group/btn"
+              className="p-1.5 rounded-xl border border-border/60 hover:border-border hover:bg-muted/60 text-muted-foreground hover:text-foreground transition-all cursor-pointer active:scale-95 shrink-0 flex items-center justify-center group/btn"
               title="Lihat Related"
+              aria-label="Lihat Related"
             >
-              <span className="text-[11px]">Related</span>
-              <ArrowRight size={12} className="group-hover/btn:translate-x-0.5 transition-transform" />
+              <ArrowRight className="size-4 group-hover/btn:translate-x-0.5 transition-transform" />
             </button>
           </div>
         </div>
 
         {/* Back Face (Warna icon app + tombol kembali di ujung bawah kanan) */}
         <div
-          className={`absolute inset-0 w-full h-full rounded-[28px] ${iconBg.className} p-4 shadow-lg border border-white/20 flex flex-col justify-end items-end overflow-hidden [backface-visibility:hidden]`}
+          className={`absolute inset-0 w-full h-full rounded-[28px] ${iconBg.className} p-4 shadow-lg border border-white/20 flex flex-col justify-end items-end overflow-hidden ${
+            isFlipped ? "pointer-events-auto" : "pointer-events-none"
+          }`}
           style={{
             ...iconBg.style,
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
             transform:
               interactionConfig.axis === "x"
                 ? `rotateX(${180 * interactionConfig.dir}deg)`
@@ -1034,6 +1219,7 @@ export const ValueTreatedFlipCard = ({
   const { isCardMovedOut } = useCardPageMover();
   const { isPinned, togglePin } = usePinnedCards(currentPageId);
   const isCardPinned = isPinned(app.to || app.title, currentPageId);
+  const wasFlippedRef = useRef(false);
   const [interactionConfig, setInteractionConfig] = useState(() => ({
     axis: Math.random() > 0.5 ? "x" : "y",
     dir: Math.random() > 0.5 ? 1 : -1,
@@ -1042,16 +1228,12 @@ export const ValueTreatedFlipCard = ({
   const handleFlip = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setInteractionConfig((prev) => {
-      let nextAxis = prev.axis;
-      let nextDir = prev.dir;
-      while (nextAxis === prev.axis && nextDir === prev.dir) {
-        nextAxis = Math.random() > 0.5 ? "x" : "y";
-        nextDir = Math.random() > 0.5 ? 1 : -1;
+    setIsFlipped((prev) => {
+      if (!prev) {
+        wasFlippedRef.current = true;
       }
-      return { axis: nextAxis, dir: nextDir };
+      return !prev;
     });
-    setIsFlipped((prev) => !prev);
   };
 
   const Icon = app.icon;
@@ -1076,9 +1258,32 @@ export const ValueTreatedFlipCard = ({
           rotateY: isFlipped && interactionConfig.axis === "y" ? 180 * interactionConfig.dir : 0,
         }}
         transition={{ duration: 0.6, type: "spring", stiffness: 80, damping: 15 }}
+        onAnimationComplete={() => {
+          if (!isFlipped && wasFlippedRef.current) {
+            wasFlippedRef.current = false;
+            setInteractionConfig((prev) => {
+              let nextAxis = prev.axis;
+              let nextDir = prev.dir;
+              while (nextAxis === prev.axis && nextDir === prev.dir) {
+                nextAxis = Math.random() > 0.5 ? "x" : "y";
+                nextDir = Math.random() > 0.5 ? 1 : -1;
+              }
+              return { axis: nextAxis, dir: nextDir };
+            });
+          }
+        }}
       >
         {/* Front Face */}
-        <div className="w-full h-full rounded-[28px] border border-border bg-card p-4 sm:p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-3 group [backface-visibility:hidden]">
+        <div
+          className={`w-full h-full rounded-[28px] border border-border bg-card p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between gap-3 group ${
+            isFlipped ? "pointer-events-none" : ""
+          }`}
+          style={{
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+            transform: "rotateY(0deg)",
+          }}
+        >
           <div>
             <div className="flex items-start justify-between gap-3">
               <Link
@@ -1144,8 +1349,9 @@ export const ValueTreatedFlipCard = ({
 
             <div className="mt-3 pt-2.5 border-t border-border/60">
               <div className="relative flex items-center justify-center mb-2">
-                <span className="text-[10px] font-normal tracking-wider text-muted-foreground text-center">
-                  Tools ({app.features.length}):
+                <span className="inline-flex items-center justify-center gap-1 text-[10px] font-normal tracking-wider text-muted-foreground text-center">
+                  <Wrench size={11} className="shrink-0" />
+                  <span>Tools ({app.features.length}):</span>
                 </span>
                 {hasMore && (
                   <button
@@ -1171,17 +1377,14 @@ export const ValueTreatedFlipCard = ({
               <div className="max-h-[140px] overflow-y-auto no-scrollbar pr-0.5">
                 <div className="flex flex-wrap justify-center gap-1.5">
                   {displayFeatures?.map((feat, idx) => {
-                    const FeatIcon = feat.icon;
-
                     return (
                       <Link
                         key={idx}
                         to={feat.to}
                         title={feat.title}
-                        className="min-w-[calc((100%-0.75rem)/3)] max-w-full inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-full bg-muted/60 hover:bg-primary/10 hover:text-primary text-[11px] font-medium text-foreground transition-all cursor-pointer border border-border/40 hover:border-primary/30 group/chip"
+                        className="w-auto max-w-full inline-flex items-center justify-center px-[6px] py-[6px] rounded-full bg-muted/60 hover:bg-primary/10 hover:text-primary text-[11px] font-medium text-foreground transition-all cursor-pointer border border-border/40 hover:border-primary/30 group/chip text-center"
                       >
-                        <FeatIcon size={12} className="text-primary shrink-0 group-hover/chip:scale-110 transition-transform" />
-                        <span className="text-center leading-snug whitespace-normal">{feat.title}</span>
+                        <span className="module-chip-label whitespace-normal">{feat.title}</span>
                       </Link>
                     );
                   })}
@@ -1190,24 +1393,28 @@ export const ValueTreatedFlipCard = ({
             </div>
           </div>
 
-          <div className="border-t border-border/50 pt-3 flex items-center justify-end text-xs">
+          <div className="pt-2 flex items-center justify-end text-xs shrink-0">
             <button
               type="button"
               onClick={handleFlip}
-              className="px-3 py-1 rounded-full border border-border/70 hover:bg-muted text-muted-foreground hover:text-foreground text-xs font-medium flex items-center gap-1 cursor-pointer transition-colors shadow-2xs group/btn"
+              className="p-1.5 rounded-xl border border-border/60 hover:border-border hover:bg-muted/60 text-muted-foreground hover:text-foreground transition-all cursor-pointer active:scale-95 shrink-0 flex items-center justify-center group/btn"
               title="Lihat Related"
+              aria-label="Lihat Related"
             >
-              <span className="text-[11px]">Related</span>
-              <ArrowRight size={12} className="group-hover/btn:translate-x-0.5 transition-transform" />
+              <ArrowRight className="size-4 group-hover/btn:translate-x-0.5 transition-transform" />
             </button>
           </div>
         </div>
 
         {/* Back Face (Warna icon app + tombol kembali di ujung bawah kanan) */}
         <div
-          className={`absolute inset-0 w-full h-full rounded-[28px] ${iconBg.className} p-4 shadow-lg border border-white/20 flex flex-col justify-end items-end overflow-hidden [backface-visibility:hidden]`}
+          className={`absolute inset-0 w-full h-full rounded-[28px] ${iconBg.className} p-4 shadow-lg border border-white/20 flex flex-col justify-end items-end overflow-hidden ${
+            isFlipped ? "pointer-events-auto" : "pointer-events-none"
+          }`}
           style={{
             ...iconBg.style,
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
             transform:
               interactionConfig.axis === "x"
                 ? `rotateX(${180 * interactionConfig.dir}deg)`

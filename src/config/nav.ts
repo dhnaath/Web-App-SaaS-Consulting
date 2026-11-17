@@ -99,8 +99,28 @@ import {
   FileCheck2,
   FileCode2,
   Flag,
+  FileCheck,
+  UserCheck,
+  Microscope,
+  Send,
+  Database,
+  UserSearch,
+  Stethoscope,
+  Library,
+  GitBranch,
+  Book,
+  Building2,
+  PiggyBank,
+  Wrench,
+  CalendarRange,
+  PhoneCall,
+  Trophy,
+  Radio,
+  CalendarClock,
   type LucideIcon,
 } from "lucide-react";
+import { CATEGORIES } from "@/frameworkData";
+import { getUnifiedWorkspaces, getUnifiedWorkspaceById } from "@/core/taxonomy";
 
 export type NavItem = {
   to: string;
@@ -125,18 +145,15 @@ export const navKonsultan: NavGroup[] = [
     title: "Master Workspaces",
     isStandalone: true,
     parentCategory: "Workspace",
-    items: [
-      { to: "/financial-planning", label: "Financial Planning and Wealth Management", icon: Coins, badge: "5 Tahapan" },
-      { to: "/business-operations", label: "Business Administration and Operations Management", icon: Store, badge: "33 Modul" },
-      { to: "/work-productivity", label: "Productivity Workspace and Workflow Systems", icon: Briefcase, badge: "9 Modul" },
-      { to: "/creative-workspace", label: "Creative Workspace and Media Production", icon: Palette, badge: "6 Modul" },
-      { to: "/research-frameworks", label: "Research Foundations and Reference Frameworks", icon: GraduationCap, badge: "6 Modul" },
-      { to: "/sharia-values", label: "Islamic Principles and Sharia Values", icon: Scale, badge: "16 Modul" },
-      { to: "/personal-life", label: "Personal Life Management", icon: Heart, badge: "5 Modul" },
-      { to: "/family-records", label: "Family Records and Household Planning", icon: Home, badge: "6 Modul" },
-      { to: "/public-affairs", label: "Public Affairs and Relations", icon: Landmark, badge: "6 Modul" },
-      { to: "/social-networks", label: "Contact Directory and Social Networks", icon: Users, badge: "6 Modul" },
-    ],
+    items: getUnifiedWorkspaces().map((ws) => ({
+      to: ws.routePath,
+      label: ws.labelEn,
+      icon: ws.icon,
+      badge:
+        ws.id === "mode_business"
+          ? `${17 + CATEGORIES.length} Modul`
+          : ws.defaultBadge,
+    })),
   },
 
   // ============================================================================
@@ -224,7 +241,6 @@ export const navKonsultan: NavGroup[] = [
       { to: "/pajak?app=pph21", label: "PPh 21 Personal", icon: Calculator },
       { to: "/pajak?app=saham", label: "Pajak Saham & Dividen", icon: TrendingUp },
       { to: "/pajak?app=properti", label: "Pajak Properti", icon: Briefcase },
-      { to: "/pajak?app=ppn", label: "PPN (11%)", icon: ShoppingCart },
     ],
   },
   {
@@ -310,6 +326,34 @@ export const navKonsultan: NavGroup[] = [
       { to: "/syariah/terlarang?app=riba", label: "Riba", icon: AlertOctagon },
       { to: "/syariah/terlarang?app=gharar", label: "Gharar", icon: ShieldAlert },
       { to: "/syariah/terlarang?app=maysir", label: "Maysir", icon: Dice5 },
+    ],
+  },
+  {
+    title: getUnifiedWorkspaceById("mode_sharia")?.labelEn ?? "Islamic Principles and Sharia Values",
+    isStandalone: true,
+    parentCategory: "Finance",
+    items: [
+      { to: "/islamic-principles-and-sharia-values", label: getUnifiedWorkspaceById("mode_sharia")?.labelEn ?? "Islamic Principles and Sharia Values", icon: Scale, badge: "20 Modul" },
+      { to: "/islamic-principles-and-sharia-values?module=islamic-principles-and-ethics", label: "Islamic Principles", icon: Compass },
+      { to: "/islamic-principles-and-sharia-values?module=islamic-business-ethics", label: "Business Ethics", icon: Briefcase },
+      { to: "/syariah/akad?app=tabarru", label: "Tabarru' Hibah", icon: HeartHandshake },
+      { to: "/syariah/akad?app=qardh", label: "Qardh Hasan", icon: Coins },
+      { to: "/syariah/akad?app=wakaf", label: "Waqf Management", icon: Building2 },
+      { to: "/syariah/akad?app=mudharabah", label: "Mudharabah", icon: TrendingUp },
+      { to: "/syariah/akad?app=musyarakah", label: "Musharakah", icon: Users },
+      { to: "/syariah/akad?app=murabahah", label: "Murabaha", icon: Receipt },
+      { to: "/syariah/akad?app=ijarah", label: "Ijarah", icon: FileCheck },
+      { to: "/syariah/akad?app=istishna", label: "Salam Istisna", icon: Package },
+      { to: "/syariah/akad?app=takaful", label: "Takaful", icon: ShieldCheck },
+      { to: "/syariah/akad?app=wadiah", label: "Wadiah", icon: Shield },
+      { to: "/zakat?app=maal", label: "Wealth Zakat", icon: Coins },
+      { to: "/zakat?app=profesi", label: "Income Zakat", icon: Wallet },
+      { to: "/zakat?app=fitrah", label: "Zakat Fitr", icon: Scale },
+      { to: "/100-komoditas?tab=syariah", label: "Sharia Investments", icon: ShieldCheck },
+      { to: "/syariah/terlarang?app=riba", label: "Riba Compliance", icon: ShieldAlert },
+      { to: "/syariah/terlarang?app=gharar", label: "Gharar Compliance", icon: Scale },
+      { to: "/islamic-principles-and-sharia-values?module=sharia-governance-and-audit", label: "Sharia Governance", icon: Landmark },
+      { to: "/islamic-principles-and-sharia-values?module=sharia-standards-and-fatwa", label: "Sharia Standards", icon: ScrollText },
     ],
   },
 
@@ -540,26 +584,67 @@ export const navKonsultan: NavGroup[] = [
   // 3. PRODUCTIVITY, OPERATIONS & OWNERSHIP (STANDALONE + GROUPED UTILITIES)
   // ============================================================================
   {
-    title: "Business Administration and Operations Management",
+    title: getUnifiedWorkspaceById("mode_business")?.labelEn ?? "Business Administration and Operations Management",
     isStandalone: true,
     parentCategory: "Business",
     items: [
-      { to: "/business-operations", label: "Business Administration and Operations Management", icon: Store, badge: "33 Modul" },
-      { to: "/peh/vendors", label: "Procurement", icon: Truck },
-      { to: "/katalog-produk", label: "Inventory Management", icon: Package },
+      { to: "/business-administration-and-operations-management", label: getUnifiedWorkspaceById("mode_business")?.labelEn ?? "Business Administration and Operations Management", icon: Store, badge: `${17 + CATEGORIES.length} Modul` },
+      { to: "/peh/vendors", label: "Procurement Management", icon: Truck },
+      { to: "/inventory", label: "Inventory Management", icon: Package },
+      { to: "/lainnya?app=quality-check", label: "Quality Control", icon: Shield },
+      { to: "/peh/compliance", label: "Workplace Safety", icon: ShieldCheck },
       { to: "/klien", label: "Client Management", icon: Briefcase },
-      { to: "/portal", label: "Customer Relations", icon: MessagesSquare },
-      { to: "/lainnya?app=queue-line", label: "Service Management", icon: Clock },
-      { to: "/expense-tracker", label: "Expenses and Assets", icon: Receipt },
-      { to: "/statistics", label: "Data Management", icon: LineChart },
+      { to: "/portal", label: "Client Communications", icon: MessagesSquare },
+      { to: "/lainnya?app=queue-line", label: "Service Scheduling", icon: Clock },
+      { to: "/lainnya?app=client-orders", label: "Commercial Services", icon: Store },
+      { to: "/expense-tracker", label: "Expense Control", icon: Receipt },
+      { to: "/asset-manager", label: "Asset Management", icon: Package },
+      { to: "/valuasi", label: "Business Valuation", icon: Building },
+      { to: "/lainnya?app=mailroom", label: "Document Management", icon: FileCheck },
+      { to: "/goal-manager", label: "Performance Management", icon: Award },
+      { to: "/100-framework", label: "Strategic Frameworks", icon: Grid2X2 },
+      { to: "/lainnya?app=time-clock", label: "Workforce Management", icon: UserCheck },
+      { to: "/peh/compliance", label: "Corporate Governance", icon: ShieldCheck },
+      { to: "/pajak?app=ppn", label: "VAT and Other Taxes", icon: Receipt },
     ],
   },
   {
-    title: "Productivity",
+    title: getUnifiedWorkspaceById("mode_research")?.labelEn ?? "Research Foundations and Reference Frameworks",
+    isStandalone: true,
+    parentCategory: "Research",
+    items: [
+      { to: "/research-foundations-and-reference-frameworks", label: getUnifiedWorkspaceById("mode_research")?.labelEn ?? "Research Foundations and Reference Frameworks", icon: GraduationCap, badge: "23 Modul" },
+      { to: "/research-foundations-and-reference-frameworks?module=market-research", label: "Market Research", icon: TrendingUp },
+      { to: "/research-foundations-and-reference-frameworks?module=industry-research", label: "Industry Research", icon: Building2 },
+      { to: "/research-foundations-and-reference-frameworks?module=competitor-research", label: "Competitor Intelligence", icon: Target },
+      { to: "/research-foundations-and-reference-frameworks?module=customer-research", label: "Customer Intelligence", icon: Users },
+      { to: "/research-foundations-and-reference-frameworks?module=opportunity-research", label: "Opportunity Analysis", icon: Sparkles },
+      { to: "/research-manager", label: "Research Design", icon: Compass },
+      { to: "/research-foundations-and-reference-frameworks?module=research-methodology", label: "Research Methods", icon: Microscope },
+      { to: "/notes", label: "Literature Review", icon: BookOpen },
+      { to: "/research-foundations-and-reference-frameworks?module=academic-writing", label: "Academic Writing", icon: PenTool },
+      { to: "/research-foundations-and-reference-frameworks?module=publication-research", label: "Publication Resources", icon: Send },
+      { to: "/research-foundations-and-reference-frameworks?module=data-intelligence", label: "Data Intelligence", icon: Database },
+      { to: "/research-foundations-and-reference-frameworks?module=business-insights", label: "Business Intelligence", icon: Lightbulb },
+      { to: "/research-foundations-and-reference-frameworks?module=trend-analysis", label: "Trend Intelligence", icon: LineChart },
+      { to: "/research-foundations-and-reference-frameworks?module=benchmarking", label: "Benchmark Intelligence", icon: Scale },
+      { to: "/research-foundations-and-reference-frameworks?module=client-research", label: "Client Intelligence", icon: UserSearch },
+      { to: "/research-foundations-and-reference-frameworks?module=business-diagnosis", label: "Business Diagnostics", icon: Stethoscope },
+      { to: "/research-foundations-and-reference-frameworks?module=feasibility-analysis", label: "Feasibility Studies", icon: Calculator },
+      { to: "/research-foundations-and-reference-frameworks?module=strategic-research", label: "Strategic Research", icon: GitBranch },
+      { to: "/100-framework", label: "Business Frameworks", icon: Layers },
+      { to: "/kurasi", label: "Business Knowledge", icon: BookOpen },
+      { to: "/wiki", label: "Knowledge Management", icon: FileCheck },
+      { to: "/reading", label: "Reading Resources", icon: Book },
+      { to: "/web-clipper", label: "Reference Resources", icon: Library },
+    ],
+  },
+  {
+    title: getUnifiedWorkspaceById("mode_employment")?.labelEn ?? "Productivity Workspace and Workflow Systems",
     isStandalone: true,
     parentCategory: "Productivity",
     items: [
-      { to: "/work-productivity", label: "Productivity Workspace and Workflow Systems", icon: Briefcase, badge: "9 Modul" },
+      { to: "/productivity-workspace-and-workflow-systems", label: getUnifiedWorkspaceById("mode_employment")?.labelEn ?? "Productivity Workspace and Workflow Systems", icon: Briefcase, badge: "9 Modul" },
       { to: "/task-manager", label: "Task Manager", icon: CheckSquare },
       { to: "/kalender", label: "Calendar", icon: CalendarDays },
       { to: "/proyek", label: "Project Manager", icon: FolderKanban },
@@ -620,16 +705,35 @@ export const navKonsultan: NavGroup[] = [
   // 4. PERSONAL, ESSENTIALS & HOUSEHOLD (GROUPED LIFESTYLE, VEHICLE & ESSENTIALS)
   // ============================================================================
   {
-    title: "Personal Life",
+    title: getUnifiedWorkspaceById("mode_personal")?.labelEn ?? "Personal Life Management",
     isStandalone: true,
     parentCategory: "Personal Life",
     items: [
-      { to: "/personal-life", label: "Personal Life Management", icon: Heart, badge: "5 Modul" },
+      { to: "/personal-life-management", label: getUnifiedWorkspaceById("mode_personal")?.labelEn ?? "Personal Life Management", icon: Heart, badge: "24 Modul" },
       { to: "/habit-tracker", label: "Personal Development", icon: Flame },
-      { to: "/journal", label: "Personal Journaling", icon: BookOpen },
-      { to: "/health?tab=workouts", label: "Health and Fitness", icon: Dumbbell },
+      { to: "/life/life-planner", label: "Life Planning", icon: Target },
+      { to: "/proyek-personal", label: "Personal Productivity", icon: FolderKanban },
+      { to: "/health?tab=workouts", label: "Health Management", icon: Dumbbell },
       { to: "/health", label: "Health Records", icon: HeartPulse },
-      { to: "/passwords", label: "Personal Tools", icon: Key },
+      { to: "/personal-life-management?module=mental-wellbeing", label: "Mental Wellbeing", icon: Brain },
+      { to: "/health?tab=skincare", label: "Personal Wellness", icon: Sparkles },
+      { to: "/journal", label: "Personal Reflection", icon: BookOpen },
+      { to: "/personal-life-management?module=life-reflection", label: "Life Reflection", icon: Compass },
+      { to: "/personal-life-management?module=personal-documents", label: "Personal Documents", icon: FileCheck },
+      { to: "/personal-life-management?module=personal-scheduling", label: "Personal Scheduling", icon: CalendarDays },
+      { to: "/personal-life-management?module=personal-records", label: "Personal Records", icon: NotebookText },
+      { to: "/personal-life-management?module=personal-budgeting", label: "Personal Finance", icon: Wallet },
+      { to: "/personal-life-management?module=income-and-expense-tracking", label: "Cash Flow", icon: Receipt },
+      { to: "/life/wishlist", label: "Financial Goals", icon: PiggyBank },
+      { to: "/personal-life-management?module=personal-learning", label: "Personal Learning", icon: GraduationCap },
+      { to: "/personal-life-management?module=skills-development", label: "Skills Development", icon: Award },
+      { to: "/personal-life-management?module=reading-and-knowledge", label: "Knowledge Resources", icon: Book },
+      { to: "/personal-life-management?module=hobbies-and-interests", label: "Personal Interests", icon: Heart },
+      { to: "/personal-life-management?module=travel-and-experiences", label: "Travel Experiences", icon: Plane },
+      { to: "/personal-life-management?module=personal-inventory", label: "Personal Assets", icon: Package },
+      { to: "/passwords", label: "Personal Security", icon: Key },
+      { to: "/kalkulator", label: "Personal Utilities", icon: Calculator },
+      { to: "/personal-life-management?module=digital-privacy", label: "Digital Privacy", icon: Lock },
     ],
   },
   {
@@ -663,7 +767,42 @@ export const navKonsultan: NavGroup[] = [
   },
 
   // ============================================================================
-  // 5. PEOPLE, FAMILY, AND SOCIETY (GROUPED FAMILY, NEIGHBORHOOD & GIVING)
+  // 5. HOUSEHOLD PLANNING & FAMILY RECORDS (8 KATEGORI, 24 MODUL)
+  // ============================================================================
+  {
+    title: getUnifiedWorkspaceById("mode_family")?.labelEn ?? "Household Planning and Family Records",
+    isStandalone: true,
+    parentCategory: "Family and Community",
+    items: [
+      { to: "/household-planning-and-family-records", label: getUnifiedWorkspaceById("mode_family")?.labelEn ?? "Household Planning and Family Records", icon: Home, badge: "24 Modul" },
+      { to: "/peh/family-tree", label: "Family Heritage", icon: GitFork },
+      { to: "/household-planning-and-family-records?module=family-members", label: "Family Members", icon: Users },
+      { to: "/lainnya?app=family-rules", label: "Family Coordination", icon: Handshake },
+      { to: "/peh/chores", label: "Household Management", icon: Home },
+      { to: "/peh/chores", label: "Domestic Operations", icon: CheckSquare },
+      { to: "/peh/maintenance", label: "Property Maintenance", icon: Wrench },
+      { to: "/peh/plants", label: "Home Environment", icon: Sprout },
+      { to: "/peh/family-budget", label: "Household Finance", icon: Wallet },
+      { to: "/household-planning-and-family-records?module=bills-and-payments", label: "Financial Obligations", icon: Receipt },
+      { to: "/household-planning-and-family-records?module=property-records", label: "Property Records", icon: Building2 },
+      { to: "/household-planning-and-family-records?module=home-inventory", label: "Household Assets", icon: Package },
+      { to: "/household-planning-and-family-records?module=home-utilities", label: "Home Utilities", icon: Zap },
+      { to: "/recipes", label: "Kitchen Operations", icon: Utensils },
+      { to: "/household-planning-and-family-records?module=meal-planning", label: "Food Planning", icon: CalendarDays },
+      { to: "/peh/pantry", label: "Food Supply", icon: ShoppingCart },
+      { to: "/lainnya?app=emergency-hub", label: "Family Security", icon: ShieldAlert },
+      { to: "/peh/family-health", label: "Family Health", icon: HeartPulse },
+      { to: "/lainnya?app=disaster-prep", label: "Emergency Planning", icon: ShieldCheck },
+      { to: "/peh/vehicles", label: "Vehicle Records", icon: Car },
+      { to: "/lainnya?app=mileage-fuel", label: "Vehicle Maintenance", icon: Fuel },
+      { to: "/household-planning-and-family-records?module=mobility-planning", label: "Family Mobility", icon: Compass },
+      { to: "/household-planning-and-family-records?module=family-documents", label: "Family Documents", icon: FileCheck },
+      { to: "/household-planning-and-family-records?module=family-calendar", label: "Family Scheduling", icon: CalendarRange },
+      { to: "/household-planning-and-family-records?module=family-archives", label: "Family Archives", icon: Archive },
+    ],
+  },
+  // ============================================================================
+  // 5B. PEOPLE, FAMILY, AND SOCIETY (GROUPED FAMILY, NEIGHBORHOOD & GIVING)
   // ============================================================================
   {
     title: "Family and Community",
@@ -680,6 +819,58 @@ export const navKonsultan: NavGroup[] = [
       { to: "/lainnya?app=public-services-guide", label: "Civic Services", icon: Compass },
       { to: "/lainnya?app=civic-calendar", label: "Civic Agenda", icon: CalendarDays },
       { to: "/zakat", label: "Giving and Impact", icon: Coins },
+    ],
+  },
+  {
+    title: getUnifiedWorkspaceById("mode_public_affairs")?.labelEn ?? "Policy Affairs and Public Relations",
+    isStandalone: true,
+    parentCategory: "Family and Community",
+    items: [
+      { to: "/policy-affairs-and-public-relations", label: getUnifiedWorkspaceById("mode_public_affairs")?.labelEn ?? "Policy Affairs and Public Relations", icon: Landmark, badge: "18 Modul" },
+      { to: "/komunitas-warga", label: "Community Affairs", icon: Building },
+      { to: "/lainnya?app=civic-calendar", label: "Community Events", icon: CalendarDays },
+      { to: "/policy-affairs-and-public-relations?module=community-development", label: "Community Development", icon: Sprout },
+      { to: "/lainnya?app=public-services-guide", label: "Public Services", icon: Compass },
+      { to: "/policy-affairs-and-public-relations?module=civic-administration", label: "Civic Administration", icon: FileCheck },
+      { to: "/policy-affairs-and-public-relations?module=public-service-performance", label: "Service Performance", icon: Gauge },
+      { to: "/peh/compliance", label: "Regulatory Compliance", icon: Scale },
+      { to: "/policy-affairs-and-public-relations?module=policy-research", label: "Policy Research", icon: Microscope },
+      { to: "/policy-affairs-and-public-relations?module=policy-development", label: "Policy Development", icon: Workflow },
+      { to: "/policy-affairs-and-public-relations?module=legislative-monitoring", label: "Legislative Affairs", icon: Landmark },
+      { to: "/peh/advocacy", label: "Public Advocacy", icon: ShieldAlert },
+      { to: "/policy-affairs-and-public-relations?module=public-consultation", label: "Public Consultation", icon: MessagesSquare },
+      { to: "/policy-affairs-and-public-relations?module=public-opinion-intelligence", label: "Public Sentiment", icon: BarChart3 },
+      { to: "/peh/global-overview", label: "Public Relations", icon: Globe },
+      { to: "/policy-affairs-and-public-relations?module=media-relations", label: "Media Affairs", icon: Megaphone },
+      { to: "/policy-affairs-and-public-relations?module=stakeholder-relations", label: "Stakeholder Affairs", icon: Handshake },
+      { to: "/policy-affairs-and-public-relations?module=government-relations", label: "Government Affairs", icon: Building2 },
+      { to: "/policy-affairs-and-public-relations?module=interagency-coordination", label: "Institutional Coordination", icon: Network },
+    ],
+  },
+  {
+    title: getUnifiedWorkspaceById("mode_networks")?.labelEn ?? "Contact Directory and Social Networks",
+    isStandalone: true,
+    parentCategory: "Family and Community",
+    items: [
+      { to: "/contact-directory-and-social-networks", label: getUnifiedWorkspaceById("mode_networks")?.labelEn ?? "Contact Directory and Social Networks", icon: Users, badge: "18 Modul" },
+      { to: "/people-manager", label: "People Directory", icon: UserCheck },
+      { to: "/peh/contacts", label: "Contact Directory", icon: PhoneCall },
+      { to: "/contact-directory-and-social-networks?module=organization-directory", label: "Organization Directory", icon: Building2 },
+      { to: "/interaction-manager", label: "Relationship Management", icon: MessagesSquare },
+      { to: "/contact-directory-and-social-networks?module=personal-connections", label: "Personal Connections", icon: HeartHandshake },
+      { to: "/contact-directory-and-social-networks?module=relationship-insights", label: "Relationship Intelligence", icon: BarChart3 },
+      { to: "/lainnya?app=circle-groups", label: "Groups Communities", icon: Network },
+      { to: "/contact-directory-and-social-networks?module=community-engagement", label: "Community Engagement", icon: CalendarDays },
+      { to: "/contact-directory-and-social-networks?module=community-administration", label: "Community Affairs", icon: ShieldCheck },
+      { to: "/peh/mentorship", label: "Professional Networks", icon: Award },
+      { to: "/contact-directory-and-social-networks?module=mentorship-and-advisory", label: "Advisory Networks", icon: Compass },
+      { to: "/contact-directory-and-social-networks?module=partnership-networks", label: "Partnership Networks", icon: Handshake },
+      { to: "/lainnya?app=gift-tracker", label: "Social Occasions", icon: Gift },
+      { to: "/contact-directory-and-social-networks?module=social-events", label: "Social Events", icon: Sparkles },
+      { to: "/contact-directory-and-social-networks?module=recognition-and-appreciation", label: "Recognition Programs", icon: Trophy },
+      { to: "/contact-directory-and-social-networks?module=communication-channels", label: "Communication Channels", icon: Radio },
+      { to: "/contact-directory-and-social-networks?module=interaction-planning", label: "Interaction Management", icon: CalendarClock },
+      { to: "/contact-directory-and-social-networks?module=network-coordination", label: "Network Management", icon: GitBranch },
     ],
   },
   {
@@ -721,7 +912,7 @@ export const otherNavGroups: NavGroup[] = [
 
   // Kesehatan & Gaya Hidup Pribadi
   ...navKonsultan
-    .filter((g) => g.title === "Personal Life" || g.title === "Personal")
+    .filter((g) => g.parentCategory === "Personal Life" || g.title === "Personal")
     .map((g) => ({ ...g, sectionCategory: "Kesehatan & Personal" })),
 
   // Home & Rekreasi (Home and Leisure Hub)
@@ -744,8 +935,13 @@ export const otherNavGroups: NavGroup[] = [
     .filter(
       (g) =>
         g.title === "Business" ||
+        g.parentCategory === "Business" ||
+        g.parentCategory === "Research" ||
+        g.title === "Business Administration & Operations Management" ||
         g.title === "Business Administration and Operations Management" ||
-        g.title === "Business Operations and Customers"
+        g.title === "Business Operations and Customers" ||
+        g.title === "Research Foundations & Reference Frameworks" ||
+        g.title === "Research Foundations and Reference Frameworks"
     )
     .map((g) => ({ ...g, sectionCategory: "Knowledge & Bisnis" })),
 
@@ -754,6 +950,8 @@ export const otherNavGroups: NavGroup[] = [
     .filter(
       (g) =>
         g.parentCategory === "Productivity" ||
+        g.title === "Productivity Workspace and Workflow Systems" ||
+        g.title === "Productivity Workspace & Workflow Systems" ||
         g.title === "Productivity" ||
         g.title === "Operations" ||
         g.title === "Employment"

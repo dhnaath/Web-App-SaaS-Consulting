@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { useLifeOS } from '../../context/LifeOSContext';
+import {
+  aggregateFinanceItemsByCategory,
+  FINANCE_REPORT_MONTH_KEY,
+  FINANCE_REPORT_MONTH_LABEL,
+  getExpenseItemsForMonth,
+  getIncomeItemsForMonth,
+  sumFinanceItems,
+} from './financeData';
 import { ArrowDownLeft, ArrowUpRight, Filter } from 'lucide-react';
 
 interface Segment {
@@ -10,31 +17,37 @@ interface Segment {
 }
 
 export const DonutBreakdownChart: React.FC = () => {
-  const { budgets, totalExpenses, totalIncomes } = useLifeOS();
   const [activeType, setActiveType] = useState<'expense' | 'income'>('expense');
   const [hoveredSegment, setHoveredSegment] = useState<Segment | null>(null);
 
-  // Expense segments mirroring screenshot
-  const expenseSegments: Segment[] = [
-    { name: 'Bills & Utilities', amount: 1224, percentage: 24.1, color: '#F59E0B' }, // warm amber
-    { name: 'Shopping', amount: 629, percentage: 12.4, color: '#EC4899' }, // pink
-    { name: 'Healthcare', amount: 390, percentage: 7.7, color: '#8B5CF6' }, // purple
-    { name: 'Food & Dining', amount: 385, percentage: 7.6, color: '#3B82F6' }, // blue
-    { name: 'Groceries', amount: 146, percentage: 2.9, color: '#10B981' }, // green
-    { name: 'Transportation', amount: 98, percentage: 1.9, color: '#6366F1' }, // indigo
-    { name: 'Other Discretionary', amount: 2200, percentage: 43.4, color: '#D1D5DB' }, // light neutral
-  ];
+  const categoryColors: Record<string, string> = {
+    'Bills & Utilities': '#F59E0B',
+    Shopping: '#EC4899',
+    Healthcare: '#8B5CF6',
+    'Food & Dining': '#3B82F6',
+    Groceries: '#10B981',
+    Transportation: '#6366F1',
+    Salary: '#10B981',
+    Ecommerce: '#3B82F6',
+    'Digital Products': '#8B5CF6',
+    Affiliates: '#F59E0B',
+    'Real Estate': '#EC4899',
+  };
 
-  const incomeSegments: Segment[] = [
-    { name: 'Salary', amount: 95420, percentage: 39.3, color: '#10B981' },
-    { name: 'Ecommerce', amount: 59500, percentage: 24.5, color: '#3B82F6' },
-    { name: 'Digital Products', amount: 37400, percentage: 15.4, color: '#8B5CF6' },
-    { name: 'Affiliates', amount: 26100, percentage: 10.7, color: '#F59E0B' },
-    { name: 'Real Estate', amount: 24500, percentage: 10.1, color: '#EC4899' },
-  ];
+  const createSegments = (items: ReadonlyArray<{ category: string; amount: number }>): Segment[] => {
+    const total = sumFinanceItems(items);
+    return aggregateFinanceItemsByCategory(items).map((item) => ({
+      name: item.category,
+      amount: item.amount,
+      percentage: total > 0 ? (item.amount / total) * 100 : 0,
+      color: categoryColors[item.category] ?? '#D1D5DB',
+    }));
+  };
 
+  const expenseSegments = createSegments(getExpenseItemsForMonth(FINANCE_REPORT_MONTH_KEY));
+  const incomeSegments = createSegments(getIncomeItemsForMonth(FINANCE_REPORT_MONTH_LABEL));
   const currentSegments = activeType === 'expense' ? expenseSegments : incomeSegments;
-  const currentTotal = activeType === 'expense' ? 5071 : 242920;
+  const currentTotal = sumFinanceItems(currentSegments);
 
   // Geometry for SVG Donut
   const size = 200;
@@ -130,7 +143,7 @@ export const DonutBreakdownChart: React.FC = () => {
             </span>
             {hoveredSegment && (
               <span className="text-[10px] text-neutral-600 font-mono-nums font-semibold">
-                {hoveredSegment.percentage}%
+                {hoveredSegment.percentage.toFixed(1)}%
               </span>
             )}
           </div>
@@ -153,7 +166,7 @@ export const DonutBreakdownChart: React.FC = () => {
               </div>
               <div className="flex items-center gap-1.5 font-mono-nums text-[11px] shrink-0">
                 <span className="font-medium text-neutral-800">${seg.amount.toLocaleString()}</span>
-                <span className="text-neutral-400 text-[10px]">({seg.percentage}%)</span>
+                <span className="text-neutral-400 text-[10px]">({seg.percentage.toFixed(1)}%)</span>
               </div>
             </div>
           ))}

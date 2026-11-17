@@ -1,14 +1,17 @@
-import React from 'react';
-import * as Icons from 'lucide-react';
+import React from "react";
+import * as LucideIcons from "lucide-react";
 
-interface IconProps extends React.SVGProps<SVGSVGElement> {
+export interface IconProps {
   name: string;
+  size?: number;
   className?: string;
-  size?: number | string;
 }
 
-export const Icon: React.FC<IconProps> = ({ name, className = 'w-4 h-4', size = 16, ...props }) => {
-  // @ts-expect-error Lucide dynamic icon indexing
-  const Component = Icons[name] || Icons.CircleDot;
-  return <Component className={className} size={size} {...props} />;
+export const Icon: React.FC<IconProps> = ({ name, size = 16, className = "" }) => {
+  const iconsMap = LucideIcons as unknown as Record<
+    string,
+    React.ComponentType<{ size?: number; className?: string }>
+  >;
+  const Component = iconsMap[name] || LucideIcons.Layers;
+  return <Component size={size} className={className} />;
 };

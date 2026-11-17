@@ -1,7 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLifeOS } from '../../context/LifeOSContext';
 import { PriorityLevel } from '../../types';
 import { X, DollarSign, Calendar, Tag, ArrowRightLeft, BookOpen, Target, CheckSquare, Landmark } from 'lucide-react';
+
+function getLocalDate(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function isValidDateInput(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
 
 export const ActionModals: React.FC = () => {
   const {
@@ -22,13 +36,15 @@ export const ActionModals: React.FC = () => {
   // Form states
   const [txName, setTxName] = useState('');
   const [txAmount, setTxAmount] = useState('');
-  const [txDate, setTxDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [txCategory, setTxCategory] = useState('Food & Dining');
-  const [txAccount, setTxAccount] = useState(accounts[0]?.id || 'acc-1');
+  const [txDate, setTxDate] = useState(() => getLocalDate());
+  const [expenseCategory, setExpenseCategory] = useState('Food & Dining');
+  const [incomeCategory, setIncomeCategory] = useState('Salary');
+  const [formError, setFormError] = useState('');
+  const [txAccount, setTxAccount] = useState(accounts[0]?.id ?? '');
 
   // Task form state
   const [taskName, setTaskName] = useState('');
-  const [taskDate, setTaskDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [taskDate, setTaskDate] = useState(() => getLocalDate());
   const [taskPriority, setTaskPriority] = useState<PriorityLevel>('Medium');
   const [taskCategory, setTaskCategory] = useState('General');
   const [taskNotes, setTaskNotes] = useState('');
@@ -45,8 +61,8 @@ export const ActionModals: React.FC = () => {
   const [goalStatus, setGoalStatus] = useState<'not_started' | 'in_progress' | 'done'>('in_progress');
 
   // Transfer form state
-  const [transferSource, setTransferSource] = useState(accounts[0]?.id || '');
-  const [transferTarget, setTransferTarget] = useState(accounts[1]?.id || '');
+  const [transferSource, setTransferSource] = useState(accounts[0]?.id ?? '');
+  const [transferTarget, setTransferTarget] = useState(accounts[1]?.id ?? '');
   const [transferAmount, setTransferAmount] = useState('');
   const [transferNote, setTransferNote] = useState('');
 
@@ -73,7 +89,7 @@ export const ActionModals: React.FC = () => {
   const [subAmount, setSubAmount] = useState('');
   const [subCycle, setSubCycle] = useState<'monthly' | 'yearly' | 'weekly'>('monthly');
   const [subCategory, setSubCategory] = useState<any>('Entertainment');
-  const [subNextDate, setSubNextDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [subNextDate, setSubNextDate] = useState(() => getLocalDate());
   const [subPayMethod, setSubPayMethod] = useState('Waverly Bank (••4912)');
   const [subAutoRenew, setSubAutoRenew] = useState(true);
   const [subNotes, setSubNotes] = useState('');
@@ -82,25 +98,47 @@ export const ActionModals: React.FC = () => {
   const [astName, setAstName] = useState('');
   const [astCategory, setAstCategory] = useState<any>('Investasi');
   const [astInstitution, setAstInstitution] = useState('');
-  const [astDate, setAstDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [astDate, setAstDate] = useState(() => getLocalDate());
   const [astPrice, setAstPrice] = useState('');
   const [astCurrentVal, setAstCurrentVal] = useState('');
   const [astLiquidity, setAstLiquidity] = useState<'High' | 'Medium' | 'Low'>('High');
   const [astNotes, setAstNotes] = useState('');
 
+  useEffect(() => {
+    setFormError('');
+    setTxDate(getLocalDate());
+  }, [activeModal]);
+
   if (!activeModal) return null;
 
   const handleExpenseSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const amount = parseFloat(txAmount);
-    if (!txName.trim() || isNaN(amount) || amount <= 0) return;
+    setFormError('');
+
+    const amount = Number(txAmount);
+    if (!txName.trim()) {
+      setFormError('Nama transaksi wajib diisi.');
+      return;
+    }
+    if (!txAmount.trim() || !Number.isFinite(amount) || amount <= 0) {
+      setFormError('Nominal transaksi harus lebih besar dari nol.');
+      return;
+    }
+    if (!isValidDateInput(txDate)) {
+      setFormError('Tanggal transaksi tidak valid.');
+      return;
+    }
+    if (!accounts.some((account) => account.id === txAccount)) {
+      setFormError('Pilih akun yang masih tersedia.');
+      return;
+    }
 
     addTransaction({
       type: 'expense',
       name: txName.trim(),
       amount,
       date: txDate,
-      category: txCategory,
+      category: expenseCategory,
       accountId: txAccount,
     });
     setTxName('');
@@ -110,15 +148,32 @@ export const ActionModals: React.FC = () => {
 
   const handleIncomeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const amount = parseFloat(txAmount);
-    if (!txName.trim() || isNaN(amount) || amount <= 0) return;
+    setFormError('');
+
+    const amount = Number(txAmount);
+    if (!txName.trim()) {
+      setFormError('Nama transaksi wajib diisi.');
+      return;
+    }
+    if (!txAmount.trim() || !Number.isFinite(amount) || amount <= 0) {
+      setFormError('Nominal transaksi harus lebih besar dari nol.');
+      return;
+    }
+    if (!isValidDateInput(txDate)) {
+      setFormError('Tanggal transaksi tidak valid.');
+      return;
+    }
+    if (!accounts.some((account) => account.id === txAccount)) {
+      setFormError('Pilih akun yang masih tersedia.');
+      return;
+    }
 
     addTransaction({
       type: 'income',
       name: txName.trim(),
       amount,
       date: txDate,
-      category: txCategory,
+      category: incomeCategory,
       accountId: txAccount,
     });
     setTxName('');
@@ -174,8 +229,23 @@ export const ActionModals: React.FC = () => {
 
   const handleTransferSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const amount = parseFloat(transferAmount);
-    if (isNaN(amount) || amount <= 0 || transferSource === transferTarget) return;
+    setFormError('');
+
+    const amount = Number(transferAmount);
+    if (!transferAmount.trim() || !Number.isFinite(amount) || amount <= 0) {
+      setFormError('Nominal transfer harus lebih besar dari nol.');
+      return;
+    }
+    const sourceExists = accounts.some((account) => account.id === transferSource);
+    const targetExists = accounts.some((account) => account.id === transferTarget);
+    if (!sourceExists || !targetExists) {
+      setFormError('Akun sumber dan tujuan harus masih tersedia.');
+      return;
+    }
+    if (transferSource === transferTarget) {
+      setFormError('Akun sumber dan tujuan tidak boleh sama.');
+      return;
+    }
 
     transferFunds(transferSource, transferTarget, amount, transferNote);
     setTransferAmount('');
@@ -259,9 +329,23 @@ export const ActionModals: React.FC = () => {
 
   const handleAssetSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const price = parseFloat(astPrice) || 0;
-    const currentVal = parseFloat(astCurrentVal) || price;
-    if (!astName.trim()) return;
+    setFormError('');
+
+    const price = Number(astPrice);
+    const currentVal = astCurrentVal.trim() === '' ? price : Number(astCurrentVal);
+
+    if (!astName.trim()) {
+      setFormError('Nama aset wajib diisi.');
+      return;
+    }
+    if (!astPrice.trim() || !Number.isFinite(price) || price < 0) {
+      setFormError('Harga beli harus berupa angka nol atau lebih.');
+      return;
+    }
+    if (!Number.isFinite(currentVal) || currentVal < 0) {
+      setFormError('Nilai pasar harus berupa angka nol atau lebih.');
+      return;
+    }
 
     addAsset({
       name: astName.trim(),
@@ -283,9 +367,14 @@ export const ActionModals: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs select-none">
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-neutral-200 animate-in fade-in zoom-in-95 duration-150">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="lifeos-action-modal-title"
+        className="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 border border-neutral-200 animate-in fade-in zoom-in-95 duration-150"
+      >
         <div className="flex items-center justify-between pb-3 border-b border-neutral-100 mb-4">
-          <h3 className="font-serif-title text-xl text-neutral-900 font-normal">
+          <h3 id="lifeos-action-modal-title" className="font-serif-title text-xl text-neutral-900 font-normal">
             {activeModal === 'expense' && 'New Expense'}
             {activeModal === 'income' && 'New Income'}
             {activeModal === 'task' && 'New Task'}
@@ -298,6 +387,8 @@ export const ActionModals: React.FC = () => {
             {activeModal === 'asset' && 'Tambah Aset Portofolio'}
           </h3>
           <button
+            type="button"
+            aria-label="Tutup dialog"
             onClick={closeModal}
             className="text-neutral-400 hover:text-neutral-700 p-1 rounded-md transition-colors"
           >
@@ -311,6 +402,9 @@ export const ActionModals: React.FC = () => {
             onSubmit={activeModal === 'expense' ? handleExpenseSubmit : handleIncomeSubmit}
             className="space-y-3 text-xs"
           >
+            {formError && (
+              <p role="alert" className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700">{formError}</p>
+            )}
             <div>
               <label className="block text-neutral-600 font-medium mb-1">
                 Description / Title
@@ -334,6 +428,7 @@ export const ActionModals: React.FC = () => {
                 <input
                   type="number"
                   step="0.01"
+                  min="0.01"
                   required
                   placeholder="0.00"
                   value={txAmount}
@@ -363,8 +458,8 @@ export const ActionModals: React.FC = () => {
                 </label>
                 {activeModal === 'expense' ? (
                   <select
-                    value={txCategory}
-                    onChange={(e) => setTxCategory(e.target.value)}
+                    value={expenseCategory}
+                    onChange={(e) => setExpenseCategory(e.target.value)}
                     className="w-full px-2.5 py-2 border border-neutral-300 rounded-md outline-hidden bg-white focus:border-neutral-900"
                   >
                     <option value="Food & Dining">Food & Dining</option>
@@ -377,8 +472,8 @@ export const ActionModals: React.FC = () => {
                   </select>
                 ) : (
                   <select
-                    value={txCategory}
-                    onChange={(e) => setTxCategory(e.target.value)}
+                    value={incomeCategory}
+                    onChange={(e) => setIncomeCategory(e.target.value)}
                     className="w-full px-2.5 py-2 border border-neutral-300 rounded-md outline-hidden bg-white focus:border-neutral-900"
                   >
                     <option value="Salary">Salary</option>
@@ -399,6 +494,7 @@ export const ActionModals: React.FC = () => {
                   onChange={(e) => setTxAccount(e.target.value)}
                   className="w-full px-2.5 py-2 border border-neutral-300 rounded-md outline-hidden bg-white focus:border-neutral-900"
                 >
+                  <option value="" disabled>Select account</option>
                   {accounts.map((acc) => (
                     <option key={acc.id} value={acc.id}>
                       {acc.name}
@@ -418,7 +514,8 @@ export const ActionModals: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="px-4 py-1.5 bg-[#2383E2] hover:bg-[#1B74C9] text-white font-medium rounded-md shadow-2xs transition-colors"
+                disabled={accounts.length === 0}
+                className="px-4 py-1.5 bg-[#2383E2] hover:bg-[#1B74C9] text-white font-medium rounded-md shadow-2xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Save {activeModal === 'expense' ? 'Expense' : 'Income'}
               </button>
@@ -573,6 +670,9 @@ export const ActionModals: React.FC = () => {
         {/* Transfer Form */}
         {activeModal === 'transfer' && (
           <form onSubmit={handleTransferSubmit} className="space-y-3 text-xs">
+            {formError && (
+              <p role="alert" className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700">{formError}</p>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-neutral-600 font-medium mb-1">
@@ -616,6 +716,7 @@ export const ActionModals: React.FC = () => {
               <input
                 type="number"
                 step="0.01"
+                min="0.01"
                 required
                 placeholder="0.00"
                 value={transferAmount}
@@ -647,7 +748,8 @@ export const ActionModals: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="px-4 py-1.5 bg-[#2383E2] hover:bg-[#1B74C9] text-white font-medium rounded-md shadow-2xs transition-colors"
+                disabled={accounts.length < 2}
+                className="px-4 py-1.5 bg-[#2383E2] hover:bg-[#1B74C9] text-white font-medium rounded-md shadow-2xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Execute Transfer
               </button>
@@ -1091,6 +1193,9 @@ export const ActionModals: React.FC = () => {
         {/* Asset Form */}
         {activeModal === 'asset' && (
           <form onSubmit={handleAssetSubmit} className="space-y-3 text-xs">
+            {formError && (
+              <p role="alert" className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700">{formError}</p>
+            )}
             <div>
               <label className="block text-neutral-600 font-medium mb-1">
                 Nama Aset *
@@ -1149,6 +1254,7 @@ export const ActionModals: React.FC = () => {
                 <input
                   type="number"
                   step="0.01"
+                  min="0"
                   required
                   placeholder="0.00"
                   value={astPrice}
@@ -1163,6 +1269,7 @@ export const ActionModals: React.FC = () => {
                 <input
                   type="number"
                   step="0.01"
+                  min="0"
                   required
                   placeholder="0.00"
                   value={astCurrentVal}

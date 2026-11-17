@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  User,
   Settings,
   Clock,
   Laptop,
@@ -8,7 +7,6 @@ import {
   Check,
 } from "lucide-react";
 import { ThemeLangToggle, TIMEZONE_IANA_MAP } from "../theme-lang-toggle";
-import { ProfileMenu } from "../wira-settings";
 import { ProgressiveBlurSettingControl } from "./ProgressiveBlurSettingControl";
 import { LiquidGlassSettingControl } from "./LiquidGlassSettingControl";
 import { ThemeColorPicker } from "./ThemeColorPicker";
@@ -65,14 +63,11 @@ export const COUNTRIES_DATA: CountryData[] = [
 
 interface TopPanelControlHubProps {
   onClose: () => void;
-  onOpenSettings: (tab: string) => void;
 }
 
 export function TopPanelControlHub({
-  onClose,
-  onOpenSettings,
+  onClose: _onClose,
 }: TopPanelControlHubProps) {
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isCountryOpen, setIsCountryOpen] = useState(false);
   const countryDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -220,49 +215,13 @@ export function TopPanelControlHub({
         style={{ backgroundColor: "hsl(var(--primary))", scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         <div className="max-w-[1815px] w-full mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 items-stretch min-w-0">
-          {/* Kolom 1: Akun & Profil Pengguna */}
-          <div className="liquid-glass-card min-w-0 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-white/50 dark:border-slate-800/80 overflow-hidden text-slate-900 dark:text-slate-100 transition-transform duration-200 hover:-translate-y-0.5 flex flex-col justify-center">
-            <div className="card-content text-slate-900 dark:text-slate-100 flex flex-col justify-center flex-1 h-full">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="glass-button flex-1 whitespace-nowrap text-xs font-semibold py-2 px-3 min-w-0 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-2xs cursor-pointer"
-                >
-                  <User className="size-4 shrink-0 text-slate-700 dark:text-slate-300" />
-                  <span>Menu Profil</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsProfileOpen(false);
-                    onOpenSettings("general");
-                  }}
-                  className="glass-button size-9 p-0 shrink-0 aspect-square rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-2xs cursor-pointer"
-                  title="Buka Pengaturan"
-                  aria-label="Pengaturan"
-                >
-                  <Settings className="size-4 shrink-0 text-slate-700 dark:text-slate-300" />
-                </button>
-              </div>
-
-              <div className="relative">
-                {/* Profile Menu Popup */}
-                <ProfileMenu
-                  isOpen={isProfileOpen}
-                  onClose={() => setIsProfileOpen(false)}
-                  onOpenSettings={(tab) => {
-                    setIsProfileOpen(false);
-                    onOpenSettings(tab);
-                  }}
-                />
-              </div>
-            </div>
+          {/* Kolom 1: Dikosongkan (elemen dipindah ke Sidebar Kanan tab Favorit) */}
+          <div className="min-w-0 w-full bg-white dark:bg-slate-900 rounded-[28px] shadow-xl border border-white dark:border-slate-800 overflow-hidden text-slate-900 dark:text-slate-100 flex flex-col justify-center">
+            <div className="card-content text-slate-900 dark:text-slate-100 flex flex-col justify-center flex-1 h-full" />
           </div>
 
           {/* Kolom 2: Pengaturan Visual & Efek */}
-          <div className="liquid-glass-card min-w-0 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-white/50 dark:border-slate-800/80 overflow-hidden text-slate-900 dark:text-slate-100 transition-transform duration-200 hover:-translate-y-0.5 flex flex-col">
+          <div className="min-w-0 w-full bg-white dark:bg-slate-900 rounded-[28px] shadow-xl border border-white dark:border-slate-800 overflow-hidden text-slate-900 dark:text-slate-100 transition-transform duration-200 hover:-translate-y-0.5 flex flex-col">
             <div className="card-content text-slate-900 dark:text-slate-100 flex flex-col justify-center flex-1 h-full">
               <div className="flex flex-col gap-2 text-left w-full">
                 <ThemeColorPicker />
@@ -273,7 +232,7 @@ export function TopPanelControlHub({
           </div>
 
           {/* Kolom 3: Wilayah & Preferensi Waktu */}
-          <div className="liquid-glass-card min-w-0 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-white/50 dark:border-slate-800/80 overflow-hidden text-slate-900 dark:text-slate-100 transition-transform duration-200 hover:-translate-y-0.5 flex flex-col justify-between">
+          <div className="min-w-0 w-full bg-white dark:bg-slate-900 rounded-[28px] shadow-xl border border-white dark:border-slate-800 overflow-hidden text-slate-900 dark:text-slate-100 transition-transform duration-200 hover:-translate-y-0.5 flex flex-col justify-between">
             <div className="card-content text-slate-900 dark:text-slate-100 flex flex-col gap-2.5 text-left w-full h-full">
               {/* Baris Atas: Jam Digital (Kiri) & Pilihan Negara (Kanan) */}
               <div className="flex items-center justify-between gap-2 w-full">
@@ -382,7 +341,7 @@ export function TopPanelControlHub({
           </div>
 
           {/* Kolom 4: Informasi Versi & Status Sistem */}
-          <div className="liquid-glass-card min-w-0 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-white/50 dark:border-slate-800/80 overflow-hidden text-slate-900 dark:text-slate-100 transition-transform duration-200 hover:-translate-y-0.5">
+          <div className="min-w-0 w-full bg-white dark:bg-slate-900 rounded-[28px] shadow-xl border border-white dark:border-slate-800 overflow-hidden text-slate-900 dark:text-slate-100 transition-transform duration-200 hover:-translate-y-0.5">
             <div className="card-content text-slate-900 dark:text-slate-100">
               <div className="card-header">
                 <div className="user-info">

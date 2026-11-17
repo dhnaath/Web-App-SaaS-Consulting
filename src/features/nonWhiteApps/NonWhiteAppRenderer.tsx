@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useRouterState, Navigate } from "@tanstack/react-router";
 import { AppShell } from "@/app/app-shell";
 import { ShellSections } from "@/app/shell-sections";
@@ -322,6 +322,154 @@ export function MatrixTowsView() {
   );
 }
 
+const SPECTRUM_SUB_ROUTE_MAP: Record<
+  "grow" | "flow" | "build" | "legacy" | "surety",
+  Record<string, Record<string, string>>
+> = {
+  surety: {
+    cat_kepatuhan: { audit: "legal", regulasi: "legal" },
+    cat_publik: { bpjs: "general_ins" },
+    cat_asuransi: { kesehatan: "insurance", jiwa: "term_life" },
+    cat_dana: { darurat: "emergency_fund" },
+    cat_proteksi: { vault: "protection" },
+  },
+  flow: {
+    cat_liabilitas: { rasio: "cat_liabilitas" },
+    cat_otomatisasi: { autodebet: "savings" },
+  },
+  build: {
+    cat_modal: { skill: "human_capital", karier: "human_capital" },
+    cat_pembukuan: { neraca: "reports", jurnal: "reports" },
+  },
+  grow: {
+    cat_profil: { toleransi: "risk_profile" },
+    cat_rebalance: { deviasi: "rebalance", jadwal: "rebalance" },
+  },
+  legacy: {
+    cat_pembelajaran: { literasi: "literacy_hub", filosofi: "literacy_hub" },
+    cat_tatakelola: { struktur: "governance" },
+    cat_likuidasi: { pelunasan: "liquidation" },
+    cat_transfer: { suksesi: "succession" },
+  },
+};
+
+const SPECTRUM_CHILD_TO_PARENT: Record<
+  "grow" | "flow" | "build" | "legacy" | "surety",
+  Record<string, string>
+> = {
+  surety: {
+    legal: "cat_kepatuhan",
+    doc_vault: "cat_kepatuhan",
+    general_ins: "cat_publik",
+    claims: "cat_publik",
+    vehicle_property: "cat_publik",
+    insurance: "cat_asuransi",
+    ci: "cat_asuransi",
+    calc_insurance: "cat_asuransi",
+    insurance_gap: "cat_asuransi",
+    unit_link: "cat_asuransi",
+    term_life: "cat_asuransi",
+    endowment: "cat_asuransi",
+    health_risk: "cat_asuransi",
+    health: "cat_asuransi",
+    emergency_fund: "cat_dana",
+    retirement: "cat_dana",
+    sinking_fund: "cat_dana",
+    protection: "cat_proteksi",
+    security: "cat_proteksi",
+    beneficiary: "cat_proteksi",
+  },
+  flow: {
+    liability: "cat_liabilitas",
+    snowball: "cat_liabilitas",
+    monthly_burden: "cat_liabilitas",
+    emi_calculator: "cat_liabilitas",
+    bill_reminders: "cat_liabilitas",
+    transactions: "cat_pengeluaran",
+    cashflow: "cat_pengeluaran",
+    cashflow_forecast: "cat_pengeluaran",
+    budget: "cat_pengeluaran",
+    expense_cat: "cat_pengeluaran",
+    split_bill: "cat_pengeluaran",
+    liquidity: "cat_kredit",
+    bank_sync: "cat_kredit",
+    tax: "cat_pajak",
+    emergency: "cat_pajak",
+    tax_harvesting: "cat_pajak",
+    savings: "cat_otomatisasi",
+  },
+  build: {
+    human_capital: "cat_modal",
+    business_val: "cat_jaringan",
+    cap_table: "cat_jaringan",
+    portfolio_rec: "cat_portofolio",
+    mortgage: "cat_portofolio",
+    child_edu: "cat_portofolio",
+    net_worth: "cat_kekayaan",
+    assets: "cat_kekayaan",
+    financial_health: "cat_kekayaan",
+    demographic_benchmark: "cat_kekayaan",
+    reports: "cat_pembukuan",
+  },
+  grow: {
+    risk_profile: "cat_profil",
+    robo_advisor: "cat_profil",
+    alloc_visual: "cat_alokasi",
+    stock_monitor: "cat_alokasi",
+    mutual_fund: "cat_alokasi",
+    bonds_sbn: "cat_alokasi",
+    gold: "cat_alokasi",
+    deposito: "cat_alokasi",
+    property: "cat_alokasi",
+    p2p: "cat_alokasi",
+    crypto: "cat_alokasi",
+    forex: "cat_alokasi",
+    trading_journal: "cat_efektif",
+    dividend_cal: "cat_efektif",
+    compounding_dca: "cat_bunga",
+    rebalance: "cat_rebalance",
+  },
+  legacy: {
+    literacy_hub: "cat_pembelajaran",
+    kids_allowance: "cat_pembelajaran",
+    governance: "cat_tatakelola",
+    family_charter: "cat_tatakelola",
+    trust_fund: "cat_tatakelola",
+    family_foundation: "cat_tatakelola",
+    philanthropy: "cat_amal",
+    donation_hist: "cat_amal",
+    liquidation: "cat_likuidasi",
+    valuables: "cat_likuidasi",
+    succession: "cat_transfer",
+    digital_will: "cat_transfer",
+    estate_tax: "cat_transfer",
+    heir_map: "cat_transfer",
+    digital_inheritance: "cat_transfer",
+    advisor_guide: "cat_transfer",
+  },
+};
+
+function resolveSpectrumTab(
+  stage: "grow" | "flow" | "build" | "legacy" | "surety",
+  rawTab: unknown,
+  rawSub: unknown,
+  defaultTab: string
+): string {
+  const baseTab = typeof rawTab === "string" && rawTab.trim() ? rawTab.trim() : defaultTab;
+  const subKey = typeof rawSub === "string" && rawSub.trim() ? rawSub.trim().toLowerCase() : "";
+
+  if (stage === "flow" && baseTab === "cat_arus_kas") {
+    return "transactions";
+  }
+
+  if (subKey) {
+    const mapped = SPECTRUM_SUB_ROUTE_MAP[stage]?.[baseTab]?.[subKey];
+    if (mapped) return mapped;
+  }
+
+  return baseTab;
+}
+
 // 5. Spectrum Stages Wrapper
 export function SpectrumStageView({ stage }: { stage: "grow" | "flow" | "build" | "legacy" | "surety" }) {
   const routerState = useRouterState();
@@ -334,7 +482,14 @@ export function SpectrumStageView({ stage }: { stage: "grow" | "flow" | "build" 
     grow: "cat_profil",
     legacy: "cat_pembelajaran",
   };
-  const [tab, setTab] = useState(typeof search.tab === "string" && search.tab ? search.tab : (defaultTabs[stage] || ""));
+  const defaultTab = defaultTabs[stage] || "";
+  const [tab, setTab] = useState(() =>
+    resolveSpectrumTab(stage, search.tab, search.sub, defaultTab)
+  );
+
+  useEffect(() => {
+    setTab(resolveSpectrumTab(stage, search.tab, search.sub, defaultTab));
+  }, [stage, search.tab, search.sub, defaultTab]);
 
   const handleBack = () => {
     navigate({ to: "/" } as any);
@@ -392,10 +547,11 @@ export function SpectrumStageView({ stage }: { stage: "grow" | "flow" | "build" 
       { id: "cat_transfer", label: "Transfer Kekayaan" },
     ],
   };
+  const activeParentTab = SPECTRUM_CHILD_TO_PARENT[stage]?.[tab] || tab;
   const stageSections = (stageTabs[stage] || []).map((t) => ({
     id: t.id,
     label: t.label,
-    active: tab === t.id,
+    active: activeParentTab === t.id,
     onSelect: () => handleSelectTab(t.id),
   }));
 

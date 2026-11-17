@@ -2,19 +2,25 @@ import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  ArrowUpDown,
   Check,
   ChevronRight,
+  EyeOff,
+  Image as ImageIcon,
+  Info,
+  Maximize2,
   MoreHorizontal,
   PanelBottom,
   Pin,
   RotateCcw,
-  X,
+  Share2,
   Palette,
 } from "lucide-react";
 import {
   LAUNCHER_PAGE_OPTIONS,
   getLauncherPageOption,
   useCardPageMover,
+  type MovedCardCategoryGroupSnapshot,
   type MovedCardFeatureSnapshot,
 } from "@/hooks/useCardPageMover";
 import {
@@ -35,6 +41,8 @@ export interface CardMoveMenuData {
   accentGradient?: string;
   icon?: React.ComponentType<{ className?: string; size?: number; strokeWidth?: number }>;
   features?: MovedCardFeatureSnapshot[];
+  tools?: MovedCardFeatureSnapshot[];
+  categoryGroups?: MovedCardCategoryGroupSnapshot[];
 }
 
 /**
@@ -251,28 +259,40 @@ export function CardMoreMenu({
 
   return (
     <div
-      ref={containerRef}
-      className="relative shrink-0"
+      className="flex items-center gap-1.5 shrink-0"
       onPointerDown={(e) => e.stopPropagation()}
     >
+      {/* Dummy Expand Full View button (layout placeholder, non-interactive) */}
       <button
         type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setIsOpen((prev) => !prev);
-        }}
-        className={`p-1.5 rounded-xl border transition-all cursor-pointer active:scale-95 shrink-0 flex items-center justify-center ${
-          isOpen
-            ? "border-border bg-muted text-foreground shadow-2xs"
-            : "border-border/60 hover:border-border hover:bg-muted/60 text-muted-foreground hover:text-foreground"
-        }`}
-        title="Opsi lainnya"
-        aria-label={`Opsi untuk ${title}`}
-        aria-expanded={isOpen}
+        disabled
+        aria-disabled="true"
+        className="p-1.5 rounded-xl border border-border/60 text-muted-foreground transition-all cursor-default shrink-0 flex items-center justify-center"
+        title="Expand full view"
+        aria-label={`Expand full view untuk ${title}`}
       >
-        <MoreHorizontal className="size-4" />
+        <Maximize2 className="size-4" />
       </button>
+
+      <div ref={containerRef} className="relative shrink-0">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsOpen((prev) => !prev);
+          }}
+          className={`p-1.5 rounded-xl border transition-all cursor-pointer active:scale-95 shrink-0 flex items-center justify-center ${
+            isOpen
+              ? "border-border bg-muted text-foreground shadow-2xs"
+              : "border-border/60 hover:border-border hover:bg-muted/60 text-muted-foreground hover:text-foreground"
+          }`}
+          title="Opsi lainnya"
+          aria-label={`Opsi untuk ${title}`}
+          aria-expanded={isOpen}
+        >
+          <MoreHorizontal className="size-4" />
+        </button>
 
       {isOpen && (
         <div
@@ -369,7 +389,18 @@ export function CardMoreMenu({
             )}
           </button>
 
-          {/* 3. Pindahkan Kotak ke Page Laman */}
+          {/* 4. Ganti Gambar Icon (Dummy - non-interactive) */}
+          <button
+            type="button"
+            disabled
+            aria-disabled="true"
+            className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground transition-colors cursor-default"
+          >
+            <ImageIcon className="size-3.5 shrink-0 text-muted-foreground" />
+            <span className="whitespace-nowrap">Ganti Gambar Icon</span>
+          </button>
+
+          {/* 5. Pindahkan Kotak ke Page Laman */}
           {moveData && (
             <>
               <button
@@ -410,8 +441,53 @@ export function CardMoreMenu({
               )}
             </>
           )}
+
+          {/* 4. Urutkan (Dummy - non-interactive) */}
+          <button
+            type="button"
+            disabled
+            aria-disabled="true"
+            className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground transition-colors cursor-default"
+          >
+            <ArrowUpDown className="size-3.5 shrink-0 text-muted-foreground" />
+            <span className="whitespace-nowrap">Urutkan</span>
+          </button>
+
+          {/* 5. Sembunyikan (Dummy - non-interactive) */}
+          <button
+            type="button"
+            disabled
+            aria-disabled="true"
+            className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground transition-colors cursor-default"
+          >
+            <EyeOff className="size-3.5 shrink-0 text-muted-foreground" />
+            <span className="whitespace-nowrap">Sembunyikan</span>
+          </button>
+
+          {/* 6. Tentang Modul Ini (Dummy - non-interactive) */}
+          <button
+            type="button"
+            disabled
+            aria-disabled="true"
+            className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground transition-colors cursor-default"
+          >
+            <Info className="size-3.5 shrink-0 text-muted-foreground" />
+            <span className="whitespace-nowrap">Tentang Modul Ini</span>
+          </button>
+
+          {/* 7. Bagikan Modul Ini (Dummy - non-interactive) */}
+          <button
+            type="button"
+            disabled
+            aria-disabled="true"
+            className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground transition-colors cursor-default"
+          >
+            <Share2 className="size-3.5 shrink-0 text-muted-foreground" />
+            <span className="whitespace-nowrap">Bagikan Modul Ini</span>
+          </button>
         </div>
       )}
+      </div>
 
       {/* Pop-up Pemilihan Page Tujuan: Floating card anchored langsung di depan menu kartu */}
       {typeof document !== "undefined" &&
@@ -434,7 +510,7 @@ export function CardMoreMenu({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.96, y: 4 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="fixed z-10 w-[450px] max-w-[calc(100vw-24px)] rounded-3xl border border-border bg-popover text-popover-foreground shadow-2xl p-2.5 flex flex-col overflow-hidden"
+                  className="fixed z-10 w-[450px] max-w-[calc(100vw-24px)] rounded-[28px] border border-border bg-popover text-popover-foreground shadow-2xl p-2.5 flex flex-col overflow-hidden"
                   style={{
                     top: popupPos?.top !== undefined ? `${popupPos.top}px` : undefined,
                     bottom: popupPos?.bottom !== undefined ? `${popupPos.bottom}px` : undefined,
@@ -542,7 +618,7 @@ export function CardMoreMenu({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.96, y: 4 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="fixed z-10 w-[385px] max-w-[calc(100vw-24px)] rounded-3xl border border-border bg-popover text-popover-foreground shadow-2xl p-2.5 flex flex-col overflow-hidden"
+                  className="fixed z-10 w-[385px] max-w-[calc(100vw-24px)] rounded-[28px] border border-border bg-popover text-popover-foreground shadow-2xl p-2.5 flex flex-col overflow-hidden"
                   style={{
                     top: popupPos?.top !== undefined ? `${popupPos.top}px` : undefined,
                     bottom: popupPos?.bottom !== undefined ? `${popupPos.bottom}px` : undefined,
@@ -551,31 +627,6 @@ export function CardMoreMenu({
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
-              {/* Header Modal */}
-              <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/40 rounded-2xl">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                    <Palette className="size-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-semibold text-foreground truncate">
-                      Ganti Warna Icon
-                    </h3>
-                    <p className="text-[11px] text-muted-foreground truncate">
-                      Kustomisasi icon kartu &ldquo;{title}&rdquo;
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsColorModalOpen(false)}
-                  className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
-                  title="Tutup"
-                >
-                  <X className="size-4" />
-                </button>
-              </div>
-
               {/* Body Modal */}
               <div className="p-5 overflow-y-auto space-y-5 no-scrollbar">
                 {/* 1. Preview Icon Kartu */}

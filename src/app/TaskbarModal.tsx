@@ -19,6 +19,7 @@ import {
 import { isNewlyRevisedApp } from "@/utils/revisedAppsMarker";
 import { ProgressiveBlur } from "@/components/ProgressiveBlur";
 import { useProgressiveBlurSetting } from "@/hooks/useProgressiveBlurSetting";
+import { getUnifiedWorkspaces, getUnifiedWorkspaceById } from "@/core/taxonomy";
 import { getRaw, setRaw } from "../core/rawStorage";
 
 interface TaskbarModalProps {
@@ -103,13 +104,17 @@ export function TaskbarModal({ isOpen, onClose }: TaskbarModalProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Primary Workspace Windows
-  const primaryWindows: WorkspaceWindow[] = useMemo(
-    () => [
+  // Primary Workspace Windows + 10 Laman Utama from src/core/taxonomy.ts
+  const primaryWindows: WorkspaceWindow[] = useMemo(() => {
+    const finWs = getUnifiedWorkspaceById("financial");
+    const bizWs = getUnifiedWorkspaceById("mode_business");
+    const empWs = getUnifiedWorkspaceById("mode_employment");
+
+    const quickWindows: WorkspaceWindow[] = [
       {
         id: "launcher",
         title: "Launcher Modul",
-        subtitle: "Pusat peluncur navigasi kerja konsultan",
+        subtitle: "Pusat peluncur navigasi 10 Laman Workspace",
         to: "/",
         icon: LayoutDashboard,
         category: "System",
@@ -125,39 +130,50 @@ export function TaskbarModal({ isOpen, onClose }: TaskbarModalProps) {
       },
       {
         id: "finance",
-        title: "Financial Planning",
+        title: finWs?.labelEn ?? "Financial Planning & Wealth Management",
         subtitle: "Neraca aset, liabilitas, dan arus kas",
         to: "/asset",
         icon: Wallet,
-        category: "Finance",
+        category: finWs?.code ?? "01-financial",
       },
       {
         id: "wealth",
-        title: "Wealth Management",
-        subtitle: "Kurasi spektrum nilai & valuasi MAPPI",
+        title: "Value Treated & Valuasi MAPPI",
+        subtitle: "Kurasi spektrum nilai & valuasi bisnis",
         to: "/kurasi-wealth",
         icon: TrendingUp,
-        category: "Wealth",
+        category: finWs?.code ?? "01-financial",
       },
       {
         id: "mba",
-        title: "Mini MBA (100 Tools)",
+        title: `${bizWs?.labelEn ?? "Business Administration & Operations Management"} · 100 Framework`,
         subtitle: "Framework bisnis, model & strategi eksekutif",
         to: "/100-framework",
         icon: Compass,
-        category: "Frameworks",
+        category: bizWs?.code ?? "02-business",
       },
       {
         id: "projects",
-        title: "Proyek & Operasional",
-        subtitle: "Manajemen eksekusi alur kerja tim",
+        title: empWs?.labelEn ?? "Productivity Workspace & Workflow Systems",
+        subtitle: "Manajemen eksekusi proyek & alur kerja tim",
         to: "/proyek",
         icon: Briefcase,
-        category: "Operations",
+        category: empWs?.code ?? "03-employment",
       },
-    ],
-    []
-  );
+    ];
+
+    const workspaceWindows: WorkspaceWindow[] = getUnifiedWorkspaces().map((ws) => ({
+      id: `ws-${ws.id}`,
+      title: ws.labelEn,
+      subtitle: `${ws.code} · ${ws.labelId}`,
+      to: ws.routePath,
+      icon: ws.icon,
+      category: ws.code,
+      badge: ws.defaultBadge,
+    }));
+
+    return [...quickWindows, ...workspaceWindows];
+  }, []);
 
   const handleSwitchWindow = (to: string) => {
     onClose();

@@ -45,7 +45,7 @@ export function LiquidGlassSettingControl() {
                 key={m.id}
                 type="button"
                 onClick={() => updateConfig({ mode: m.id })}
-                className={`flex flex-col items-center justify-center py-1 px-1.5 rounded-lg text-[10px] font-medium transition-all cursor-pointer border ${
+                className={`flex flex-col items-center justify-center py-1 px-1.5 rounded-[28px] text-[10px] font-medium transition-all cursor-pointer border ${
                   isSelected
                     ? "bg-primary text-white border-primary shadow-2xs font-semibold ring-1 ring-primary/30"
                     : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600"

@@ -43,15 +43,24 @@ import {
   Heart,
   Shield,
   Sprout,
+  FileText,
+  CalendarDays,
+  Settings,
+  CheckSquare,
   type LucideIcon,
 } from "lucide-react";
 import { type NavItem } from "@/config/nav";
 import { HeaderNavPills, ShellHeader } from "@/app/shell-header";
-import { MBACard } from "@/components/common/MBACard";
+import {
+  MBACard,
+  buildModuleCategoryGroups,
+  type ModuleComponentCategory,
+} from "@/components/common/MBACard";
 import { MovedCardsSection } from "@/components/common/MovedCardsGridItems";
 import {
   LauncherPageProvider,
   adjustCategoryTabsCount,
+  syncLauncherPageBadge,
   useCardPageMover,
   useCurrentLauncherPage,
 } from "@/hooks/useCardPageMover";
@@ -64,6 +73,7 @@ export interface FinancialStandaloneFeature {
   to: string;
   icon: LucideIcon;
   desc?: string;
+  componentCategory: ModuleComponentCategory;
 }
 
 export interface StandaloneFinancialAppDef {
@@ -87,71 +97,76 @@ export const STANDALONE_FINANCIAL_APPS: StandaloneFinancialAppDef[] = [
     id: "kepatuhan-hukum",
     to: "/surety?tab=cat_kepatuhan",
     title: "Legal Compliance",
-    subtitle: "Kepatuhan legalitas keuangan perbankan, regulasi otoritas jasa keuangan, serta audit kepatuhan.",
+    subtitle: "Kepatuhan finansial pribadi dan keluarga, regulasi perbankan, audit kepatuhan, serta arsip catatan kepatuhan.",
     category: "surety",
     categoryLabel: "Surety",
     icon: Scale,
     badge: "Standalone",
     features: [
-      { title: "Audit Kepatuhan", to: "/surety?tab=cat_kepatuhan&sub=audit", icon: Scale },
-      { title: "OJK and BI Regulations", to: "/surety?tab=cat_kepatuhan&sub=regulasi", icon: ShieldCheck },
+      { title: "Compliance Audit", to: "/surety?tab=cat_kepatuhan&sub=audit", icon: Scale, componentCategory: "Analytics" },
+      { title: "Regulatory Guide", to: "/surety?tab=cat_kepatuhan&sub=regulasi", icon: ShieldCheck, componentCategory: "Guides" },
+      { title: "Compliance Records", to: "", icon: FileText, componentCategory: "Records" },
     ],
   },
   {
     id: "perlindungan-publik",
     to: "/surety?tab=cat_publik",
     title: "Public Protection",
-    subtitle: "Sistem jaminan sosial nasional, perlindungan keselamatan publik, dan asuransi sosial dasar tenaga kerja.",
+    subtitle: "Perlindungan sosial pribadi dan keluarga melalui program jaminan sosial nasional, evaluasi cakupan proteksi, dan catatan klaim.",
     category: "surety",
     categoryLabel: "Surety",
     icon: Globe,
     badge: "Standalone",
     features: [
-      { title: "Jaminan Sosial BPJS", to: "/surety?tab=cat_publik&sub=bpjs", icon: Globe },
-      { title: "Keselamatan Kerja", to: "/surety?tab=cat_publik&sub=k3", icon: Shield },
+      { title: "Social Security", to: "/surety?tab=cat_publik&sub=bpjs", icon: Globe, componentCategory: "Features" },
+      { title: "Coverage Assessment", to: "", icon: Shield, componentCategory: "Analytics" },
+      { title: "Claims Records", to: "", icon: ReceiptText, componentCategory: "Records" },
     ],
   },
   {
     id: "asuransi-pribadi",
     to: "/surety?tab=cat_asuransi",
     title: "Private Insurance",
-    subtitle: "Proteksi risiko kesehatan personal, penyakit kritis, dan proteksi asuransi jiwa finansial keluarga.",
+    subtitle: "Proteksi risiko kesehatan personal, penyakit kritis, asuransi jiwa, catatan polis, evaluasi cakupan, serta manajemen klaim.",
     category: "surety",
     categoryLabel: "Surety",
     icon: Umbrella,
     badge: "Standalone",
     features: [
-      { title: "Asuransi Kesehatan", to: "/surety?tab=cat_asuransi&sub=kesehatan", icon: HeartPulse },
-      { title: "Life and Critical Illness Insurance", to: "/surety?tab=cat_asuransi&sub=jiwa", icon: Umbrella },
+      { title: "Health Coverage", to: "/surety?tab=cat_asuransi&sub=kesehatan", icon: HeartPulse, componentCategory: "Features" },
+      { title: "Life Coverage", to: "/surety?tab=cat_asuransi&sub=jiwa", icon: Umbrella, componentCategory: "Features" },
+      { title: "Policy Records", to: "", icon: FileText, componentCategory: "Records" },
+      { title: "Coverage Assessment", to: "", icon: Shield, componentCategory: "Analytics" },
+      { title: "Claims Management", to: "", icon: Activity, componentCategory: "Workflows" },
     ],
   },
   {
     id: "kecukupan-dana",
     to: "/surety?tab=cat_dana",
     title: "Fund Sufficiency",
-    subtitle: "Fondasi cadangan dana darurat, buffer likuiditas operasional, dan pemeliharaan kas likuid tak terduga.",
+    subtitle: "Pemantauan cadangan likuid yang tersedia, perencanaan target dana darurat, dan analisis kecukupan cadangan dana.",
     category: "surety",
     categoryLabel: "Surety",
     icon: Vault,
     badge: "Standalone",
     features: [
-      { title: "Liquid Reserves", to: "/liquid-reserves", icon: Coins },
-      { title: "Emergency Fund", to: "/surety?tab=cat_dana&sub=darurat", icon: Vault },
+      { title: "Reserve Dashboard", to: "/liquid-reserves", icon: Coins, componentCategory: "Dashboards", desc: "Dashboard posisi cadangan likuid yang tersedia." },
+      { title: "Emergency Planner", to: "/surety?tab=cat_dana&sub=darurat", icon: Vault, componentCategory: "Tools", desc: "Perencanaan target dan progres dana darurat." },
+      { title: "Reserve Analysis", to: "", icon: LineChart, componentCategory: "Analytics", desc: "Analisis ketahanan, rasio kecukupan, dan proyeksi cadangan dana." },
     ],
   },
   {
     id: "proteksi-aset",
     to: "/surety?tab=cat_proteksi",
     title: "Asset Protection",
-    subtitle: "Brankas terenkripsi dokumen fisik aset, akses sandi finansial aman, dan pengarsipan nota garansi belanja.",
+    subtitle: "Pengamanan dokumen kepemilikan aset dan bukti pembelian serta arsip garansi aset.",
     category: "surety",
     categoryLabel: "Surety",
     icon: Lock,
     badge: "Standalone",
     features: [
-      { title: "Dokumen Aset", to: "/surety?tab=cat_proteksi&sub=vault", icon: ShieldCheck },
-      { title: "Passwords", to: "/surety?tab=cat_proteksi&sub=passwords", icon: Key },
-      { title: "Warranty and Purchase Records", to: "/surety?tab=cat_proteksi", icon: ShieldCheck },
+      { title: "Asset Documents", to: "/surety?tab=cat_proteksi&sub=vault", icon: ShieldCheck, componentCategory: "Records", desc: "Arsip dokumen kepemilikan aset dan catatan bukti pembelian (purchase records)." },
+      { title: "Warranty Records", to: "/surety?tab=cat_proteksi", icon: ShieldCheck, componentCategory: "Records", desc: "Arsip dan pelacakan garansi aset." },
     ],
   },
 
@@ -162,70 +177,81 @@ export const STANDALONE_FINANCIAL_APPS: StandaloneFinancialAppDef[] = [
     id: "beban-liabilitas",
     to: "/flow?tab=cat_liabilitas",
     title: "Burden Liability",
-    subtitle: "Pengawasan kewajiban finansial jangka pendek dan panjang, pemetaan rasio utang, serta cicilan bulanan.",
+    subtitle: "Pengelolaan kewajiban finansial jangka pendek dan panjang, kredit, rasio utang, cicilan, serta arsip liabilitas.",
     category: "flow",
     categoryLabel: "Flow",
     icon: CreditCard,
     badge: "Standalone",
     features: [
-      { title: "Kuadran Liabilitas", to: "/liability", icon: CreditCard },
-      { title: "Debt Service Ratio", to: "/flow?tab=cat_liabilitas&sub=rasio", icon: Calculator },
+      { title: "Liability Dashboard", to: "/liability", icon: CreditCard, componentCategory: "Dashboards" },
+      { title: "Debt Ratio Calculator", to: "/flow?tab=cat_liabilitas", icon: Calculator, componentCategory: "Tools" },
+      { title: "Debt Management", to: "/kredit", icon: CreditCard, componentCategory: "Features" },
+      { title: "Liability Records", to: "", icon: FileText, componentCategory: "Records" },
     ],
   },
   {
     id: "pemasukan-pengeluaran",
     to: "/flow?tab=cat_pengeluaran",
     title: "Income-Expense",
-    subtitle: "Monitoring komprehensif aliran pendapatan aktif/pasif serta tracking kuadran pengeluaran primer dan sekunder.",
+    subtitle: "Pemantauan pendapatan, pengeluaran, penyusunan anggaran, dan analisis realisasi anggaran personal maupun keluarga.",
     category: "flow",
     categoryLabel: "Flow",
     icon: ArrowRightLeft,
     badge: "Standalone",
     features: [
-      { title: "Kuadran Pendapatan", to: "/earning", icon: DollarSign },
-      { title: "Kuadran Pengeluaran", to: "/expense", icon: ShoppingCart },
+      { title: "Income Dashboard", to: "/earning", icon: DollarSign, componentCategory: "Dashboards" },
+      { title: "Expense Dashboard", to: "/expense", icon: ShoppingCart, componentCategory: "Dashboards" },
+      { title: "Budget Planner", to: "/budget", icon: Wallet, componentCategory: "Templates" },
+      { title: "Budget Analysis", to: "", icon: LineChart, componentCategory: "Analytics" },
+      { title: "Income Forecast", to: "", icon: TrendingUp, componentCategory: "Analytics" },
     ],
   },
   {
     id: "kas-kredit",
     to: "/flow?tab=cat_kredit",
     title: "Cash-Credit",
-    subtitle: "Pengelolaan saldo kas harian, transaksi multi-wallet, serta kontrol limit kartu kredit dan pinjaman lunak.",
+    subtitle: "Pemantauan saldo likuiditas, mutasi rekening, buku kas transaksi harian, serta analisis arus kas dan likuiditas.",
     category: "flow",
     categoryLabel: "Flow",
     icon: Banknote,
     badge: "Standalone",
     features: [
-      { title: "Buku Arus Kas", to: "/flow?tab=cat_arus_kas", icon: Banknote },
-      { title: "Kredit dan Utang", to: "/kredit", icon: CreditCard },
+      { title: "Cash Ledger", to: "/flow?tab=transactions", icon: Banknote, componentCategory: "Records", desc: "Buku kas dan ledger mutasi transaksi pemasukan serta pengeluaran rinci." },
+      { title: "Account Records", to: "", icon: FileText, componentCategory: "Records" },
+      { title: "Cashflow Dashboard", to: "", icon: LineChart, componentCategory: "Dashboards" },
+      { title: "Liquidity Analysis", to: "", icon: TrendingUp, componentCategory: "Analytics" },
+      { title: "Liquidity Forecast", to: "", icon: LineChart, componentCategory: "Analytics" },
     ],
   },
   {
     id: "retribusi-kontribusi",
     to: "/flow?tab=cat_pajak",
     title: "Retribution-Contribution",
-    subtitle: "Perhitungan estimasi pajak penghasilan pribadi (PPh 21 progresif), PTKP, dan kepatuhan kontribusi pajak resmi.",
+    subtitle: "Perhitungan estimasi pajak penghasilan pribadi (PPh 21 progresif), arsip pajak, analisis beban pajak, dan panduan kepatuhan.",
     category: "flow",
     categoryLabel: "Flow",
     icon: Receipt,
     badge: "Standalone",
     features: [
-      { title: "Personal Income Tax", to: "/pajak?app=pph21", icon: Calculator },
-      { title: "VAT and Other Taxes", to: "/pajak?app=ppn", icon: Receipt },
+      { title: "Tax Calculator", to: "/pajak?app=pph21", icon: Calculator, componentCategory: "Tools" },
+      { title: "Tax Records", to: "", icon: FileText, componentCategory: "Records" },
+      { title: "Tax Analysis", to: "", icon: LineChart, componentCategory: "Analytics" },
+      { title: "Tax Guide", to: "", icon: BookOpen, componentCategory: "Guides" },
     ],
   },
   {
     id: "sistem-otomatisasi",
     to: "/flow?tab=cat_otomatisasi",
     title: "Automation System",
-    subtitle: "Otomasi sistem alokasi anggaran bulanan dengan formula persentase 50/30/20 dan autodebet investasi rutin.",
+    subtitle: "Otomatisasi pembayaran, jadwal tagihan rutin, dan alokasi tabungan otomatis sesuai jadwal yang ditetapkan.",
     category: "flow",
     categoryLabel: "Flow",
     icon: Activity,
     badge: "Standalone",
     features: [
-      { title: "50/30/20 Budget", to: "/budget", icon: Wallet },
-      { title: "Autodebet Rutin", to: "/flow?tab=cat_otomatisasi&sub=autodebet", icon: Activity },
+      { title: "Payment Automation", to: "/flow?tab=cat_otomatisasi&sub=autodebet", icon: Activity, componentCategory: "Automations" },
+      { title: "Payment Schedule", to: "", icon: CalendarDays, componentCategory: "Workflows" },
+      { title: "Savings Automation", to: "", icon: RefreshCw, componentCategory: "Automations" },
     ],
   },
 
@@ -236,73 +262,82 @@ export const STANDALONE_FINANCIAL_APPS: StandaloneFinancialAppDef[] = [
     id: "modal-manusia",
     to: "/build?tab=cat_modal",
     title: "Human Capital",
-    subtitle: "Valuasi kapasitas nilai keahlian diri, daya ungkit karier profesional, dan estimasi nilai kapital manusia.",
+    subtitle: "Valuasi kapasitas nilai keahlian diri, analisis daya ungkit karier profesional, dan asesmen kapital manusia.",
     category: "build",
     categoryLabel: "Build",
     icon: Brain,
     badge: "Standalone",
     features: [
-      { title: "Skills Valuation", to: "/build?tab=cat_modal&sub=skill", icon: Brain },
-      { title: "Daya Ungkit Karier", to: "/build?tab=cat_modal&sub=karier", icon: TrendingUp },
+      { title: "Skills Assessment", to: "/build?tab=cat_modal&sub=skill", icon: Brain, componentCategory: "Tools" },
+      { title: "Career Analysis", to: "/build?tab=cat_modal&sub=karier", icon: TrendingUp, componentCategory: "Analytics" },
+      { title: "Capital Assessment", to: "", icon: Activity, componentCategory: "Analytics" },
     ],
   },
   {
     id: "jaringan",
     to: "/build?tab=cat_jaringan",
     title: "Net-Work",
-    subtitle: "Pusat relasi kemitraan bisnis penghasil omset dan direktori kontak spesialis keuangan, banker, serta akuntan.",
+    subtitle: "Jaringan profesional finansial personal dan keluarga, arsip penasihat, serta evaluasi kinerja penasihat.",
     category: "build",
     categoryLabel: "Build",
     icon: Network,
     badge: "Standalone",
     features: [
-      { title: "Klien dan Partner", to: "/build?tab=cat_jaringan&sub=klien", icon: Briefcase },
-      { title: "People Manager", to: "/build?tab=cat_jaringan&sub=people", icon: Users },
+      { title: "Professional Directory", to: "/people-manager", icon: Users, desc: "Direktori profesional finansial personal dan keluarga, termasuk banker, akuntan, konsultan pajak, dan penasihat.", componentCategory: "Features" },
+      { title: "Advisor Records", to: "", icon: FileText, componentCategory: "Records" },
+      { title: "Advisor Assessment", to: "", icon: ShieldCheck, componentCategory: "Analytics" },
     ],
   },
   {
     id: "portofolio",
     to: "/build?tab=cat_portofolio",
     title: "Portfolio",
-    subtitle: "Manajemen kepemilikan multi-aset: properti real estate, surat berharga saham/sukuk, aset digital, dan HKI.",
+    subtitle: "Manajemen kepemilikan multi-aset: properti real estate, surat berharga, aset digital, HKI, pemantauan harga pasar, serta analitik portofolio.",
     category: "build",
     categoryLabel: "Build",
     icon: Briefcase,
     badge: "Standalone",
     features: [
-      { title: "Real Estate", to: "/real-estate", icon: Home },
-      { title: "Paper Securities", to: "/paper-securities", icon: ScrollText },
-      { title: "Digital Assets", to: "/digital-assets", icon: Binary },
-      { title: "Intellectual Property", to: "/intellectual-property", icon: Lightbulb },
-      { title: "Market Price Monitor", to: "/100-komoditas", icon: Package },
+      { title: "Real Estate", to: "/real-estate", icon: Home, componentCategory: "Features" },
+      { title: "Securities", to: "/paper-securities", icon: ScrollText, componentCategory: "Features" },
+      { title: "Digital Assets", to: "/digital-assets", icon: Binary, componentCategory: "Features" },
+      { title: "Intellectual Property", to: "/intellectual-property", icon: Lightbulb, componentCategory: "Records" },
+      { title: "Market Monitor", to: "/100-komoditas", icon: Package, componentCategory: "Dashboards", desc: "Pemantauan harga pasar dan nilai terkini instrumen atau aset yang dimiliki." },
+      { title: "Portfolio Dashboard", to: "", icon: PieChart, componentCategory: "Dashboards" },
+      { title: "Portfolio Analysis", to: "", icon: LineChart, componentCategory: "Analytics" },
+      { title: "Asset Valuation", to: "", icon: Calculator, componentCategory: "Tools" },
     ],
   },
   {
     id: "kekayaan-bersih",
     to: "/build?tab=cat_kekayaan",
     title: "Net-Worth",
-    subtitle: "Perhitungan kalkulasi total net worth bersih dari seluruh kelas aset serta asesmen rasio kesehatan keuangan.",
+    subtitle: "Perhitungan kalkulasi total net worth bersih dari seluruh kelas aset, asesmen kesehatan finansial, dan arsip kekayaan bersih.",
     category: "build",
     categoryLabel: "Build",
     icon: Landmark,
     badge: "Standalone",
     features: [
-      { title: "Kuadran Aset", to: "/asset", icon: Briefcase },
-      { title: "Kesehatan Finansial", to: "/financial-health", icon: HeartPulse },
+      { title: "Asset Dashboard", to: "/asset", icon: Briefcase, componentCategory: "Dashboards" },
+      { title: "Financial Assessment", to: "/financial-health", icon: HeartPulse, componentCategory: "Analytics" },
+      { title: "Net Worth Calculator", to: "", icon: Calculator, componentCategory: "Tools" },
+      { title: "Net Worth Records", to: "", icon: FileText, componentCategory: "Records" },
     ],
   },
   {
     id: "pembukuan",
     to: "/build?tab=cat_pembukuan",
     title: "Book Entry",
-    subtitle: "Sistem pembukuan neraca saldo aset personal, jurnal penyesuaian arus transaksi, dan pencatatan buku besar.",
+    subtitle: "Sistem pembukuan neraca saldo aset personal, jurnal transaksi, buku besar, dan alat rekonsiliasi.",
     category: "build",
     categoryLabel: "Build",
     icon: BookOpen,
     badge: "Standalone",
     features: [
-      { title: "Neraca Saldo Aset", to: "/build?tab=cat_pembukuan&sub=neraca", icon: BookOpen },
-      { title: "Jurnal Transaksi", to: "/build?tab=cat_pembukuan&sub=jurnal", icon: ReceiptText },
+      { title: "Asset Balance", to: "/build?tab=cat_pembukuan&sub=neraca", icon: BookOpen, componentCategory: "Analytics" },
+      { title: "Journal Entries", to: "/build?tab=cat_pembukuan&sub=jurnal", icon: ReceiptText, componentCategory: "Records" },
+      { title: "Ledger Records", to: "", icon: FileText, componentCategory: "Records" },
+      { title: "Reconciliation Tools", to: "", icon: RefreshCw, componentCategory: "Tools" },
     ],
   },
 
@@ -313,69 +348,79 @@ export const STANDALONE_FINANCIAL_APPS: StandaloneFinancialAppDef[] = [
     id: "profil-risiko",
     to: "/grow?tab=cat_profil",
     title: "Risk Profiling",
-    subtitle: "Diagnostik toleransi risiko investor (konservatif, moderat, agresif) serta horizon waktu pencapaian target modal.",
+    subtitle: "Asesmen toleransi dan kapasitas risiko, horizon waktu investasi, profil investor, serta laporan kesesuaian.",
     category: "grow",
     categoryLabel: "Grow",
     icon: Activity,
     badge: "Standalone",
     features: [
-      { title: "Diagnostik Toleransi", to: "/grow?tab=cat_profil&sub=toleransi", icon: Activity },
-      { title: "Horizon Waktu Modal", to: "/grow?tab=cat_profil&sub=horizon", icon: LineChart },
+      { title: "Risk Assessment", to: "/grow?tab=cat_profil&sub=toleransi", icon: Activity, componentCategory: "Tools" },
+      { title: "Investment Horizon", to: "/grow?tab=cat_profil", icon: LineChart, componentCategory: "Settings" },
+      { title: "Risk Capacity", to: "", icon: Shield, componentCategory: "Tools" },
+      { title: "Investor Profile", to: "", icon: Users, componentCategory: "Records" },
+      { title: "Suitability Report", to: "", icon: FileText, componentCategory: "Templates" },
     ],
   },
   {
     id: "alokasi",
     to: "/grow?tab=cat_alokasi",
     title: "Allocation",
-    subtitle: "Strategi alokasi aset syariah melalui pasar muamalah fisik, indeks saham sharia, dan 100 komoditas riil dunia.",
+    subtitle: "Penyusunan alokasi aset dan instrumen investasi, perencanaan, analisis, serta pengaturan batas alokasi.",
     category: "grow",
     categoryLabel: "Grow",
     icon: PieChart,
     badge: "Standalone",
     features: [
-      { title: "Logam Mulia & Saham", to: "/100-komoditas", icon: Coins },
+      { title: "Asset Allocation", to: "/grow?tab=cat_alokasi", icon: Coins, componentCategory: "Features", desc: "Penyusunan bobot modal untuk kelas aset dan instrumen investasi; terpisah dari pemantauan harga pasar." },
+      { title: "Allocation Planner", to: "", icon: Layers, componentCategory: "Tools" },
+      { title: "Allocation Analysis", to: "", icon: LineChart, componentCategory: "Analytics" },
+      { title: "Allocation Settings", to: "", icon: Settings, componentCategory: "Settings" },
     ],
   },
   {
     id: "efektif-efisien",
     to: "/grow?tab=cat_efektif",
     title: "Effective-Efficient",
-    subtitle: "Pengurangan friction fee transaksi, rasio efisiensi pengelolaan instrumen, dan maksimalisasi net yield return.",
+    subtitle: "Analisis biaya transaksi, optimalisasi imbal hasil bersih, kalkulator biaya, dan perbandingan produk investasi.",
     category: "grow",
     categoryLabel: "Grow",
     icon: Zap,
     badge: "Standalone",
     features: [
-      { title: "Cost and Fee Efficiency", to: "/grow?tab=cat_efektif&sub=friction", icon: Zap },
-      { title: "Net Yield Optimization", to: "/grow?tab=cat_efektif&sub=yield", icon: TrendingUp },
+      { title: "Cost Analysis", to: "/grow?tab=cat_efektif", icon: Zap, componentCategory: "Analytics" },
+      { title: "Net Return Analysis", to: "/grow?tab=cat_efektif", icon: TrendingUp, componentCategory: "Analytics" },
+      { title: "Fee Calculator", to: "", icon: Calculator, componentCategory: "Tools" },
+      { title: "Product Comparison", to: "", icon: Scale, componentCategory: "Analytics" },
     ],
   },
   {
     id: "bunga-berbunga",
     to: "/grow?tab=cat_bunga",
     title: "Compounding",
-    subtitle: "Simulasi kekuatan bunga majemuk (compounding interest) dan kalkulator Return on Investment (ROI) berkala.",
+    subtitle: "Kalkulator kekuatan bunga majemuk (compounding interest) dan simulator imbal hasil investasi berkala.",
     category: "grow",
     categoryLabel: "Grow",
     icon: TrendingUp,
     badge: "Standalone",
     features: [
-      { title: "Compound Interest and ROI", to: "/investasi?app=bunga-majemuk", icon: Calculator },
-      { title: "Simulasi Waktu Majemuk", to: "/investasi?app=roi", icon: TrendingUp },
+      { title: "Compound Calculator", to: "/investasi?app=bunga-majemuk", icon: Calculator, componentCategory: "Tools" },
+      { title: "Return Simulator", to: "/investasi?app=roi", icon: TrendingUp, componentCategory: "Tools" },
     ],
   },
   {
     id: "rebalancing-periodik",
     to: "/grow?tab=cat_rebalance",
     title: "Periodic Rebalancing",
-    subtitle: "Penyesuaian periodik deviasi alokasi aset investasi agar tetap berada pada batas toleransi risiko yang optimal.",
+    subtitle: "Pemantauan deviasi alokasi aset, jadwal rebalancing, kalkulator penyesuaian, dan alur kerja rebalancing.",
     category: "grow",
     categoryLabel: "Grow",
     icon: RefreshCw,
     badge: "Standalone",
     features: [
-      { title: "Deviasi Alokasi Aset", to: "/grow?tab=cat_rebalance&sub=deviasi", icon: RefreshCw },
-      { title: "Jadwal Rebalancing", to: "/grow?tab=cat_rebalance&sub=jadwal", icon: Layers },
+      { title: "Allocation Drift", to: "/grow?tab=cat_rebalance&sub=deviasi", icon: RefreshCw, componentCategory: "Analytics" },
+      { title: "Rebalancing Schedule", to: "/grow?tab=cat_rebalance&sub=jadwal", icon: Layers, componentCategory: "Workflows" },
+      { title: "Rebalancing Calculator", to: "", icon: Calculator, componentCategory: "Tools" },
+      { title: "Rebalancing Workflow", to: "", icon: Activity, componentCategory: "Workflows" },
     ],
   },
 
@@ -386,69 +431,82 @@ export const STANDALONE_FINANCIAL_APPS: StandaloneFinancialAppDef[] = [
     id: "pembelajaran-seumur-hidup",
     to: "/legacy?tab=cat_pembelajaran",
     title: "Lifelong Learning",
-    subtitle: "Edukasi filosofi kekayaan keluarga, kurikulum literasi finansial antargenerasi, dan transfer nilai-nilai bijak.",
+    subtitle: "Literasi finansial antargenerasi, filosofi nilai keluarga, rencana pembelajaran, dan catatan pembelajaran.",
     category: "legacy",
     categoryLabel: "Legacy",
     icon: GraduationCap,
     badge: "Standalone",
     features: [
-      { title: "Literasi Antargenerasi", to: "/legacy?tab=cat_pembelajaran&sub=literasi", icon: GraduationCap },
-      { title: "Filosofi Nilai Keluarga", to: "/legacy?tab=cat_pembelajaran&sub=filosofi", icon: BookOpen },
+      { title: "Financial Literacy", to: "/legacy?tab=cat_pembelajaran&sub=literasi", icon: GraduationCap, componentCategory: "Guides" },
+      { title: "Family Values", to: "/legacy?tab=cat_pembelajaran", icon: BookOpen, componentCategory: "Guides" },
+      { title: "Learning Plan", to: "", icon: CalendarDays, componentCategory: "Workflows" },
+      { title: "Learning Records", to: "", icon: FileText, componentCategory: "Records" },
     ],
   },
   {
     id: "tata-kelola",
     to: "/legacy?tab=cat_tatakelola",
     title: "Good Governance",
-    subtitle: "Tata kelola legalitas aset keluarga, struktur kepemilikan terstruktur, dan kepatuhan hukum antargenerasi.",
+    subtitle: "Tinjauan tata kelola aset keluarga, struktur kepemilikan, registri aset keluarga, kerangka kerja, dan alur tata kelola.",
     category: "legacy",
     categoryLabel: "Legacy",
     icon: Building,
     badge: "Standalone",
     features: [
-      { title: "Asset Governance and Audit", to: "/legacy?tab=cat_tatakelola", icon: Scale },
-      { title: "Struktur Kepemilikan", to: "/legacy?tab=cat_tatakelola&sub=struktur", icon: Building },
+      { title: "Governance Review", to: "/legacy?tab=cat_tatakelola", icon: Scale, componentCategory: "Analytics", desc: "Pengawasan tata kelola, dokumentasi, dan audit aset keluarga." },
+      { title: "Ownership Structure", to: "/legacy?tab=cat_tatakelola&sub=struktur", icon: Building, componentCategory: "Settings" },
+      { title: "Family Asset Registry", to: "", icon: FileText, componentCategory: "Records" },
+      { title: "Governance Framework", to: "", icon: BookOpen, componentCategory: "Guides" },
+      { title: "Governance Workflow", to: "", icon: Activity, componentCategory: "Workflows" },
     ],
   },
   {
     id: "kontribusi-amal",
     to: "/legacy?tab=cat_amal",
     title: "Charitable Concern",
-    subtitle: "Penyaluran zakat dan sedekah terstruktur, pelacak donasi infaq kemanusiaan, serta pencatatan relawan sosial.",
+    subtitle: "Catatan donasi dan infaq, log relawan sosial, perencanaan filantropi, serta analisis kontribusi amal.",
     category: "legacy",
     categoryLabel: "Legacy",
     icon: HeartHandshake,
     badge: "Standalone",
     features: [
-      { title: "Infaq and Donation Records", to: "/lainnya?app=donation-tracker", icon: Coins },
-      { title: "Volunteer and Social Service Log", to: "/lainnya?app=volunteer-log", icon: Heart },
+      { title: "Donation Records", to: "/lainnya?app=donation-tracker", icon: Coins, componentCategory: "Records" },
+      { title: "Volunteer Records", to: "/lainnya?app=volunteer-log", icon: Heart, componentCategory: "Records" },
+      { title: "Giving Analysis", to: "", icon: LineChart, componentCategory: "Analytics" },
+      { title: "Giving Planner", to: "", icon: CalendarDays, componentCategory: "Tools" },
     ],
   },
   {
     id: "likuidasi-kewajiban",
     to: "/legacy?tab=cat_likuidasi",
     title: "Liability Liquidation",
-    subtitle: "Prosedur penutupan dan pelunasan seluruh sisa kewajiban hutang piutang sebelum transisi pembagian warisan aset.",
+    subtitle: "Alur penyelesaian pelunasan kewajiban, catatan pelunasan, dan daftar periksa likuidasi sebelum suksesi.",
     category: "legacy",
     categoryLabel: "Legacy",
     icon: ReceiptText,
     badge: "Standalone",
     features: [
-      { title: "Pelunasan Kewajiban", to: "/legacy?tab=cat_likuidasi&sub=pelunasan", icon: ReceiptText },
+      { title: "Settlement Workflow", to: "/legacy?tab=cat_likuidasi&sub=pelunasan", icon: ReceiptText, componentCategory: "Workflows" },
+      { title: "Settlement Records", to: "", icon: FileText, componentCategory: "Records" },
+      { title: "Settlement Checklist", to: "", icon: CheckSquare, componentCategory: "Templates" },
     ],
   },
   {
     id: "transfer-kekayaan",
     to: "/legacy?tab=cat_transfer",
     title: "Wealth Transfer",
-    subtitle: "Perencanaan suksesi peralihan portofolio aset, pembagian hak waris, dan pemindahan hak milik bebas sengketa.",
+    subtitle: "Alur suksesi peralihan kekayaan (referensi silang ke modul Portfolio), registri ahli waris, kalkulator waris, panduan, dan catatan transfer.",
     category: "legacy",
     categoryLabel: "Legacy",
     icon: Gift,
     badge: "Standalone",
     features: [
-      { title: "Portofolio Waris", to: "/build?tab=cat_portofolio", icon: Briefcase },
-      { title: "Perencanaan Suksesi", to: "/legacy?tab=cat_transfer&sub=suksesi", icon: Gift },
+      { title: "Succession Workflow", to: "/legacy?tab=cat_transfer&sub=suksesi", icon: Gift, componentCategory: "Workflows" },
+      { title: "Beneficiary Registry", to: "", icon: Users, componentCategory: "Records" },
+      { title: "Estate Calculator", to: "", icon: Calculator, componentCategory: "Tools" },
+      { title: "Estate Guide", to: "", icon: BookOpen, componentCategory: "Guides" },
+      { title: "Transfer Records", to: "", icon: FileText, componentCategory: "Records" },
+      { title: "Distribution Planner", to: "", icon: Layers, componentCategory: "Tools" },
     ],
   },
 ];
@@ -522,44 +580,62 @@ export const WEALTH_STAGE_MAIN_BOXES: WealthStageMainBoxDef[] = [
       {
         id: "kepatuhan-hukum",
         title: "Legal Compliance",
-        subtitle: "Kepatuhan legalitas keuangan perbankan, regulasi otoritas jasa keuangan, serta audit kepatuhan.",
+        subtitle: "Kepatuhan legalitas keuangan perbankan, regulasi otoritas jasa keuangan, audit kepatuhan, serta catatan kepatuhan.",
         to: "/surety?tab=cat_kepatuhan",
         icon: Scale,
+        subFeatures: [
+          { title: "Compliance Audit", to: "/surety?tab=cat_kepatuhan&sub=audit", icon: Scale },
+          { title: "Regulatory Guide", to: "/surety?tab=cat_kepatuhan&sub=regulasi", icon: ShieldCheck },
+          { title: "Compliance Records", to: "", icon: FileText },
+        ],
       },
       {
         id: "perlindungan-publik",
         title: "Public Protection",
-        subtitle: "Sistem jaminan sosial nasional, perlindungan keselamatan publik, dan asuransi sosial dasar tenaga kerja.",
+        subtitle: "Perlindungan sosial pribadi dan keluarga melalui program jaminan sosial nasional, evaluasi cakupan, dan catatan klaim.",
         to: "/surety?tab=cat_publik",
         icon: Globe,
+        subFeatures: [
+          { title: "Social Security", to: "/surety?tab=cat_publik&sub=bpjs", icon: Globe },
+          { title: "Coverage Assessment", to: "", icon: Shield },
+          { title: "Claims Records", to: "", icon: ReceiptText },
+        ],
       },
       {
         id: "asuransi-pribadi",
         title: "Private Insurance",
-        subtitle: "Proteksi risiko kesehatan personal, penyakit kritis, dan proteksi asuransi jiwa finansial keluarga.",
+        subtitle: "Proteksi risiko kesehatan personal, proteksi jiwa, catatan polis, evaluasi cakupan, dan manajemen klaim.",
         to: "/surety?tab=cat_asuransi",
         icon: Umbrella,
+        subFeatures: [
+          { title: "Health Coverage", to: "/surety?tab=cat_asuransi&sub=kesehatan", icon: HeartPulse },
+          { title: "Life Coverage", to: "/surety?tab=cat_asuransi&sub=jiwa", icon: Umbrella },
+          { title: "Policy Records", to: "", icon: FileText },
+          { title: "Coverage Assessment", to: "", icon: Shield },
+          { title: "Claims Management", to: "", icon: Activity },
+        ],
       },
       {
         id: "kecukupan-dana",
         title: "Fund Sufficiency",
-        subtitle: "Fondasi cadangan dana darurat, buffer likuiditas operasional, dan pemeliharaan kas likuid tak terduga.",
+        subtitle: "Pemantauan cadangan likuid, perencanaan dana darurat, dan analisis kecukupan cadangan dana.",
         to: "/surety?tab=cat_dana",
         icon: Vault,
         subFeatures: [
-          { title: "Liquid Reserves", to: "/liquid-reserves", icon: Coins },
+          { title: "Reserve Dashboard", to: "/liquid-reserves", icon: Coins },
+          { title: "Emergency Planner", to: "/surety?tab=cat_dana&sub=darurat", icon: Vault },
+          { title: "Reserve Analysis", to: "", icon: LineChart },
         ],
       },
       {
         id: "proteksi-aset",
         title: "Asset Protection",
-        subtitle: "Brankas terenkripsi dokumen fisik aset, akses sandi finansial aman, dan pengarsipan nota garansi belanja.",
+        subtitle: "Pengamanan dokumen kepemilikan aset dan bukti pembelian serta arsip garansi aset.",
         to: "/surety?tab=cat_proteksi",
         icon: Lock,
         subFeatures: [
-          { title: "Dokumen Aset", to: "/surety?tab=cat_proteksi&sub=vault", icon: ShieldCheck },
-          { title: "Passwords", to: "/surety?tab=cat_proteksi&sub=passwords", icon: Key },
-          { title: "Warranty and Purchase Records", to: "/surety?tab=cat_proteksi", icon: ShieldCheck },
+          { title: "Asset Documents", to: "/surety?tab=cat_proteksi&sub=vault", icon: ShieldCheck },
+          { title: "Warranty Records", to: "/surety?tab=cat_proteksi", icon: ShieldCheck },
         ],
       },
     ],
@@ -589,53 +665,67 @@ export const WEALTH_STAGE_MAIN_BOXES: WealthStageMainBoxDef[] = [
       {
         id: "beban-liabilitas",
         title: "Burden Liability",
-        subtitle: "Pengawasan kewajiban finansial jangka pendek dan panjang, pemetaan rasio utang, serta cicilan bulanan.",
+        subtitle: "Pengelolaan kewajiban finansial jangka pendek dan panjang, kredit, rasio utang, cicilan, serta arsip liabilitas.",
         to: "/flow?tab=cat_liabilitas",
         icon: CreditCard,
         subFeatures: [
-          { title: "Kuadran Liabilitas", to: "/liability", icon: CreditCard },
+          { title: "Liability Dashboard", to: "/liability", icon: CreditCard },
+          { title: "Debt Ratio Calculator", to: "/flow?tab=cat_liabilitas", icon: Calculator },
+          { title: "Debt Management", to: "/kredit", icon: CreditCard },
+          { title: "Liability Records", to: "", icon: FileText },
         ],
       },
       {
         id: "pemasukan-pengeluaran",
         title: "Income-Expense",
-        subtitle: "Monitoring komprehensif aliran pendapatan aktif/pasif serta tracking kuadran pengeluaran primer dan sekunder.",
+        subtitle: "Pemantauan pendapatan, pengeluaran, penyusunan anggaran, dan analisis realisasi anggaran personal maupun keluarga.",
         to: "/flow?tab=cat_pengeluaran",
         icon: ArrowRightLeft,
         subFeatures: [
-          { title: "Kuadran Pendapatan", to: "/earning", icon: DollarSign },
-          { title: "Kuadran Pengeluaran", to: "/expense", icon: ShoppingCart },
+          { title: "Income Dashboard", to: "/earning", icon: DollarSign },
+          { title: "Expense Dashboard", to: "/expense", icon: ShoppingCart },
+          { title: "Budget Planner", to: "/budget", icon: Wallet },
+          { title: "Budget Analysis", to: "", icon: LineChart },
+          { title: "Income Forecast", to: "", icon: TrendingUp },
         ],
       },
       {
         id: "kas-kredit",
         title: "Cash-Credit",
-        subtitle: "Pengelolaan saldo kas harian, transaksi multi-wallet, serta kontrol limit kartu kredit dan pinjaman lunak.",
+        subtitle: "Pemantauan saldo likuiditas, mutasi rekening, buku kas transaksi harian, serta analisis arus kas dan likuiditas.",
         to: "/flow?tab=cat_kredit",
         icon: Banknote,
         subFeatures: [
-          { title: "Buku Arus Kas", to: "/flow?tab=cat_arus_kas", icon: Banknote },
-          { title: "Kredit & Utang", to: "/kredit", icon: CreditCard },
+          { title: "Cash Ledger", to: "/flow?tab=transactions", icon: Banknote },
+          { title: "Account Records", to: "", icon: FileText },
+          { title: "Cashflow Dashboard", to: "", icon: LineChart },
+          { title: "Liquidity Analysis", to: "", icon: TrendingUp },
+          { title: "Liquidity Forecast", to: "", icon: LineChart },
         ],
       },
       {
         id: "retribusi-kontribusi",
         title: "Retribution-Contribution",
-        subtitle: "Perhitungan estimasi pajak penghasilan pribadi (PPh 21 progresif), PTKP, dan kepatuhan kontribusi pajak resmi.",
+        subtitle: "Perhitungan estimasi pajak penghasilan pribadi (PPh 21 progresif), arsip pajak, analisis beban pajak, dan panduan kepatuhan.",
         to: "/flow?tab=cat_pajak",
         icon: Receipt,
         subFeatures: [
-          { title: "Personal Income Tax", to: "/pajak?app=pph21", icon: Calculator },
+          { title: "Tax Calculator", to: "/pajak?app=pph21", icon: Calculator },
+          { title: "Tax Records", to: "", icon: FileText },
+          { title: "Tax Analysis", to: "", icon: LineChart },
+          { title: "Tax Guide", to: "", icon: BookOpen },
         ],
       },
       {
         id: "sistem-otomatisasi",
         title: "Automation System",
-        subtitle: "Otomasi sistem alokasi anggaran bulanan dengan formula persentase 50/30/20 dan autodebet investasi rutin.",
+        subtitle: "Otomatisasi pembayaran, jadwal tagihan rutin, dan alokasi tabungan otomatis sesuai jadwal yang ditetapkan.",
         to: "/flow?tab=cat_otomatisasi",
         icon: Activity,
         subFeatures: [
-          { title: "50/30/20 Budget", to: "/budget", icon: Wallet },
+          { title: "Payment Automation", to: "/flow?tab=cat_otomatisasi&sub=autodebet", icon: Activity },
+          { title: "Payment Schedule", to: "", icon: CalendarDays },
+          { title: "Savings Automation", to: "", icon: RefreshCw },
         ],
       },
     ],
@@ -665,52 +755,69 @@ export const WEALTH_STAGE_MAIN_BOXES: WealthStageMainBoxDef[] = [
       {
         id: "modal-manusia",
         title: "Human Capital",
-        subtitle: "Valuasi kapasitas nilai keahlian diri, daya ungkit karier profesional, dan estimasi nilai kapital manusia.",
+        subtitle: "Valuasi kapasitas nilai keahlian diri, analisis daya ungkit karier profesional, dan asesmen kapital manusia.",
         to: "/build?tab=cat_modal",
         icon: Brain,
+        subFeatures: [
+          { title: "Skills Assessment", to: "/build?tab=cat_modal&sub=skill", icon: Brain },
+          { title: "Career Analysis", to: "/build?tab=cat_modal&sub=karier", icon: TrendingUp },
+          { title: "Capital Assessment", to: "", icon: Activity },
+        ],
       },
       {
         id: "jaringan",
         title: "Net-Work",
-        subtitle: "Pusat relasi kemitraan bisnis penghasil omset dan direktori kontak spesialis keuangan, banker, serta akuntan.",
+        subtitle: "Jaringan profesional finansial personal dan keluarga, arsip penasihat, serta evaluasi kinerja penasihat.",
         to: "/build?tab=cat_jaringan",
         icon: Network,
         subFeatures: [
-          { title: "Klien & Partner", to: "/build?tab=cat_jaringan&sub=klien", icon: Briefcase },
-          { title: "People Manager", to: "/build?tab=cat_jaringan&sub=people", icon: Users },
+          { title: "Professional Directory", to: "/people-manager", icon: Users },
+          { title: "Advisor Records", to: "", icon: FileText },
+          { title: "Advisor Assessment", to: "", icon: ShieldCheck },
         ],
       },
       {
         id: "portofolio",
         title: "Portfolio",
-        subtitle: "Manajemen kepemilikan multi-aset: properti real estate, surat berharga saham/sukuk, aset digital, dan HKI.",
+        subtitle: "Manajemen kepemilikan multi-aset: properti real estate, surat berharga, aset digital, HKI, pemantauan harga pasar, serta analitik portofolio.",
         to: "/build?tab=cat_portofolio",
         icon: Briefcase,
         subFeatures: [
           { title: "Real Estate", to: "/real-estate", icon: Home },
-          { title: "Paper Securities", to: "/paper-securities", icon: ScrollText },
+          { title: "Securities", to: "/paper-securities", icon: ScrollText },
           { title: "Digital Assets", to: "/digital-assets", icon: Binary },
           { title: "Intellectual Property", to: "/intellectual-property", icon: Lightbulb },
-          { title: "Market Price Monitor", to: "/100-komoditas", icon: Package },
+          { title: "Market Monitor", to: "/100-komoditas", icon: Package },
+          { title: "Portfolio Dashboard", to: "", icon: PieChart },
+          { title: "Portfolio Analysis", to: "", icon: LineChart },
+          { title: "Asset Valuation", to: "", icon: Calculator },
         ],
       },
       {
         id: "kekayaan-bersih",
         title: "Net-Worth",
-        subtitle: "Perhitungan kalkulasi total net worth bersih dari seluruh kelas aset serta asesmen rasio kesehatan keuangan.",
+        subtitle: "Perhitungan kalkulasi total net worth bersih dari seluruh kelas aset, asesmen kesehatan finansial, dan arsip kekayaan bersih.",
         to: "/build?tab=cat_kekayaan",
         icon: Landmark,
         subFeatures: [
-          { title: "Kuadran Aset", to: "/asset", icon: Briefcase },
-          { title: "Kesehatan Finansial", to: "/financial-health", icon: HeartPulse },
+          { title: "Asset Dashboard", to: "/asset", icon: Briefcase },
+          { title: "Financial Assessment", to: "/financial-health", icon: HeartPulse },
+          { title: "Net Worth Calculator", to: "", icon: Calculator },
+          { title: "Net Worth Records", to: "", icon: FileText },
         ],
       },
       {
         id: "pembukuan",
         title: "Book Entry",
-        subtitle: "Sistem pembukuan neraca saldo aset personal, jurnal penyesuaian arus transaksi, dan pencatatan buku besar.",
+        subtitle: "Sistem pembukuan neraca saldo aset personal, jurnal transaksi, buku besar, dan alat rekonsiliasi.",
         to: "/build?tab=cat_pembukuan",
         icon: BookOpen,
+        subFeatures: [
+          { title: "Asset Balance", to: "/build?tab=cat_pembukuan&sub=neraca", icon: BookOpen },
+          { title: "Journal Entries", to: "/build?tab=cat_pembukuan&sub=jurnal", icon: ReceiptText },
+          { title: "Ledger Records", to: "", icon: FileText },
+          { title: "Reconciliation Tools", to: "", icon: RefreshCw },
+        ],
       },
     ],
   },
@@ -739,43 +846,66 @@ export const WEALTH_STAGE_MAIN_BOXES: WealthStageMainBoxDef[] = [
       {
         id: "profil-risiko",
         title: "Risk Profiling",
-        subtitle: "Diagnostik toleransi risiko investor (konservatif, moderat, agresif) serta horizon waktu pencapaian target modal.",
+        subtitle: "Asesmen toleransi dan kapasitas risiko, horizon waktu investasi, profil investor, serta laporan kesesuaian.",
         to: "/grow?tab=cat_profil",
         icon: Activity,
+        subFeatures: [
+          { title: "Risk Assessment", to: "/grow?tab=cat_profil&sub=toleransi", icon: Activity },
+          { title: "Investment Horizon", to: "/grow?tab=cat_profil", icon: LineChart },
+          { title: "Risk Capacity", to: "", icon: Shield },
+          { title: "Investor Profile", to: "", icon: Users },
+          { title: "Suitability Report", to: "", icon: FileText },
+        ],
       },
       {
         id: "alokasi",
         title: "Allocation",
-        subtitle: "Strategi alokasi aset syariah melalui pasar muamalah fisik, indeks saham sharia, dan 100 komoditas riil dunia.",
+        subtitle: "Penyusunan alokasi aset dan instrumen investasi, perencanaan, analisis, serta pengaturan batas alokasi.",
         to: "/grow?tab=cat_alokasi",
         icon: PieChart,
         subFeatures: [
-          { title: "Logam Mulia & Saham", to: "/100-komoditas", icon: Coins },
+          { title: "Asset Allocation", to: "/grow?tab=cat_alokasi", icon: Coins },
+          { title: "Allocation Planner", to: "", icon: Layers },
+          { title: "Allocation Analysis", to: "", icon: LineChart },
+          { title: "Allocation Settings", to: "", icon: Settings },
         ],
       },
       {
         id: "efektif-efisien",
         title: "Effective-Efficient",
-        subtitle: "Pengurangan friction fee transaksi, rasio efisiensi pengelolaan instrumen, dan maksimalisasi net yield return.",
+        subtitle: "Analisis biaya transaksi, optimalisasi imbal hasil bersih, kalkulator biaya, dan perbandingan produk investasi.",
         to: "/grow?tab=cat_efektif",
         icon: Zap,
+        subFeatures: [
+          { title: "Cost Analysis", to: "/grow?tab=cat_efektif", icon: Zap },
+          { title: "Net Return Analysis", to: "/grow?tab=cat_efektif", icon: TrendingUp },
+          { title: "Fee Calculator", to: "", icon: Calculator },
+          { title: "Product Comparison", to: "", icon: Scale },
+        ],
       },
       {
         id: "bunga-berbunga",
         title: "Compounding",
-        subtitle: "Simulasi kekuatan bunga majemuk (compounding interest) dan kalkulator Return on Investment (ROI) berkala.",
+        subtitle: "Kalkulator kekuatan bunga majemuk (compounding interest) dan simulator imbal hasil investasi berkala.",
         to: "/grow?tab=cat_bunga",
         icon: TrendingUp,
         subFeatures: [
-          { title: "Compound Interest and ROI", to: "/investasi?app=bunga-majemuk", icon: Calculator },
+          { title: "Compound Calculator", to: "/investasi?app=bunga-majemuk", icon: Calculator },
+          { title: "Return Simulator", to: "/investasi?app=roi", icon: TrendingUp },
         ],
       },
       {
         id: "rebalancing-periodik",
         title: "Periodic Rebalancing",
-        subtitle: "Penyesuaian periodik deviasi alokasi aset investasi agar tetap berada pada batas toleransi risiko yang optimal.",
+        subtitle: "Pemantauan deviasi alokasi aset, jadwal rebalancing, kalkulator penyesuaian, dan alur kerja rebalancing.",
         to: "/grow?tab=cat_rebalance",
         icon: RefreshCw,
+        subFeatures: [
+          { title: "Allocation Drift", to: "/grow?tab=cat_rebalance&sub=deviasi", icon: RefreshCw },
+          { title: "Rebalancing Schedule", to: "/grow?tab=cat_rebalance&sub=jadwal", icon: Layers },
+          { title: "Rebalancing Calculator", to: "", icon: Calculator },
+          { title: "Rebalancing Workflow", to: "", icon: Activity },
+        ],
       },
     ],
   },
@@ -804,50 +934,68 @@ export const WEALTH_STAGE_MAIN_BOXES: WealthStageMainBoxDef[] = [
       {
         id: "pembelajaran-seumur-hidup",
         title: "Lifelong Learning",
-        subtitle: "Edukasi filosofi kekayaan keluarga, kurikulum literasi finansial antargenerasi, dan transfer nilai-nilai bijak.",
+        subtitle: "Literasi finansial antargenerasi, filosofi nilai keluarga, rencana pembelajaran, dan catatan pembelajaran.",
         to: "/legacy?tab=cat_pembelajaran",
         icon: GraduationCap,
+        subFeatures: [
+          { title: "Financial Literacy", to: "/legacy?tab=cat_pembelajaran&sub=literasi", icon: GraduationCap },
+          { title: "Family Values", to: "/legacy?tab=cat_pembelajaran", icon: BookOpen },
+          { title: "Learning Plan", to: "", icon: CalendarDays },
+          { title: "Learning Records", to: "", icon: FileText },
+        ],
       },
       {
         id: "tata-kelola",
         title: "Good Governance",
-        subtitle: "Tata kelola legalitas aset keluarga, struktur kepemilikan terstruktur, dan kepatuhan hukum antargenerasi.",
+        subtitle: "Tinjauan tata kelola aset keluarga, struktur kepemilikan, registri aset keluarga, kerangka kerja, dan alur tata kelola.",
         to: "/legacy?tab=cat_tatakelola",
         icon: Building,
         subFeatures: [
-          { title: "Asset Governance and Audit", to: "/legacy?tab=cat_tatakelola", icon: Scale },
-          { title: "Struktur Kepemilikan", to: "/legacy?tab=cat_tatakelola&sub=struktur", icon: Building },
+          { title: "Governance Review", to: "/legacy?tab=cat_tatakelola", icon: Scale },
+          { title: "Ownership Structure", to: "/legacy?tab=cat_tatakelola&sub=struktur", icon: Building },
+          { title: "Family Asset Registry", to: "", icon: FileText },
+          { title: "Governance Framework", to: "", icon: BookOpen },
+          { title: "Governance Workflow", to: "", icon: Activity },
         ],
       },
       {
         id: "kontribusi-amal",
         title: "Charitable Concern",
-        subtitle: "Penyaluran zakat dan sedekah terstruktur, pelacak donasi infaq kemanusiaan, serta pencatatan relawan sosial.",
+        subtitle: "Catatan donasi dan infaq, log relawan sosial, perencanaan filantropi, serta analisis kontribusi amal.",
         to: "/legacy?tab=cat_amal",
         icon: HeartHandshake,
         subFeatures: [
-          { title: "Infaq and Donation Records", to: "/lainnya?app=donation-tracker", icon: Coins },
-          { title: "Volunteer and Social Service Log", to: "/lainnya?app=volunteer-log", icon: Heart },
+          { title: "Donation Records", to: "/lainnya?app=donation-tracker", icon: Coins },
+          { title: "Volunteer Records", to: "/lainnya?app=volunteer-log", icon: Heart },
+          { title: "Giving Analysis", to: "", icon: LineChart },
+          { title: "Giving Planner", to: "", icon: CalendarDays },
         ],
       },
       {
         id: "likuidasi-kewajiban",
         title: "Liability Liquidation",
-        subtitle: "Prosedur penutupan dan pelunasan seluruh sisa kewajiban hutang piutang sebelum transisi pembagian warisan aset.",
+        subtitle: "Alur penyelesaian pelunasan kewajiban, catatan pelunasan, dan daftar periksa likuidasi sebelum suksesi.",
         to: "/legacy?tab=cat_likuidasi",
         icon: ReceiptText,
         subFeatures: [
-          { title: "Pelunasan Kewajiban", to: "/legacy?tab=cat_likuidasi&sub=pelunasan", icon: ReceiptText },
+          { title: "Settlement Workflow", to: "/legacy?tab=cat_likuidasi&sub=pelunasan", icon: ReceiptText },
+          { title: "Settlement Records", to: "", icon: FileText },
+          { title: "Settlement Checklist", to: "", icon: CheckSquare },
         ],
       },
       {
         id: "transfer-kekayaan",
         title: "Wealth Transfer",
-        subtitle: "Perencanaan suksesi peralihan portofolio aset, pembagian hak waris, dan pemindahan hak milik bebas sengketa.",
+        subtitle: "Alur suksesi peralihan kekayaan (referensi silang ke modul Portfolio), registri ahli waris, kalkulator waris, panduan, dan catatan transfer.",
         to: "/legacy?tab=cat_transfer",
         icon: Gift,
         subFeatures: [
-          { title: "Portfolio Aset", to: "/build?tab=cat_portofolio", icon: Briefcase },
+          { title: "Succession Workflow", to: "/legacy?tab=cat_transfer&sub=suksesi", icon: Gift },
+          { title: "Beneficiary Registry", to: "", icon: Users },
+          { title: "Estate Calculator", to: "", icon: Calculator },
+          { title: "Estate Guide", to: "", icon: BookOpen },
+          { title: "Transfer Records", to: "", icon: FileText },
+          { title: "Distribution Planner", to: "", icon: Layers },
         ],
       },
     ],
@@ -1201,6 +1349,7 @@ function CategorySectionView({
             badge={app.categoryLabel}
             shortDesc={app.subtitle}
             gradient={getGradient ? getGradient(app.title) : undefined}
+            categoryGroups={buildModuleCategoryGroups(app.features, app.to)}
             features={app.features?.map((f) => ({
               title: f.title,
               to: f.to,
@@ -1214,6 +1363,56 @@ function CategorySectionView({
     </section>
   );
 }
+
+export const FIN_CATEGORY_TABS: {
+  id: FinancialCategoryTab;
+  label: string;
+  count: number;
+}[] = [
+  { id: "all", label: "Semua", count: STANDALONE_FINANCIAL_APPS.length },
+  {
+    id: "surety",
+    label: "Surety",
+    count: STANDALONE_FINANCIAL_APPS.filter((a) => a.category === "surety").length,
+  },
+  {
+    id: "flow",
+    label: "Flow",
+    count: STANDALONE_FINANCIAL_APPS.filter((a) => a.category === "flow").length,
+  },
+  {
+    id: "build",
+    label: "Build",
+    count: STANDALONE_FINANCIAL_APPS.filter((a) => a.category === "build").length,
+  },
+  {
+    id: "grow",
+    label: "Grow",
+    count: STANDALONE_FINANCIAL_APPS.filter((a) => a.category === "grow").length,
+  },
+  {
+    id: "legacy",
+    label: "Legacy",
+    count: STANDALONE_FINANCIAL_APPS.filter((a) => a.category === "legacy").length,
+  },
+];
+
+export const FIN_TOTAL_MODULES = STANDALONE_FINANCIAL_APPS.length;
+export const FIN_TOOLS_COUNT = STANDALONE_FINANCIAL_APPS.reduce(
+  (sum, app) =>
+    sum + (app.features?.filter((f) => f.componentCategory === "Tools").length || 0),
+  0
+);
+export const FIN_FEATURES_COUNT = STANDALONE_FINANCIAL_APPS.reduce(
+  (sum, app) =>
+    sum + (app.features?.filter((f) => f.componentCategory !== "Tools").length || 0),
+  0
+);
+export const FIN_TOTAL_BADGE = `${FIN_TOTAL_MODULES} Modul • ${FIN_FEATURES_COUNT} Features • ${FIN_TOOLS_COUNT} Tools`;
+syncLauncherPageBadge("financial", FIN_TOTAL_BADGE);
+export const FIN_SUMMARY_DESC = FIN_CATEGORY_TABS.map(
+  (t) => `${t.label} (${t.count})`
+).join(" · ");
 
 export function FinancialWealthSection({
   favorites,
@@ -1234,6 +1433,13 @@ export function FinancialWealthSection({
   }, [selectedTab]);
 
   const allLabel = lang === "en" ? "All" : lang === "zh" ? "全部" : "Semua";
+  const localizedTabs = useMemo(
+    () =>
+      FIN_CATEGORY_TABS.map((t) =>
+        t.id === "all" ? { ...t, label: allLabel } : t
+      ),
+    [allLabel]
+  );
 
   return (
     <LauncherPageProvider pageId={pageId}>
@@ -1241,17 +1447,7 @@ export function FinancialWealthSection({
       {/* Portaled ShellHeader: Clean Category Selector di Top Right Bar */}
       <ShellHeader>
         <HeaderNavPills
-          items={adjustCategoryTabsCount(
-            [
-              { id: "all" as FinancialCategoryTab, label: allLabel, count: 25 },
-              { id: "surety" as FinancialCategoryTab, label: "Surety", count: 5 },
-              { id: "flow" as FinancialCategoryTab, label: "Flow", count: 5 },
-              { id: "build" as FinancialCategoryTab, label: "Build", count: 5 },
-              { id: "grow" as FinancialCategoryTab, label: "Grow", count: 5 },
-              { id: "legacy" as FinancialCategoryTab, label: "Legacy", count: 5 },
-            ],
-            getPageCountDelta(pageId)
-          )}
+          items={adjustCategoryTabsCount(localizedTabs, getPageCountDelta(pageId))}
           activeId={selectedTab}
           onSelect={(id) => setSelectedTab(id)}
         />
@@ -1260,7 +1456,7 @@ export function FinancialWealthSection({
       {/* Title */}
       <div className="text-center mb-3 sm:mb-4">
         <h3 className="text-2xl sm:text-3xl font-bold text-foreground/90 tracking-tight flex items-center justify-center gap-2">
-          <span>Financial Planning and Wealth Management</span>
+          <span>Financial Planning <span className="font-normal">and</span> Wealth Management</span>
         </h3>
       </div>
 
@@ -1284,6 +1480,7 @@ export function FinancialWealthSection({
               badge={app.categoryLabel}
               shortDesc={app.subtitle}
               gradient={getGradient ? getGradient(app.title) : undefined}
+              categoryGroups={buildModuleCategoryGroups(app.features, app.to)}
               features={app.features?.map((f) => ({
                 title: f.title,
                 to: f.to,

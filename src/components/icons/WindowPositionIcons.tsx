@@ -6,12 +6,13 @@ import type { SVGProps } from "react";
  * Standard 24x24 viewBox with crisp geometric alignment.
  */
 
-// 1. Sidebar Kiri (Window Snap Left with docking arrow indicator)
+// 1. Sidebar Kiri (Window Snap Left with optional docking arrow indicator)
 export function WindowPositionLeftIcon({
   size = 24,
   className = "",
+  showArrow = true,
   ...props
-}: SVGProps<SVGSVGElement> & { size?: number | string }) {
+}: SVGProps<SVGSVGElement> & { size?: number | string; showArrow?: boolean }) {
   return (
     <svg
       width={size}
@@ -37,20 +38,23 @@ export function WindowPositionLeftIcon({
       {/* Inner Snap Divider */}
       <line x1="10" y1="4" x2="10" y2="20" strokeWidth={1.5} />
       {/* Directional Dock Arrow pointing into left panel */}
-      <path
-        d="M17 12H13M15 9.5L12.5 12L15 14.5"
-        strokeWidth={1.75}
-      />
+      {showArrow && (
+        <path
+          d="M17 12H13M15 9.5L12.5 12L15 14.5"
+          strokeWidth={1.75}
+        />
+      )}
     </svg>
   );
 }
 
-// 2. Sidebar Kanan (Window Snap Right with docking arrow indicator)
+// 2. Sidebar Kanan (Window Snap Right with optional docking arrow indicator)
 export function WindowPositionRightIcon({
   size = 24,
   className = "",
+  showArrow = true,
   ...props
-}: SVGProps<SVGSVGElement> & { size?: number | string }) {
+}: SVGProps<SVGSVGElement> & { size?: number | string; showArrow?: boolean }) {
   return (
     <svg
       width={size}
@@ -76,10 +80,12 @@ export function WindowPositionRightIcon({
       {/* Inner Snap Divider */}
       <line x1="14" y1="4" x2="14" y2="20" strokeWidth={1.5} />
       {/* Directional Dock Arrow pointing into right panel */}
-      <path
-        d="M7 12H11M9 9.5L11.5 12L9 14.5"
-        strokeWidth={1.75}
-      />
+      {showArrow && (
+        <path
+          d="M7 12H11M9 9.5L11.5 12L9 14.5"
+          strokeWidth={1.75}
+        />
+      )}
     </svg>
   );
 }

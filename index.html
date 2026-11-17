@@ -881,19 +881,24 @@
       }
 
       /* ==========================================================================
-         Penyelarasan Gap Judul Laman dan Kotak-Kotak Modul di Bawahnya (6px)
-         Identik dengan jarak gap pada bar kanan atas kategori (gap: 6px)
+         Penyelarasan Gap Judul Laman dan Kotak-Kotak Modul di Bawahnya (30px)
+         Berlaku seragam di seluruh laman Launcher
          ========================================================================== */
       div#root:nth-of-type(1) > div:nth-of-type(1) > main#mainContent:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1),
-      div#root > div > main#mainContent > div:nth-of-type(3) .text-center {
+      div#root > div > main#mainContent > div:nth-of-type(3) div.text-center:has(> h1),
+      .touch-pan-y > div > div > div.text-center,
+      .touch-pan-y > div > div > div > div.text-center {
         margin-bottom: 0 !important;
         padding-bottom: 0 !important;
       }
 
       div#root:nth-of-type(1) > div:nth-of-type(1) > main#mainContent:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2),
+      div#root:nth-of-type(1) > div:nth-of-type(1) > main#mainContent:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2),
       div#root > div > main#mainContent > div:nth-of-type(3) .text-center + div.grid,
-      div#root > div > main#mainContent > div:nth-of-type(3) .text-center + div[class*="grid"] {
-        margin-top: 6px !important;
+      div#root > div > main#mainContent > div:nth-of-type(3) .text-center + div[class*="grid"],
+      .touch-pan-y > div > div > div.text-center + div,
+      .touch-pan-y > div > div > div > div.text-center + div {
+        margin-top: 30px !important;
       }
     </style>
   </head>

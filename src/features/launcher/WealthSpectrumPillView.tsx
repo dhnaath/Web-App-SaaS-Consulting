@@ -134,7 +134,7 @@ export function WealthSpectrumPillView({
               <div className="p-3 sm:p-3.5 flex-1 flex flex-col gap-2.5">
                 <div className="space-y-2">
                     <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">
-                      <span>5 Modul Aplikasi & Fitur ({appsForTahap.length}):</span>
+                      <span>{appsForTahap.length} Modul Aplikasi dan Fitur:</span>
                       <Link
                         to={`/${t.id}` as any}
                         className="text-primary hover:underline flex items-center gap-0.5 lowercase text-[10px] font-medium"

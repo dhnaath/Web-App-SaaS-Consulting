@@ -7,9 +7,16 @@ import {
   Sparkles,
   X,
   Home,
+  Gem,
 } from "lucide-react";
 import { navKonsultan } from "@/config/nav";
 import { CATEGORIES } from "@/frameworkData";
+import {
+  PRODUCT_TAXONOMY,
+  getUnifiedWorkspaces,
+  getUnifiedWorkspaceById,
+  resolveWorkspaceIdForRoute,
+} from "@/core/taxonomy";
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -41,7 +48,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     }
   }, [isOpen]);
 
-  // Aggregate items from nav and 100 frameworks
+  // Aggregate items from 10 Laman Utama, navKonsultan, PRODUCT_TAXONOMY, and 100 frameworks
   const allItems: PaletteItem[] = useMemo(() => {
     const list: PaletteItem[] = [
       {
@@ -52,21 +59,49 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
         to: "/home",
         icon: Home,
       },
+      {
+        id: "hub-value-treated",
+        title: "Applied Value Framework (Value Treated)",
+        category: "Value Treated · 5 Jenjang SKS & 10 Bidang Value",
+        badge: "Hub Utama",
+        to: "/value-treated",
+        icon: Gem,
+      },
     ];
+
+    // 0. 10 Laman Utama (Level 1 Workspaces)
+    getUnifiedWorkspaces().forEach((ws) => {
+      list.push({
+        id: `ws-${ws.id}`,
+        title: ws.labelEn,
+        category: `${ws.code} · ${ws.labelId}`,
+        badge: "Laman Utama",
+        to: ws.routePath,
+        icon: ws.icon,
+      });
+    });
 
     // 1. Navigation items (Executive apps, Portals, Money tracker, etc.)
     navKonsultan.forEach((group) => {
       group.items.forEach((item) => {
         if (item.to && item.to !== "/") {
+          const resolvedWsId = resolveWorkspaceIdForRoute(item.to);
+          const resolvedWs = resolvedWsId ? getUnifiedWorkspaceById(resolvedWsId) : undefined;
+          const fallbackBadge =
+            group.title.includes("Finance") ||
+            ["Asset", "Flow", "Grow", "Build", "Legacy"].some((w) =>
+              group.title.includes(w),
+            )
+              ? getUnifiedWorkspaceById("financial")?.labelEn ?? "Finance"
+              : group.title.includes("Client") || group.title.includes("Portal")
+                ? "Client Portal"
+                : "App";
+
           list.push({
             id: `nav-${item.to}`,
             title: item.label,
-            category: group.title,
-            badge: group.title.includes("Finance") || ["Asset", "Flow", "Grow", "Build", "Legacy"].some(w => group.title.includes(w))
-              ? "Finance"
-              : group.title.includes("Client") || group.title.includes("Portal")
-              ? "Client Portal"
-              : "App",
+            category: resolvedWs ? `${resolvedWs.labelEn} · ${group.title}` : group.title,
+            badge: resolvedWs?.labelEn ?? fallbackBadge,
             to: item.to,
             icon: item.icon,
           });
@@ -74,14 +109,36 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       });
     });
 
-    // 2. 100 Consulting Frameworks
+    // 2. Complete Product Taxonomy (SaaS Inti, PEH, Life OS, Wira)
+    PRODUCT_TAXONOMY.forEach((page) => {
+      const ws = getUnifiedWorkspaceById(page.workspaceId);
+      const wsLabel = ws?.labelEn ?? page.name;
+      page.modules.forEach((mod) => {
+        const items = [...mod.features, ...mod.tools];
+        items.forEach((entry) => {
+          list.push({
+            id: `tax-${page.id}-${mod.id}-${entry.id}`,
+            title: entry.name,
+            category: `${wsLabel} · ${mod.name}`,
+            badge: wsLabel,
+            to: entry.route,
+            icon: ws?.icon ?? Layers,
+          });
+        });
+      });
+    });
+
+    // 3. 100 Consulting Frameworks
+    const bizLabel =
+      getUnifiedWorkspaceById("mode_business")?.labelEn ??
+      "Business Administration and Operations Management";
     CATEGORIES.forEach((cat) => {
       cat.frameworks.forEach((fw) => {
         const slug = fw.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
         list.push({
           id: `fw-${slug}`,
           title: fw,
-          category: `Framework: ${cat.name}`,
+          category: `${bizLabel} · ${cat.name}`,
           badge: "100 Framework",
           to: `/framework/${slug}`,
           icon: Layers,

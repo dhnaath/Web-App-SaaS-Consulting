@@ -36,6 +36,26 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; dot: string }>
   'Investment': { bg: 'bg-teal-50', text: 'text-teal-800', dot: 'bg-teal-500' },
   'Other': { bg: 'bg-neutral-100', text: 'text-neutral-700', dot: 'bg-neutral-400' },
 };
+type TxType = 'expense' | 'income';
+
+const TRANSACTION_CATEGORIES: Record<TxType, readonly string[]> = {
+  expense: ['Food & Dining', 'Groceries', 'Housing & Rent', 'Transportation', 'Utilities', 'Shopping', 'Entertainment', 'Healthcare', 'Other'],
+  income: ['Salary', 'Freelance', 'Investment', 'Other'],
+};
+
+function getLocalDate(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function isValidDateInput(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
 
 export const SimpleFinanceView: React.FC = () => {
   const { transactions, addTransaction, deleteTransaction, accounts } = useLifeOS();
@@ -50,16 +70,18 @@ export const SimpleFinanceView: React.FC = () => {
   const [txName, setTxName] = useState('');
   const [txAmount, setTxAmount] = useState('');
   const [txCategory, setTxCategory] = useState('Food & Dining');
-  const [txDate, setTxDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [txAccount, setTxAccount] = useState('acc-1');
+  const [txDate, setTxDate] = useState(getLocalDate);
+  const [txAccount, setTxAccount] = useState(() => accounts[0]?.id ?? '');
   const [txNote, setTxNote] = useState('');
+  const [formError, setFormError] = useState('');
 
   // Format currency
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(val);
   };
 
@@ -112,7 +134,7 @@ export const SimpleFinanceView: React.FC = () => {
   }, [monthlyTransactions]);
 
   const netSavings = totalIncome - totalExpense;
-  const savingsRate = totalIncome > 0 ? Math.max(0, Math.round((netSavings / totalIncome) * 100)) : 0;
+  const savingsRate = totalIncome > 0 ? Math.round((netSavings / totalIncome) * 100) : null;
 
   // Category breakdown for expenses
   const categoryExpenses = useMemo(() => {
@@ -140,24 +162,65 @@ export const SimpleFinanceView: React.FC = () => {
   const estimatedBudgetLimit = 4500;
   const budgetUsedPct = Math.min(100, Math.round((totalExpense / estimatedBudgetLimit) * 100));
 
-  const handleCreateTransaction = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!txName.trim() || !txAmount) return;
+  const changeTransactionType = (type: TxType) => {
+    setTxType(type);
+    setTxCategory(TRANSACTION_CATEGORIES[type][0]);
+    setFormError('');
+  };
 
-    addTransaction({
-      name: txName.trim(),
-      amount: parseFloat(txAmount) || 0,
-      type: txType,
-      category: txCategory,
-      date: txDate,
-      accountId: txAccount,
-      note: txNote.trim() || undefined,
-    });
-
+  const openTransactionModal = (type: TxType) => {
+    changeTransactionType(type);
     setTxName('');
     setTxAmount('');
     setTxNote('');
-    setIsAddModalOpen(false);
+    setTxDate(getLocalDate());
+    setTxAccount(accounts[0]?.id ?? '');
+    setIsAddModalOpen(true);
+  };
+
+  const handleCreateTransaction = (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError('');
+    const amount = Number(txAmount);
+
+    if (!txName.trim()) {
+      setFormError('Nama transaksi wajib diisi.');
+      return;
+    }
+    if (!txAmount.trim() || !Number.isFinite(amount) || amount <= 0) {
+      setFormError('Nominal harus berupa angka lebih besar dari nol.');
+      return;
+    }
+    if (!isValidDateInput(txDate)) {
+      setFormError('Tanggal transaksi tidak valid.');
+      return;
+    }
+    if (!accounts.some((account) => account.id === txAccount)) {
+      setFormError('Pilih akun yang masih tersedia.');
+      return;
+    }
+    if (!TRANSACTION_CATEGORIES[txType].includes(txCategory)) {
+      setFormError('Kategori tidak sesuai dengan jenis transaksi.');
+      return;
+    }
+
+    try {
+      addTransaction({
+        name: txName.trim(),
+        amount,
+        type: txType,
+        category: txCategory,
+        date: txDate,
+        accountId: txAccount,
+        note: txNote.trim() || undefined,
+      });
+      setTxName('');
+      setTxAmount('');
+      setTxNote('');
+      setIsAddModalOpen(false);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'Transaksi gagal diproses. Silakan coba lagi.');
+    }
   };
 
   return (
@@ -205,10 +268,7 @@ export const SimpleFinanceView: React.FC = () => {
           </div>
 
           <button
-            onClick={() => {
-              setTxType('income');
-              setIsAddModalOpen(true);
-            }}
+            onClick={() => openTransactionModal('income')}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-xs font-medium rounded-lg border border-emerald-200/60 transition-colors shadow-2xs"
           >
             <ArrowDownLeft className="w-3.5 h-3.5" />
@@ -216,10 +276,7 @@ export const SimpleFinanceView: React.FC = () => {
           </button>
 
           <button
-            onClick={() => {
-              setTxType('expense');
-              setIsAddModalOpen(true);
-            }}
+            onClick={() => openTransactionModal('expense')}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 text-white hover:bg-neutral-800 text-xs font-medium rounded-lg shadow-2xs transition-colors"
           >
             <ArrowUpRight className="w-3.5 h-3.5" />
@@ -284,19 +341,29 @@ export const SimpleFinanceView: React.FC = () => {
           </div>
           <div className="flex items-baseline gap-2">
             <span className="font-serif-title text-2xl font-normal text-neutral-900">
-              {savingsRate}%
+              {savingsRate === null ? '—' : `${savingsRate}%`}
             </span>
             <span className="text-[11px] text-emerald-600 font-medium">
-              {savingsRate >= 30 ? 'Target ideal tercapai' : 'Optimal >20%'}
+              {savingsRate === null
+                ? 'Belum ada pemasukan'
+                : savingsRate < 0
+                  ? 'Defisit periode ini'
+                  : savingsRate >= 30
+                    ? 'Target ideal tercapai'
+                    : 'Optimal >20%'}
             </span>
           </div>
           {/* Mini progress bar */}
           <div className="w-full bg-neutral-100 rounded-full h-1.5 mt-2 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                savingsRate >= 30 ? 'bg-emerald-500' : savingsRate >= 15 ? 'bg-amber-500' : 'bg-rose-500'
+                savingsRate !== null && savingsRate >= 30
+                  ? 'bg-emerald-500'
+                  : savingsRate !== null && savingsRate >= 15
+                    ? 'bg-amber-500'
+                    : 'bg-rose-500'
               }`}
-              style={{ width: `${Math.min(100, savingsRate)}%` }}
+              style={{ width: `${Math.max(0, Math.min(100, savingsRate ?? 0))}%` }}
             />
           </div>
         </div>
@@ -454,10 +521,7 @@ export const SimpleFinanceView: React.FC = () => {
             <div className="pt-3 border-t border-neutral-100 mt-2 flex items-center justify-between text-xs text-neutral-500">
               <span>Menampilkan {filteredTransactions.length} dari {transactions.length} entri</span>
               <button
-                onClick={() => {
-                  setTxType('expense');
-                  setIsAddModalOpen(true);
-                }}
+                onClick={() => openTransactionModal('expense')}
                 className="flex items-center gap-1 text-neutral-700 hover:text-neutral-900 font-medium py-1 px-2 rounded-md hover:bg-neutral-100"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -601,6 +665,8 @@ export const SimpleFinanceView: React.FC = () => {
                 </h3>
               </div>
               <button
+                type="button"
+                aria-label="Tutup formulir transaksi"
                 onClick={() => setIsAddModalOpen(false)}
                 className="text-neutral-400 hover:text-neutral-600 text-sm font-semibold p-1"
               >
@@ -609,11 +675,17 @@ export const SimpleFinanceView: React.FC = () => {
             </div>
 
             <form onSubmit={handleCreateTransaction} className="space-y-3.5 text-xs">
+              {formError && (
+                <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-rose-700">
+                  {formError}
+                </p>
+              )}
+
               {/* Type Switcher */}
               <div className="grid grid-cols-2 gap-2 p-1 bg-neutral-100 rounded-lg">
                 <button
                   type="button"
-                  onClick={() => setTxType('expense')}
+                  onClick={() => changeTransactionType('expense')}
                   className={`py-1.5 font-medium rounded-md transition-all ${
                     txType === 'expense' ? 'bg-white text-rose-700 shadow-2xs' : 'text-neutral-600'
                   }`}
@@ -622,7 +694,7 @@ export const SimpleFinanceView: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setTxType('income')}
+                  onClick={() => changeTransactionType('income')}
                   className={`py-1.5 font-medium rounded-md transition-all ${
                     txType === 'income' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-neutral-600'
                   }`}
@@ -680,26 +752,9 @@ export const SimpleFinanceView: React.FC = () => {
                     onChange={(e) => setTxCategory(e.target.value)}
                     className="w-full px-3 py-2 bg-neutral-50 border border-neutral-200 rounded-lg outline-hidden focus:bg-white focus:border-neutral-400 cursor-pointer"
                   >
-                    {txType === 'income' ? (
-                      <>
-                        <option value="Salary">Salary</option>
-                        <option value="Freelance">Freelance</option>
-                        <option value="Investment">Investment</option>
-                        <option value="Other">Other</option>
-                      </>
-                    ) : (
-                      <>
-                        <option value="Food & Dining">Food & Dining</option>
-                        <option value="Groceries">Groceries</option>
-                        <option value="Housing & Rent">Housing & Rent</option>
-                        <option value="Transportation">Transportation</option>
-                        <option value="Utilities">Utilities</option>
-                        <option value="Shopping">Shopping</option>
-                        <option value="Entertainment">Entertainment</option>
-                        <option value="Healthcare">Healthcare</option>
-                        <option value="Other">Other</option>
-                      </>
-                    )}
+                    {TRANSACTION_CATEGORIES[txType].map((category) => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -710,6 +765,7 @@ export const SimpleFinanceView: React.FC = () => {
                     onChange={(e) => setTxAccount(e.target.value)}
                     className="w-full px-3 py-2 bg-neutral-50 border border-neutral-200 rounded-lg outline-hidden focus:bg-white focus:border-neutral-400 cursor-pointer"
                   >
+                    <option value="" disabled>Pilih akun</option>
                     {accounts.map((acc) => (
                       <option key={acc.id} value={acc.id}>
                         {acc.name} ({acc.institution})
@@ -740,7 +796,8 @@ export const SimpleFinanceView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 font-medium shadow-2xs"
+                  disabled={accounts.length === 0}
+                  className="px-4 py-2 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 font-medium shadow-2xs disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Simpan Transaksi
                 </button>

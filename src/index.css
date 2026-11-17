@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   :root {
@@ -963,6 +964,139 @@ html {
 #app-header-actions-portal button[data-state="active"] * {
   color: hsl(var(--primary-foreground)) !important;
 }
+
+/* ==========================================================================
+   Header Icon Micro-Animations (9 distinct animations for selected buttons)
+   ========================================================================== */
+
+@keyframes header-panel-nudge-left {
+  0% { transform: translateX(0) scaleX(1); }
+  35% { transform: translateX(-3px) scaleX(0.92); }
+  70% { transform: translateX(1px) scaleX(1.03); }
+  100% { transform: translateX(0) scaleX(1); }
+}
+
+@keyframes header-panel-nudge-right {
+  0% { transform: translateX(0) scaleX(1); }
+  35% { transform: translateX(3px) scaleX(0.92); }
+  70% { transform: translateX(-1px) scaleX(1.03); }
+  100% { transform: translateX(0) scaleX(1); }
+}
+
+@keyframes header-home-hop {
+  0% { transform: translateY(0) scale(1); }
+  35% { transform: translateY(-3.5px) scale(1.12); }
+  65% { transform: translateY(1px) scale(0.96); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+@keyframes header-arrow-kick-left {
+  0% { transform: translateX(0); }
+  40% { transform: translateX(-4px) scale(1.06); }
+  75% { transform: translateX(1px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes header-arrow-kick-right {
+  0% { transform: translateX(0); }
+  40% { transform: translateX(4px) scale(1.06); }
+  75% { transform: translateX(-1px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes header-refresh-whirl {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(200deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes header-info-wiggle {
+  0% { transform: rotate(0deg) scale(1); }
+  20% { transform: rotate(-14deg) scale(1.1); }
+  45% { transform: rotate(14deg) scale(1.1); }
+  70% { transform: rotate(-8deg) scale(1.05); }
+  85% { transform: rotate(6deg) scale(1.02); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+@keyframes header-gear-cw {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(105deg) scale(1.08); }
+  100% { transform: rotate(180deg) scale(1); }
+}
+
+@keyframes header-gear-ccw {
+  0% { transform: rotate(0deg) scale(1); }
+  40% { transform: rotate(-95deg) scale(1.08); }
+  70% { transform: rotate(-80deg) scale(1.04); }
+  100% { transform: rotate(-180deg) scale(1); }
+}
+
+.group:hover .header-anim-panel-left,
+.header-anim-panel-left[data-anim="true"] {
+  animation: header-panel-nudge-left 480ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.group:hover .header-anim-panel-right,
+.header-anim-panel-right[data-anim="true"] {
+  animation: header-panel-nudge-right 480ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.group:hover .header-anim-home,
+.header-anim-home[data-anim="true"] {
+  animation: header-home-hop 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.group:hover .header-anim-arrow-left,
+.header-anim-arrow-left[data-anim="true"] {
+  animation: header-arrow-kick-left 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.group:hover .header-anim-arrow-right,
+.header-anim-arrow-right[data-anim="true"] {
+  animation: header-arrow-kick-right 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.group:hover .header-anim-refresh {
+  animation: header-refresh-whirl 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.group:hover .header-anim-info,
+.header-anim-info[data-anim="true"] {
+  animation: header-info-wiggle 520ms ease-in-out;
+}
+
+.group:hover .header-anim-gear-cw {
+  animation: header-gear-cw 550ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.group:hover .header-anim-gear-ccw {
+  animation: header-gear-ccw 580ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes header-star-twinkle {
+  0% { transform: scale(1) rotate(0deg); }
+  35% { transform: scale(1.22) rotate(18deg); }
+  70% { transform: scale(0.95) rotate(-8deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.group:hover .header-anim-star {
+  animation: header-star-twinkle 520ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Optical vertical centering for text inside module card pills */
+.module-chip-label {
+  display: block;
+  text-align: center;
+  line-height: 1.15;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+  text-box: trim-both cap alphabetic;
+}
+
+
+
 
 
 

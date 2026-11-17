@@ -7,26 +7,26 @@ import type {
   FrameworkContent,
   FrameworkCategory,
   MBAPillar,
-} from "@/data/types/framework";
+} from "@/core/frameworkTypes";
 
 export type {
   FrameworkContent,
   FrameworkCategory,
   MBAPillar,
-} from "@/data/types/framework";
+} from "@/core/frameworkTypes";
 
 export const MBA_PILLARS: MBAPillar[] = [
   {
     id: "strategy",
     name: "Strategy",
     description: "Analisis posisi kompetitif, formulasi arah strategis korporat, model bisnis, dan pengambilan keputusan berbasis data.",
-    categories: ["Strategic Analysis", "Business Design", "Decision Analysis"],
+    categories: ["Competitive Analysis", "Growth Strategy", "Business Design", "Feasibility Analysis", "Decision Frameworks"],
   },
   {
     id: "commercial",
     name: "Commercial",
     description: "Pertumbuhan komersial, bauran pemasaran, customer experience, manajemen siklus produk, dan akselerasi revenue penjualan.",
-    categories: ["Marketing Management", "Customer Experience", "Product Management", "Sales Revenue"],
+    categories: ["Marketing Management", "Customer Experience", "Product Discovery", "Agile Delivery", "Sales Pipeline", "Pricing Economics"],
   },
   {
     id: "finance",
@@ -44,19 +44,19 @@ export const MBA_PILLARS: MBAPillar[] = [
     id: "organization",
     name: "Organization",
     description: "Manajemen modal manusia, budaya kerja, transformasi perubahan organisasi, dan pelacakan kinerja terukur.",
-    categories: ["People Management", "Change Management", "Performance Management"],
+    categories: ["Talent Development", "Team Culture", "Change Management", "Performance Management"],
   },
   {
     id: "innovation",
     name: "Innovation",
     description: "Penciptaan nilai terobosan, akselerasi inovasi lean, perancangan masa depan teknologi, dan keberlanjutan ESG.",
-    categories: ["Innovation Management", "Technology Futures", "Sustainability"],
+    categories: ["Ideation Frameworks", "Venture Validation", "Technology Futures", "Sustainability"],
   },
   {
     id: "governance",
     name: "Governance",
     description: "Tata kelola perusahaan, manajemen risiko, analisis kebijakan publik, dan komunikasi krisis serta reputasi korporat.",
-    categories: ["Risk Management", "Policy Management", "Corporate Communications"],
+    categories: ["Risk Management", "Policy Management", "Brand Messaging", "Stakeholder Relations"],
   },
   {
     id: "analytics",
@@ -69,7 +69,7 @@ export const MBA_PILLARS: MBAPillar[] = [
 export const CATEGORIES: FrameworkCategory[] = [
   // 1. Strategy
   {
-    "name": "Strategic Analysis",
+    "name": "Competitive Analysis",
     "pillar": "Strategy",
     "frameworks": [
       "SWOT Analysis",
@@ -77,7 +77,13 @@ export const CATEGORIES: FrameworkCategory[] = [
       "PESTEL Analysis",
       "Porter's Five Forces",
       "VRIO Framework",
-      "Value Chain Analysis",
+      "Value Chain Analysis"
+    ]
+  },
+  {
+    "name": "Growth Strategy",
+    "pillar": "Strategy",
+    "frameworks": [
       "BCG Matrix",
       "GE-McKinsey Matrix",
       "Ansoff Matrix",
@@ -96,17 +102,23 @@ export const CATEGORIES: FrameworkCategory[] = [
     ]
   },
   {
-    "name": "Decision Analysis",
+    "name": "Feasibility Analysis",
     "pillar": "Strategy",
     "frameworks": [
       "Cost-Benefit Analysis (CBA)",
       "Business Case Analysis",
       "Decision Tree Analysis",
+      "Pareto Analysis (80/20)"
+    ]
+  },
+  {
+    "name": "Decision Frameworks",
+    "pillar": "Strategy",
+    "frameworks": [
       "Decision Matrix (Pugh)",
       "Analytical Hierarchy Process (AHP)",
-      "Six Thinking Hats",
       "Eisenhower Matrix",
-      "Pareto Analysis (80/20)"
+      "Six Thinking Hats"
     ]
   },
 
@@ -129,30 +141,42 @@ export const CATEGORIES: FrameworkCategory[] = [
     ]
   },
   {
-    "name": "Product Management",
+    "name": "Product Discovery",
     "pillar": "Commercial",
     "frameworks": [
       "Product Vision Board",
       "Kano Feature Prioritization",
-      "Scrum / Kanban Board",
       "RICE Scoring Model",
       "MoSCoW Prioritization",
+      "Opportunity Solution Tree"
+    ]
+  },
+  {
+    "name": "Agile Delivery",
+    "pillar": "Commercial",
+    "frameworks": [
+      "Scrum / Kanban Board",
       "User Story Mapping",
-      "Opportunity Solution Tree",
       "Dual-Track Agile Framework"
     ]
   },
   {
-    "name": "Sales Revenue",
+    "name": "Sales Pipeline",
     "pillar": "Commercial",
     "frameworks": [
       "MEDDPICC Framework",
-      "Pricing Matrix",
-      "Unit Economics (CLV/CAC)",
-      "SPIN Selling Framework",
       "BANT Framework",
-      "Revenue Engine (Flywheel)",
+      "SPIN Selling Framework",
+      "Revenue Engine (Flywheel)"
+    ]
+  },
+  {
+    "name": "Pricing Economics",
+    "pillar": "Commercial",
+    "frameworks": [
+      "Pricing Matrix",
       "Value-Based Pricing Canvas",
+      "Unit Economics (CLV/CAC)",
       "Churn Analysis Matrix"
     ]
   },
@@ -197,17 +221,23 @@ export const CATEGORIES: FrameworkCategory[] = [
 
   // 5. Organization
   {
-    "name": "People Management",
+    "name": "Talent Development",
     "pillar": "Organization",
     "frameworks": [
       "9-Box Talent Grid",
+      "360-Degree Feedback",
+      "Kirkpatrick 4-Level Model",
+      "EVP Canvas"
+    ]
+  },
+  {
+    "name": "Team Culture",
+    "pillar": "Organization",
+    "frameworks": [
       "Situational Leadership",
       "Johari Window",
       "Culture Map",
-      "Lencioni's 5 Dysfunctions",
-      "EVP Canvas",
-      "360-Degree Feedback",
-      "Kirkpatrick 4-Level Model"
+      "Lencioni's 5 Dysfunctions"
     ]
   },
   {
@@ -231,15 +261,21 @@ export const CATEGORIES: FrameworkCategory[] = [
 
   // 6. Innovation
   {
-    "name": "Innovation Management",
+    "name": "Ideation Frameworks",
     "pillar": "Innovation",
     "frameworks": [
-      "Lean Startup Loop",
       "Design Thinking",
       "Doblin's 10 Types Innovation",
       "SCAMPER Ideation Canvas",
+      "Open Innovation Model"
+    ]
+  },
+  {
+    "name": "Venture Validation",
+    "pillar": "Innovation",
+    "frameworks": [
+      "Lean Startup Loop",
       "MVP Canvas",
-      "Open Innovation Model",
       "Value Proposition Testing"
     ]
   },
@@ -284,17 +320,23 @@ export const CATEGORIES: FrameworkCategory[] = [
     ]
   },
   {
-    "name": "Corporate Communications",
+    "name": "Brand Messaging",
     "pillar": "Governance",
     "frameworks": [
       "SCR Framework (Minto)",
-      "Crisis Communication (SCCT)",
       "Brand Archetypes",
       "PESO Model",
-      "Carroll's CSR Pyramid",
+      "Press Release Canvas"
+    ]
+  },
+  {
+    "name": "Stakeholder Relations",
+    "pillar": "Governance",
+    "frameworks": [
+      "Crisis Communication (SCCT)",
       "Issue Life Cycle",
       "Stakeholder Engagement",
-      "Press Release Canvas"
+      "Carroll's CSR Pyramid"
     ]
   },
 

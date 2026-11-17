@@ -1,7 +1,11 @@
 import React, { useState, useMemo } from "react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { HeaderNavPills, ShellHeader } from "@/app/shell-header";
-import { MBACard } from "@/components/common/MBACard";
+import {
+  MBACard,
+  buildModuleCategoryGroups,
+  type ModuleComponentCategory,
+} from "@/components/common/MBACard";
 import { MovedCardsGridItems } from "@/components/common/MovedCardsGridItems";
 import {
   LauncherPageProvider,
@@ -26,6 +30,7 @@ export interface HomeLeisureSubMenu {
   id: string;
   label: string;
   to: string;
+  componentCategory: ModuleComponentCategory;
 }
 
 export interface HomeLeisureAppItem {
@@ -63,10 +68,10 @@ export const HOME_LEISURE_APPS: HomeLeisureAppItem[] = [
     badgeBg: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
     badgeText: "Home",
     subMenus: [
-      { id: "piket-tugas", label: "Piket & Tugas Domestik", to: "/lainnya?app=home-chores" },
-      { id: "servis-perawatan", label: "Servis & Perawatan Rumah", to: "/lainnya?app=appliance-care" },
-      { id: "tanaman-kebun", label: "Tanaman & Kebun", to: "/peh/plants" },
-      { id: "inventaris-elektronik", label: "Inventaris Rumah & Elektronik", to: "/lainnya?app=home-inventory" },
+      { id: "piket-tugas", label: "Piket & Tugas Domestik", to: "/lainnya?app=home-chores", componentCategory: "Workflows" },
+      { id: "servis-perawatan", label: "Servis & Perawatan Rumah", to: "/lainnya?app=appliance-care", componentCategory: "Records" },
+      { id: "tanaman-kebun", label: "Tanaman & Kebun", to: "/peh/plants", componentCategory: "Automations" },
+      { id: "inventaris-elektronik", label: "Inventaris Rumah & Elektronik", to: "/lainnya?app=home-inventory", componentCategory: "Records" },
     ],
   },
   {
@@ -84,12 +89,12 @@ export const HOME_LEISURE_APPS: HomeLeisureAppItem[] = [
     badgeBg: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
     badgeText: "Home",
     subMenus: [
-      { id: "pantry-inventory", label: "Pantry Inventory", to: "/recipes?tab=pantry" },
-      { id: "cook-log", label: "Cook Log", to: "/recipes?tab=cook-log" },
-      { id: "expiry-alert", label: "Expiry Alert", to: "/recipes?tab=expiry" },
-      { id: "leftover-manager", label: "Leftover Manager", to: "/recipes?tab=leftovers" },
-      { id: "meal-planner", label: "Meal Planner", to: "/recipes?tab=meal-planner" },
-      { id: "shopping-list", label: "Shopping List", to: "/shopping" },
+      { id: "pantry-inventory", label: "Pantry Inventory", to: "/recipes?tab=pantry", componentCategory: "Records" },
+      { id: "cook-log", label: "Cook Log", to: "/recipes?tab=cook-log", componentCategory: "Records" },
+      { id: "expiry-alert", label: "Expiry Alert", to: "/recipes?tab=expiry", componentCategory: "Automations" },
+      { id: "leftover-manager", label: "Leftover Manager", to: "/recipes?tab=leftovers", componentCategory: "Tools" },
+      { id: "meal-planner", label: "Meal Planner", to: "/recipes?tab=meal-planner", componentCategory: "Workflows" },
+      { id: "shopping-list", label: "Shopping List", to: "/shopping", componentCategory: "Features" },
     ],
   },
 
@@ -111,9 +116,9 @@ export const HOME_LEISURE_APPS: HomeLeisureAppItem[] = [
     badgeBg: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
     badgeText: "Vehicle",
     subMenus: [
-      { id: "vehicle-registry", label: "Vehicle Registry", to: "/lainnya?app=vehicle-identity" },
-      { id: "vehicle-renewals", label: "Vehicle Renewals", to: "/lainnya?app=vehicle-renewals" },
-      { id: "vehicle-logbook", label: "Vehicle Logbook", to: "/lainnya?app=vehicle-logbook" },
+      { id: "vehicle-registry", label: "Vehicle Registry", to: "/lainnya?app=vehicle-identity", componentCategory: "Records" },
+      { id: "vehicle-renewals", label: "Vehicle Renewals", to: "/lainnya?app=vehicle-renewals", componentCategory: "Automations" },
+      { id: "vehicle-logbook", label: "Vehicle Logbook", to: "/lainnya?app=vehicle-logbook", componentCategory: "Records" },
     ],
   },
   {
@@ -131,9 +136,9 @@ export const HOME_LEISURE_APPS: HomeLeisureAppItem[] = [
     badgeBg: "bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30",
     badgeText: "Vehicle",
     subMenus: [
-      { id: "fuel-log", label: "Fuel Log", to: "/lainnya?app=mileage-fuel" },
-      { id: "service-history", label: "Service History", to: "/lainnya?app=vehicle-service" },
-      { id: "parts-lifecycle", label: "Parts Lifecycle", to: "/lainnya?app=parts-lifecycle" },
+      { id: "fuel-log", label: "Fuel Log", to: "/lainnya?app=mileage-fuel", componentCategory: "Analytics" },
+      { id: "service-history", label: "Service History", to: "/lainnya?app=vehicle-service", componentCategory: "Records" },
+      { id: "parts-lifecycle", label: "Parts Lifecycle", to: "/lainnya?app=parts-lifecycle", componentCategory: "Analytics" },
     ],
   },
 
@@ -155,8 +160,8 @@ export const HOME_LEISURE_APPS: HomeLeisureAppItem[] = [
     badgeBg: "bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30",
     badgeText: "Leisure",
     subMenus: [
-      { id: "trip-planner", label: "Trip Planner", to: "/trips" },
-      { id: "weather", label: "Weather", to: "/weather" },
+      { id: "trip-planner", label: "Trip Planner", to: "/trips", componentCategory: "Workflows" },
+      { id: "weather", label: "Weather", to: "/weather", componentCategory: "Dashboards" },
     ],
   },
   {
@@ -174,10 +179,10 @@ export const HOME_LEISURE_APPS: HomeLeisureAppItem[] = [
     badgeBg: "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30",
     badgeText: "Leisure",
     subMenus: [
-      { id: "movies", label: "Movies", to: "/movies" },
-      { id: "games", label: "Games", to: "/games" },
-      { id: "podcasts", label: "Podcasts", to: "/podcasts" },
-      { id: "music", label: "Music", to: "/music" },
+      { id: "movies", label: "Movies", to: "/movies", componentCategory: "Records" },
+      { id: "games", label: "Games", to: "/games", componentCategory: "Features" },
+      { id: "podcasts", label: "Podcasts", to: "/podcasts", componentCategory: "Features" },
+      { id: "music", label: "Music", to: "/music", componentCategory: "Features" },
     ],
   },
 ];
@@ -239,7 +244,7 @@ export function HomeLeisurePage({
         {/* Title (Matching MBA Page Header Style) */}
         <div className="text-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground/90 tracking-tight flex items-center justify-center gap-2.5">
-            <span>Home and Leisure</span>
+            <span>Home <span className="font-normal">and</span> Leisure</span>
           </h1>
         </div>
 
@@ -258,6 +263,7 @@ export function HomeLeisurePage({
                 title: sub.label,
                 to: sub.to || app.to,
               }))}
+              categoryGroups={buildModuleCategoryGroups(app.subMenus, app.to)}
               isFav={isFavorite(app.to)}
               toggleFavorite={toggleFavorite}
             />

@@ -1,6 +1,6 @@
 import { ShellHeader } from "@/app/shell-header";
 import { ShellSidebar } from "@/app/shell-sidebar";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   FolderKanban,
   Plus,
@@ -33,7 +33,17 @@ import {
 } from "./types";
 import { TaskStatus, TaskPriority } from "../task-manager/types";
 
-export function ProjectManagerApp() {
+export interface ProjectManagerAppProps {
+  initialViewMode?: ProjectViewMode;
+  externalSearchQuery?: string;
+  externalProjectId?: string | null;
+}
+
+export function ProjectManagerApp({
+  initialViewMode = "overview",
+  externalSearchQuery,
+  externalProjectId,
+}: ProjectManagerAppProps = {}) {
   const {
     state,
     tasks,
@@ -53,12 +63,12 @@ export function ProjectManagerApp() {
   } = useProjectManager();
 
   const [activeProjectId, setActiveProjectId] = useState<string>(() => {
-    return state.projects[0]?.id || "";
+    return externalProjectId || state.projects[0]?.id || "";
   });
 
-  const [viewMode, setViewMode] = useState<ProjectViewMode>("overview");
+  const [viewMode, setViewMode] = useState<ProjectViewMode>(initialViewMode);
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>(externalSearchQuery ?? "");
 
   // Modals state
   const [showNewProjectModal, setShowNewProjectModal] = useState<boolean>(false);
@@ -69,6 +79,31 @@ export function ProjectManagerApp() {
   const [showNewRiskModal, setShowNewRiskModal] = useState<boolean>(false);
   const [showNewMemberModal, setShowNewMemberModal] = useState<boolean>(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
+
+  useEffect(() => {
+    setViewMode(initialViewMode);
+  }, [initialViewMode]);
+
+  useEffect(() => {
+    if (externalSearchQuery !== undefined) {
+      setSearchQuery(externalSearchQuery);
+    }
+  }, [externalSearchQuery]);
+
+  useEffect(() => {
+    if (externalProjectId) {
+      const matched = state.projects.find((p) => p.id === externalProjectId);
+      if (matched) {
+        setActiveProjectId(matched.id);
+      }
+    }
+  }, [externalProjectId, state.projects]);
+
+  useEffect(() => {
+    const openNewModal = () => setShowNewProjectModal(true);
+    window.addEventListener("aio_project_manager_new_project", openNewModal);
+    return () => window.removeEventListener("aio_project_manager_new_project", openNewModal);
+  }, []);
 
   // Active Project
   const activeProject = useMemo(() => {

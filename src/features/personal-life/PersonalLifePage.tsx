@@ -1,42 +1,105 @@
 import React, { useState, useMemo } from "react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { HeaderNavPills, ShellHeader } from "@/app/shell-header";
-import { MBACard } from "@/components/common/MBACard";
+import {
+  MBACard,
+  buildModuleCategoryGroups,
+  type ModuleComponentCategory,
+} from "@/components/common/MBACard";
 import { MovedCardsGridItems } from "@/components/common/MovedCardsGridItems";
 import {
   LauncherPageProvider,
   adjustCategoryTabsCount,
+  syncLauncherPageBadge,
   useCardPageMover,
   useCurrentLauncherPage,
 } from "@/hooks/useCardPageMover";
 import { usePinnedCards, sortCardsWithPinned } from "@/hooks/usePinnedCards";
 import {
   Flame,
-  BookOpen,
-  Heart,
+  Target,
+  FolderKanban,
   Dumbbell,
   HeartPulse,
+  Brain,
+  Sparkles,
+  BookOpen,
+  Compass,
+  FileCheck,
+  CalendarDays,
+  NotebookText,
+  Wallet,
+  Receipt,
+  PiggyBank,
+  GraduationCap,
+  Award,
+  Book,
+  Heart,
+  Plane,
+  Package,
   Key,
+  Calculator,
+  Lock,
   Search,
 } from "lucide-react";
 
 export type PersonalLifeCategory =
   | "all"
-  | "pengembangan"
-  | "refleksi"
-  | "kesehatan"
-  | "utilitas";
+  | "development"
+  | "wellness"
+  | "reflection"
+  | "administration"
+  | "finance"
+  | "learning"
+  | "lifestyle"
+  | "technology";
+
+const LEGACY_PERSONAL_CATEGORY_MAP: Record<string, PersonalLifeCategory> = {
+  pengembangan: "development",
+  refleksi: "reflection",
+  kesehatan: "wellness",
+  utilitas: "technology",
+  "personal-growth": "development",
+  "health-wellbeing": "wellness",
+  "reflection-mindfulness": "reflection",
+  "personal-administration": "administration",
+  "personal-finance": "finance",
+  "learning-knowledge": "learning",
+  "lifestyle-leisure": "lifestyle",
+  "digital-security-utilities": "technology",
+};
+
+export function normalizePersonalCategory(raw?: string | null): PersonalLifeCategory {
+  if (!raw) return "all";
+  const key = raw.trim().toLowerCase();
+  if (
+    key === "all" ||
+    key === "development" ||
+    key === "wellness" ||
+    key === "reflection" ||
+    key === "administration" ||
+    key === "finance" ||
+    key === "learning" ||
+    key === "lifestyle" ||
+    key === "technology"
+  ) {
+    return key;
+  }
+  return LEGACY_PERSONAL_CATEGORY_MAP[key] ?? "all";
+}
 
 export interface PersonalLifeSubMenu {
   id: string;
   label: string;
   to: string;
+  inverted?: boolean;
+  componentCategory: ModuleComponentCategory;
 }
 
 export interface PersonalLifeAppItem {
   id: string;
   name: string;
-  category: "pengembangan" | "refleksi" | "kesehatan" | "utilitas";
+  category: Exclude<PersonalLifeCategory, "all">;
   categoryLabel: string;
   shortDesc: string;
   to: string;
@@ -51,121 +114,516 @@ export interface PersonalLifeAppItem {
 
 export const PERSONAL_LIFE_APPS: PersonalLifeAppItem[] = [
   // ============================================================================
-  // 1. Pengembangan (1 App)
+  // 1. Development (3 Modul)
   // ============================================================================
   {
-    id: "habits-and-planning",
+    id: "personal-development",
     name: "Personal Development",
-    category: "pengembangan",
-    categoryLabel: "Pengembangan",
+    category: "development",
+    categoryLabel: "Development",
     shortDesc:
-      "Pengembangan kebiasaan positif konsisten, perencanaan sasaran hidup terpadu, proyek mandiri, serta pencatatan sasaran dan tabungan masa depan.",
+      "Pembangunan kebiasaan positif harian, pelacakan konsistensi streak rutinitas, serta penguatan disiplin pengembangan diri.",
     to: "/habit-tracker",
     icon: Flame,
-    badge: "Pengembangan",
+    badge: "Development",
     accentGradient: "from-emerald-500 to-teal-600",
     accentBorder: "border-emerald-500/30 hover:border-emerald-500/60",
     badgeBg: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
-    badgeText: "Pengembangan",
+    badgeText: "Development",
     subMenus: [
-      { id: "habit-tracker", label: "Habit Tracker", to: "/habit-tracker" },
-      { id: "life-planner", label: "Life Planner", to: "/life/life-planner" },
-      { id: "personal-projects", label: "Personal Projects", to: "/proyek-personal" },
-      { id: "wishlist", label: "Wishlist and Savings", to: "/life/wishlist" },
+      { id: "habit-tracker", label: "Habit Tracker", to: "/habit-tracker", inverted: false, componentCategory: "Automations" },
+      { id: "personal-growth-matrix", label: "Personal Growth Matrix", to: "", componentCategory: "Tools" },
+      { id: "personal-habits-guide", label: "Personal Habits Guide", to: "", componentCategory: "Guides" },
     ],
   },
-
-  // ============================================================================
-  // 2. Refleksi (1 App)
-  // ============================================================================
   {
-    id: "journaling",
-    name: "Personal Journaling",
-    category: "refleksi",
-    categoryLabel: "Refleksi",
+    id: "goal-and-life-planning",
+    name: "Life Planning",
+    category: "development",
+    categoryLabel: "Development",
     shortDesc:
-      "Ruang refleksi privat harian, jurnal rasa syukur berkala untuk ketenangan batin, serta pemetaan suasana hati (mood map) terstruktur.",
-    to: "/journal",
-    icon: BookOpen,
-    badge: "Refleksi",
+      "Perumusan visi hidup jangka panjang, penetapan target pribadi per kuartal, dan evaluasi keselarasan pencapaian sasaran hidup.",
+    to: "/life/life-planner",
+    icon: Target,
+    badge: "Development",
     accentGradient: "from-teal-500 to-cyan-600",
     accentBorder: "border-teal-500/30 hover:border-teal-500/60",
     badgeBg: "bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30",
-    badgeText: "Refleksi",
+    badgeText: "Development",
     subMenus: [
-      { id: "daily-journal", label: "Daily Journal", to: "/journal" },
-      { id: "gratitude-journal", label: "Gratitude Journal", to: "/journal?tab=gratitude" },
-      { id: "mood-tracker", label: "Mood Tracker", to: "/journal?tab=mood" },
+      { id: "life-planner", label: "Life Planner", to: "/life/life-planner", inverted: false, componentCategory: "Features" },
+      { id: "annual-life-blueprint", label: "Annual Life Blueprint", to: "", componentCategory: "Templates" },
+      { id: "milestone-alignment-analytics", label: "Milestone Alignment Analytics", to: "", componentCategory: "Analytics" },
+    ],
+  },
+  {
+    id: "personal-productivity",
+    name: "Personal Productivity",
+    category: "development",
+    categoryLabel: "Development",
+    shortDesc:
+      "Pengelolaan inisiatif proyek mandiri di luar pekerjaan kantor, alokasi fokus waktu individu, dan ringkasan capaian pribadi.",
+    to: "/proyek-personal",
+    icon: FolderKanban,
+    badge: "Development",
+    accentGradient: "from-sky-500 to-blue-600",
+    accentBorder: "border-sky-500/30 hover:border-sky-500/60",
+    badgeBg: "bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30",
+    badgeText: "Development",
+    subMenus: [
+      { id: "personal-projects", label: "Personal Projects", to: "/proyek-personal", inverted: false, componentCategory: "Workflows" },
+      { id: "daily-focus-planner", label: "Daily Focus Planner", to: "", componentCategory: "Tools" },
+      { id: "personal-output-dashboard", label: "Personal Output Dashboard", to: "", componentCategory: "Dashboards" },
     ],
   },
 
   // ============================================================================
-  // 3. Kesehatan (2 Apps: Health and Fitness & Health Records)
+  // 2. Wellness (4 Modul)
   // ============================================================================
   {
-    id: "fitness-and-sleep",
-    name: "Health and Fitness",
-    category: "kesehatan",
-    categoryLabel: "Kesehatan",
+    id: "health-and-fitness",
+    name: "Health Management",
+    category: "wellness",
+    categoryLabel: "Wellness",
     shortDesc:
-      "Pusat pencatatan latihan fisik harian, kualitas istirahat malam dan kalkulator tidur, komposisi berat badan tubuh, serta log hidrasi air minum.",
+      "Pusat pencatatan latihan fisik harian, kualitas tidur malam, komposisi metrik tubuh, serta pengingat konsumsi air minum.",
     to: "/health?tab=workouts",
     icon: Dumbbell,
-    badge: "Kesehatan",
+    badge: "Wellness",
     accentGradient: "from-blue-500 to-indigo-600",
     accentBorder: "border-blue-500/30 hover:border-blue-500/60",
     badgeBg: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
-    badgeText: "Kesehatan",
+    badgeText: "Wellness",
     subMenus: [
-      { id: "workouts", label: "Workout Tracker", to: "/health?tab=workouts" },
-      { id: "sleep-quality", label: "Sleep Tracker", to: "/health?tab=sleep" },
-      { id: "body-metrics", label: "Body Metrics", to: "/health?tab=body-metrics" },
-      { id: "water-intake", label: "Water Tracker", to: "/health?tab=water" },
+      { id: "workouts", label: "Workout Tracker", to: "/health?tab=workouts", inverted: false, componentCategory: "Features" },
+      { id: "sleep-quality", label: "Sleep Tracker", to: "/health?tab=sleep", inverted: false, componentCategory: "Analytics" },
+      { id: "body-metrics", label: "Body Metrics", to: "/health?tab=body-metrics", inverted: false, componentCategory: "Dashboards" },
+      { id: "water-intake", label: "Water Tracker", to: "/health?tab=water", inverted: false, componentCategory: "Automations" },
     ],
   },
   {
     id: "health-records",
     name: "Health Records",
-    category: "kesehatan",
-    categoryLabel: "Kesehatan",
+    category: "wellness",
+    categoryLabel: "Wellness",
     shortDesc:
-      "Pusat rekam medis komprehensif: pelacak riwayat kesehatan dokter, tanda vital tubuh, jadwal pengingat minum obat, dan log perawatan kulit.",
+      "Pusat rekam medis klinis pribadi: ringkasan kondisi kesehatan, arsip riwayat pemeriksaan dokter, tanda vital, dan pengingat jadwal obat.",
     to: "/health",
     icon: HeartPulse,
-    badge: "Kesehatan",
+    badge: "Wellness",
     accentGradient: "from-rose-500 to-pink-600",
     accentBorder: "border-rose-500/30 hover:border-rose-500/60",
     badgeBg: "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30",
-    badgeText: "Kesehatan",
+    badgeText: "Wellness",
     subMenus: [
-      { id: "health-tracker", label: "Health Overview", to: "/health" },
-      { id: "medical-records", label: "Medical Records", to: "/health?tab=medical-records" },
-      { id: "vitals-tracker", label: "Vital Signs", to: "/health?tab=vitals" },
-      { id: "med-reminder", label: "Medication Reminder", to: "/lainnya?app=med-reminder" },
-      { id: "skincare-log", label: "Skincare Tracker", to: "/health?tab=skincare" },
+      { id: "health-tracker", label: "Health Overview", to: "/health", inverted: false, componentCategory: "Dashboards" },
+      { id: "medical-records", label: "Medical Records", to: "/health?tab=medical-records", inverted: false, componentCategory: "Records" },
+      { id: "vitals-tracker", label: "Vital Signs", to: "/health?tab=vitals", inverted: false, componentCategory: "Analytics" },
+      { id: "med-reminder", label: "Medication Reminder", to: "/lainnya?app=med-reminder", inverted: false, componentCategory: "Automations" },
+    ],
+  },
+  {
+    id: "mental-wellbeing",
+    name: "Mental Wellbeing",
+    category: "wellness",
+    categoryLabel: "Wellness",
+    shortDesc:
+      "Pemantauan tingkat stres harian, rutinitas latihan pernapasan untuk regulasi emosi, dan analisis ketahanan kesehatan mental pribadi.",
+    to: "/personal-life-management?module=mental-wellbeing",
+    icon: Brain,
+    badge: "Wellness",
+    accentGradient: "from-violet-500 to-purple-600",
+    accentBorder: "border-violet-500/30 hover:border-violet-500/60",
+    badgeBg: "bg-violet-500/15 text-violet-600 dark:text-violet-400 border-violet-500/30",
+    badgeText: "Wellness",
+    subMenus: [
+      { id: "stress-resilience-checkin", label: "Stress Check-In", to: "", componentCategory: "Tools" },
+      { id: "breathing-mindfulness-routine", label: "Mindfulness Routine", to: "", componentCategory: "Workflows" },
+      { id: "emotional-wellbeing-trends", label: "Emotional Wellbeing Trends", to: "", componentCategory: "Analytics" },
+    ],
+  },
+  {
+    id: "nutrition-and-self-care",
+    name: "Personal Wellness",
+    category: "wellness",
+    categoryLabel: "Wellness",
+    shortDesc:
+      "Pengelolaan rutinitas perawatan kulit pagi-malam, pencatatan asupan nutrisi pribadi, dan panduan kebiasaan merawat diri sehari-hari.",
+    to: "/health?tab=skincare",
+    icon: Sparkles,
+    badge: "Wellness",
+    accentGradient: "from-pink-500 to-rose-600",
+    accentBorder: "border-pink-500/30 hover:border-pink-500/60",
+    badgeBg: "bg-pink-500/15 text-pink-600 dark:text-pink-400 border-pink-500/30",
+    badgeText: "Wellness",
+    subMenus: [
+      { id: "skincare-log", label: "Skincare Tracker", to: "/health?tab=skincare", inverted: false, componentCategory: "Workflows" },
+      { id: "personal-nutrition-log", label: "Personal Nutrition Log", to: "", componentCategory: "Records" },
+      { id: "self-care-routine-guide", label: "Self-Care Routine Guide", to: "", componentCategory: "Guides" },
     ],
   },
 
   // ============================================================================
-  // 4. Utilitas (1 App: Personal Tools)
+  // 3. Reflection (2 Modul)
   // ============================================================================
   {
-    id: "personal-tools",
-    name: "Personal Tools",
-    category: "utilitas",
-    categoryLabel: "Utilitas",
+    id: "personal-journaling",
+    name: "Personal Reflection",
+    category: "reflection",
+    categoryLabel: "Reflection",
     shortDesc:
-      "Brankas manajemen kata sandi terenkripsi dan keamanan akun personal, serta kalkulator utilitas serbaguna untuk kebutuhan komputasi harian.",
+      "Ruang penulisan jurnal harian privat, catatan rasa syukur berkala, serta pemetaan dinamika suasana hati (mood tracker).",
+    to: "/journal",
+    icon: BookOpen,
+    badge: "Reflection",
+    accentGradient: "from-teal-500 to-emerald-600",
+    accentBorder: "border-teal-500/30 hover:border-teal-500/60",
+    badgeBg: "bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30",
+    badgeText: "Reflection",
+    subMenus: [
+      { id: "daily-journal", label: "Daily Journal", to: "/journal", inverted: false, componentCategory: "Records" },
+      { id: "gratitude-journal", label: "Gratitude Journal", to: "/journal?tab=gratitude", inverted: false, componentCategory: "Templates" },
+      { id: "mood-tracker", label: "Mood Tracker", to: "/journal?tab=mood", inverted: false, componentCategory: "Analytics" },
+    ],
+  },
+  {
+    id: "life-reflection",
+    name: "Life Reflection",
+    category: "reflection",
+    categoryLabel: "Reflection",
+    shortDesc:
+      "Evaluasi berkala kualitas hidup mingguan dan tahunan, kompas nilai inti pribadi, serta arsip pelajaran bermakna kehidupan.",
+    to: "/personal-life-management?module=life-reflection",
+    icon: Compass,
+    badge: "Reflection",
+    accentGradient: "from-indigo-500 to-violet-600",
+    accentBorder: "border-indigo-500/30 hover:border-indigo-500/60",
+    badgeBg: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30",
+    badgeText: "Reflection",
+    subMenus: [
+      { id: "weekly-annual-review-template", label: "Periodic Review Template", to: "", componentCategory: "Templates" },
+      { id: "core-values-purpose-compass", label: "Values Compass", to: "", componentCategory: "Tools" },
+      { id: "life-lessons-archive", label: "Life Lessons Archive", to: "", componentCategory: "Records" },
+    ],
+  },
+
+  // ============================================================================
+  // 4. Administration (3 Modul)
+  // ============================================================================
+  {
+    id: "personal-documents",
+    name: "Personal Documents",
+    category: "administration",
+    categoryLabel: "Administration",
+    shortDesc:
+      "Registri berkas identitas diri pribadi (KTP, paspor, SIM, ijazah), pengingat masa berlaku dokumen, dan panduan administrasi individu.",
+    to: "/personal-life-management?module=personal-documents",
+    icon: FileCheck,
+    badge: "Administration",
+    accentGradient: "from-slate-500 to-blue-600",
+    accentBorder: "border-slate-500/30 hover:border-slate-500/60",
+    badgeBg: "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/30",
+    badgeText: "Administration",
+    subMenus: [
+      { id: "personal-id-certificate-registry", label: "ID Certificate Registry", to: "", componentCategory: "Records" },
+      { id: "personal-document-renewal-reminder", label: "Document Renewal Reminder", to: "", componentCategory: "Automations" },
+      { id: "personal-admin-checklist-guide", label: "Admin Checklist Guide", to: "", componentCategory: "Guides" },
+    ],
+  },
+  {
+    id: "personal-scheduling",
+    name: "Personal Scheduling",
+    category: "administration",
+    categoryLabel: "Administration",
+    shortDesc:
+      "Pengaturan kalender dan komitmen agenda pribadi, pola blok waktu harian individu, serta pengingat otomatis janji pribadi.",
+    to: "/personal-life-management?module=personal-scheduling",
+    icon: CalendarDays,
+    badge: "Administration",
+    accentGradient: "from-cyan-500 to-sky-600",
+    accentBorder: "border-cyan-500/30 hover:border-cyan-500/60",
+    badgeBg: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30",
+    badgeText: "Administration",
+    subMenus: [
+      { id: "personal-calendar-commitments", label: "Personal Schedule", to: "", componentCategory: "Features" },
+      { id: "time-blocking-template", label: "Time Blocking Template", to: "", componentCategory: "Templates" },
+      { id: "personal-appointment-reminder", label: "Personal Appointment Reminder", to: "", componentCategory: "Automations" },
+    ],
+  },
+  {
+    id: "personal-records",
+    name: "Personal Records",
+    category: "administration",
+    categoryLabel: "Administration",
+    shortDesc:
+      "Arsip catatan penting riwayat pribadi, kartu informasi medis darurat individu, dan pengaturan retensi catatan personal.",
+    to: "/personal-life-management?module=personal-records",
+    icon: NotebookText,
+    badge: "Administration",
+    accentGradient: "from-blue-500 to-slate-600",
+    accentBorder: "border-blue-500/30 hover:border-blue-500/60",
+    badgeBg: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
+    badgeText: "Administration",
+    subMenus: [
+      { id: "personal-milestones-logs", label: "Milestone Log", to: "", componentCategory: "Records" },
+      { id: "emergency-medical-info-card", label: "Emergency Medical Card", to: "", componentCategory: "Templates" },
+      { id: "personal-archive-settings", label: "Personal Archive Settings", to: "", componentCategory: "Settings" },
+    ],
+  },
+
+  // ============================================================================
+  // 5. Finance (3 Modul)
+  // ============================================================================
+  {
+    id: "personal-budgeting",
+    name: "Personal Finance",
+    category: "finance",
+    categoryLabel: "Finance",
+    shortDesc:
+      "Perencanaan anggaran bulanan kebutuhan pribadi sehari-hari, batas belanja per pos pengeluaran, dan evaluasi varian anggaran individu.",
+    to: "/personal-life-management?module=personal-budgeting",
+    icon: Wallet,
+    badge: "Finance",
+    accentGradient: "from-emerald-500 to-green-600",
+    accentBorder: "border-emerald-500/30 hover:border-emerald-500/60",
+    badgeBg: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
+    badgeText: "Finance",
+    subMenus: [
+      { id: "monthly-personal-budget-plan", label: "Personal Budget Plan", to: "", componentCategory: "Templates" },
+      { id: "personal-spending-limits", label: "Personal Spending Limits", to: "", componentCategory: "Settings" },
+      { id: "budget-variance-analytics", label: "Budget Variance Analytics", to: "", componentCategory: "Analytics" },
+    ],
+  },
+  {
+    id: "income-and-expense-tracking",
+    name: "Cash Flow",
+    category: "finance",
+    categoryLabel: "Finance",
+    shortDesc:
+      "Buku kas harian pribadi untuk mencatat pemasukan dan pengeluaran rutin sehari-hari beserta ringkasan arus kas harian individu.",
+    to: "/personal-life-management?module=income-and-expense-tracking",
+    icon: Receipt,
+    badge: "Finance",
+    accentGradient: "from-green-500 to-teal-600",
+    accentBorder: "border-green-500/30 hover:border-green-500/60",
+    badgeBg: "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30",
+    badgeText: "Finance",
+    subMenus: [
+      { id: "daily-expense-ledger", label: "Daily Expense Ledger", to: "", componentCategory: "Records" },
+      { id: "personal-income-log", label: "Personal Income Log", to: "", componentCategory: "Records" },
+      { id: "daily-cashflow-overview", label: "Daily Cashflow Overview", to: "", componentCategory: "Dashboards" },
+    ],
+  },
+  {
+    id: "savings-and-financial-goals",
+    name: "Financial Goals",
+    category: "finance",
+    categoryLabel: "Finance",
+    shortDesc:
+      "Pengelolaan daftar wishlist barang atau pengalaman pribadi, kalkulator tabungan target personal, dan pemantauan progres menabung.",
+    to: "/life/wishlist",
+    icon: PiggyBank,
+    badge: "Finance",
+    accentGradient: "from-amber-500 to-emerald-600",
+    accentBorder: "border-amber-500/30 hover:border-amber-500/60",
+    badgeBg: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
+    badgeText: "Finance",
+    subMenus: [
+      { id: "wishlist", label: "Savings Wishlist", to: "/life/wishlist", inverted: false, componentCategory: "Records" },
+      { id: "personal-savings-target-calculator", label: "Savings Target Calculator", to: "", componentCategory: "Tools" },
+      { id: "savings-goal-progress-analytics", label: "Savings Goal Analytics", to: "", componentCategory: "Analytics" },
+    ],
+  },
+
+  // ============================================================================
+  // 6. Learning (3 Modul)
+  // ============================================================================
+  {
+    id: "personal-learning",
+    name: "Personal Learning",
+    category: "learning",
+    categoryLabel: "Learning",
+    shortDesc:
+      "Perencanaan belajar mandiri pribadi, pemantauan sesi studi personal, serta panduan teknik belajar efektif untuk pengembangan wawasan.",
+    to: "/personal-life-management?module=personal-learning",
+    icon: GraduationCap,
+    badge: "Learning",
+    accentGradient: "from-purple-500 to-indigo-600",
+    accentBorder: "border-purple-500/30 hover:border-purple-500/60",
+    badgeBg: "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30",
+    badgeText: "Learning",
+    subMenus: [
+      { id: "self-study-plan-tracker", label: "Self-Study Plan Tracker", to: "", componentCategory: "Workflows" },
+      { id: "personal-study-session-dashboard", label: "Study Session Dashboard", to: "", componentCategory: "Dashboards" },
+      { id: "effective-self-learning-guide", label: "Effective Self-Learning Guide", to: "", componentCategory: "Guides" },
+    ],
+  },
+  {
+    id: "skills-development",
+    name: "Skills Development",
+    category: "learning",
+    categoryLabel: "Learning",
+    shortDesc:
+      "Inventarisasi daftar keahlian pribadi, pemetaan latihan keterampilan baru yang sedang diasah, dan analitik penguasaan skill individu.",
+    to: "/personal-life-management?module=skills-development",
+    icon: Award,
+    badge: "Learning",
+    accentGradient: "from-fuchsia-500 to-purple-600",
+    accentBorder: "border-fuchsia-500/30 hover:border-fuchsia-500/60",
+    badgeBg: "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-500/30",
+    badgeText: "Learning",
+    subMenus: [
+      { id: "personal-skill-inventory", label: "Personal Skill Inventory", to: "", componentCategory: "Records" },
+      { id: "skill-gap-practice-matrix", label: "Skill Gap Matrix", to: "", componentCategory: "Tools" },
+      { id: "skill-mastery-analytics", label: "Skill Mastery Analytics", to: "", componentCategory: "Analytics" },
+    ],
+  },
+  {
+    id: "reading-and-knowledge",
+    name: "Knowledge Resources",
+    category: "learning",
+    categoryLabel: "Learning",
+    shortDesc:
+      "Log bacaan buku dan artikel pribadi untuk pengayaan wawasan, format ringkasan intisari bacaan personal, dan panduan kurasi bacaan.",
+    to: "/personal-life-management?module=reading-and-knowledge",
+    icon: Book,
+    badge: "Learning",
+    accentGradient: "from-indigo-500 to-blue-600",
+    accentBorder: "border-indigo-500/30 hover:border-indigo-500/60",
+    badgeBg: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30",
+    badgeText: "Learning",
+    subMenus: [
+      { id: "personal-book-article-log", label: "Reading Log", to: "", componentCategory: "Records" },
+      { id: "personal-takeaways-highlights", label: "Reading Takeaways", to: "", componentCategory: "Templates" },
+      { id: "curated-personal-reading-guide", label: "Personal Reading Guide", to: "", componentCategory: "Guides" },
+    ],
+  },
+
+  // ============================================================================
+  // 7. Lifestyle (3 Modul)
+  // ============================================================================
+  {
+    id: "hobbies-and-interests",
+    name: "Personal Interests",
+    category: "lifestyle",
+    categoryLabel: "Lifestyle",
+    shortDesc:
+      "Catatan sesi hobi dan eksplorasi minat pribadi, penjadwalan waktu luang berkualitas, serta panduan perlengkapan dan inspirasi hobi.",
+    to: "/personal-life-management?module=hobbies-and-interests",
+    icon: Heart,
+    badge: "Lifestyle",
+    accentGradient: "from-orange-500 to-rose-600",
+    accentBorder: "border-orange-500/30 hover:border-orange-500/60",
+    badgeBg: "bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30",
+    badgeText: "Lifestyle",
+    subMenus: [
+      { id: "hobby-activity-log", label: "Hobby Activity Log", to: "", componentCategory: "Records" },
+      { id: "hobby-time-interest-planner", label: "Hobby Interest Planner", to: "", componentCategory: "Features" },
+      { id: "hobby-gear-inspiration-guide", label: "Hobby Gear Guide", to: "", componentCategory: "Guides" },
+    ],
+  },
+  {
+    id: "travel-and-experiences",
+    name: "Travel Experiences",
+    category: "lifestyle",
+    categoryLabel: "Lifestyle",
+    shortDesc:
+      "Daftar destinasi dan pengalaman hidup impian pribadi, daftar periksa perlengkapan solo travel, dan dokumentasi kisah perjalanan pribadi.",
+    to: "/personal-life-management?module=travel-and-experiences",
+    icon: Plane,
+    badge: "Lifestyle",
+    accentGradient: "from-amber-500 to-orange-600",
+    accentBorder: "border-amber-500/30 hover:border-amber-500/60",
+    badgeBg: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
+    badgeText: "Lifestyle",
+    subMenus: [
+      { id: "personal-travel-wishlist-bucket-list", label: "Travel Wishlist", to: "", componentCategory: "Records" },
+      { id: "solo-packing-experience-checklist", label: "Solo Packing Checklist", to: "", componentCategory: "Tools" },
+      { id: "personal-experience-journal-workflow", label: "Experience Journal Workflow", to: "", componentCategory: "Workflows" },
+    ],
+  },
+  {
+    id: "personal-inventory",
+    name: "Personal Assets",
+    category: "lifestyle",
+    categoryLabel: "Lifestyle",
+    shortDesc:
+      "Inventarisasi barang kepemilikan individu (gadget, koleksi, aksesori), kurasi lemari kapsul pribadi, dan pengingat garansi barang pribadi.",
+    to: "/personal-life-management?module=personal-inventory",
+    icon: Package,
+    badge: "Lifestyle",
+    accentGradient: "from-yellow-500 to-amber-600",
+    accentBorder: "border-yellow-500/30 hover:border-yellow-500/60",
+    badgeBg: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border-yellow-500/30",
+    badgeText: "Lifestyle",
+    subMenus: [
+      { id: "personal-belongings-registry", label: "Personal Belongings Registry", to: "", componentCategory: "Records" },
+      { id: "personal-wardrobe-capsule-planner", label: "Wardrobe Capsule Planner", to: "", componentCategory: "Tools" },
+      { id: "warranty-service-due-reminder", label: "Warranty Service Reminder", to: "", componentCategory: "Automations" },
+    ],
+  },
+
+  // ============================================================================
+  // 8. Technology (3 Modul: 2 Split Legacy + 1 New)
+  // ============================================================================
+  {
+    id: "personal-security",
+    name: "Personal Security",
+    category: "technology",
+    categoryLabel: "Technology",
+    shortDesc:
+      "Brankas manajemen kata sandi akun personal terenkripsi, daftar periksa audit keamanan akun & 2FA, serta panduan pengamanan kode pemulihan.",
     to: "/passwords",
     icon: Key,
-    badge: "Utilitas",
+    badge: "Technology",
     accentGradient: "from-cyan-500 to-blue-600",
     accentBorder: "border-cyan-500/30 hover:border-cyan-500/60",
     badgeBg: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/30",
-    badgeText: "Utilitas",
+    badgeText: "Technology",
     subMenus: [
-      { id: "passwords", label: "Password Manager", to: "/passwords" },
-      { id: "utilities", label: "Calculator and Utilities", to: "/kalkulator" },
+      { id: "passwords", label: "Passwords", to: "/passwords", inverted: false, componentCategory: "Settings" },
+      { id: "account-security-audit-checklist", label: "Security Audit Checklist", to: "", componentCategory: "Tools" },
+      { id: "recovery-codes-backup-guide", label: "Recovery Backup Guide", to: "", componentCategory: "Guides" },
+    ],
+  },
+  {
+    id: "personal-utilities",
+    name: "Personal Utilities",
+    category: "technology",
+    categoryLabel: "Technology",
+    shortDesc:
+      "Kalkulator utilitas serbaguna untuk kebutuhan komputasi harian pribadi, konverter satuan & waktu cepat, serta preferensi alat bantu personal.",
+    to: "/kalkulator",
+    icon: Calculator,
+    badge: "Technology",
+    accentGradient: "from-sky-500 to-indigo-600",
+    accentBorder: "border-sky-500/30 hover:border-sky-500/60",
+    badgeBg: "bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30",
+    badgeText: "Technology",
+    subMenus: [
+      { id: "utilities", label: "Utility Calculator", to: "/kalkulator", inverted: false, componentCategory: "Tools" },
+      { id: "personal-quick-converters", label: "Personal Quick Converters", to: "", componentCategory: "Tools" },
+      { id: "utility-shortcuts-preferences", label: "Utility Shortcuts Preferences", to: "", componentCategory: "Settings" },
+    ],
+  },
+  {
+    id: "digital-privacy",
+    name: "Digital Privacy",
+    category: "technology",
+    categoryLabel: "Technology",
+    shortDesc:
+      "Alur audit privasi izin aplikasi dan akun digital, pembersihan jejak digital pribadi, serta panduan perlindungan data diri di internet.",
+    to: "/personal-life-management?module=digital-privacy",
+    icon: Lock,
+    badge: "Technology",
+    accentGradient: "from-slate-600 to-zinc-700",
+    accentBorder: "border-slate-500/30 hover:border-slate-500/60",
+    badgeBg: "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/30",
+    badgeText: "Technology",
+    subMenus: [
+      { id: "account-privacy-audit-workflow", label: "Privacy Audit Workflow", to: "", componentCategory: "Workflows" },
+      { id: "digital-footprint-cleanup", label: "Digital Footprint Cleanup", to: "", componentCategory: "Records" },
+      { id: "personal-data-protection-guide", label: "Data Protection Guide", to: "", componentCategory: "Guides" },
     ],
   },
 ];
@@ -175,32 +633,94 @@ export const PERSONAL_LIFE_CATEGORY_TABS: {
   label: string;
   count: number;
 }[] = [
-  { id: "all", label: "Semua", count: 5 },
-  { id: "pengembangan", label: "Pengembangan", count: 1 },
-  { id: "refleksi", label: "Refleksi", count: 1 },
-  { id: "kesehatan", label: "Kesehatan", count: 2 },
-  { id: "utilitas", label: "Utilitas", count: 1 },
+  { id: "all", label: "Semua", count: PERSONAL_LIFE_APPS.length },
+  {
+    id: "development",
+    label: "Development",
+    count: PERSONAL_LIFE_APPS.filter((a) => a.category === "development").length,
+  },
+  {
+    id: "wellness",
+    label: "Wellness",
+    count: PERSONAL_LIFE_APPS.filter((a) => a.category === "wellness").length,
+  },
+  {
+    id: "reflection",
+    label: "Reflection",
+    count: PERSONAL_LIFE_APPS.filter((a) => a.category === "reflection").length,
+  },
+  {
+    id: "administration",
+    label: "Administration",
+    count: PERSONAL_LIFE_APPS.filter((a) => a.category === "administration").length,
+  },
+  {
+    id: "finance",
+    label: "Finance",
+    count: PERSONAL_LIFE_APPS.filter((a) => a.category === "finance").length,
+  },
+  {
+    id: "learning",
+    label: "Learning",
+    count: PERSONAL_LIFE_APPS.filter((a) => a.category === "learning").length,
+  },
+  {
+    id: "lifestyle",
+    label: "Lifestyle",
+    count: PERSONAL_LIFE_APPS.filter((a) => a.category === "lifestyle").length,
+  },
+  {
+    id: "technology",
+    label: "Technology",
+    count: PERSONAL_LIFE_APPS.filter((a) => a.category === "technology").length,
+  },
 ];
 
-export function PersonalLifePage({ isEmbedded = false }: { isEmbedded?: boolean } = {}) {
-  const [selectedCategory, setSelectedCategory] = useState<PersonalLifeCategory>("all");
+export const PERSONAL_TOTAL_MODULES = PERSONAL_LIFE_APPS.length;
+export const PERSONAL_TOOLS_COUNT = PERSONAL_LIFE_APPS.reduce(
+  (sum, app) => sum + app.subMenus.filter((s) => s.componentCategory === "Tools").length,
+  0
+);
+export const PERSONAL_FEATURES_COUNT = PERSONAL_LIFE_APPS.reduce(
+  (sum, app) => sum + app.subMenus.filter((s) => s.componentCategory !== "Tools").length,
+  0
+);
+export const PERSONAL_TOTAL_BADGE = `${PERSONAL_TOTAL_MODULES} Modul • ${PERSONAL_FEATURES_COUNT} Features • ${PERSONAL_TOOLS_COUNT} Tools`;
+syncLauncherPageBadge("mode_personal", PERSONAL_TOTAL_BADGE);
+export const PERSONAL_SUMMARY_DESC = PERSONAL_LIFE_CATEGORY_TABS.map(
+  (t) => `${t.label} (${t.count})`
+).join(" · ");
+
+export function PersonalLifePage({ isEmbedded: _isEmbedded = false }: { isEmbedded?: boolean } = {}) {
+  const [selectedCategory, setSelectedCategory] = useState<PersonalLifeCategory>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const cat = params.get("category") || params.get("pill");
+        if (cat) return normalizePersonalCategory(cat);
+      } catch {}
+    }
+    return "all";
+  });
   const [searchQuery, setSearchQuery] = useState("");
-  const { isFavorite, toggleFavorite, favorites } = useFavorites();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const pageId = useCurrentLauncherPage("mode_personal") || "mode_personal";
   const { getPageCountDelta, getCardsMovedIntoPage } = useCardPageMover();
   const { pinnedList } = usePinnedCards(pageId);
 
   const filteredApps = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
     const list = PERSONAL_LIFE_APPS.filter((app) => {
       const matchCategory =
         selectedCategory === "all" || app.category === selectedCategory;
       const matchSearch =
-        searchQuery.trim() === "" ||
-        app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        app.shortDesc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        app.categoryLabel.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        q === "" ||
+        app.name.toLowerCase().includes(q) ||
+        app.shortDesc.toLowerCase().includes(q) ||
+        app.categoryLabel.toLowerCase().includes(q) ||
+        app.badge.toLowerCase().includes(q) ||
         app.subMenus.some((sub) =>
-          sub.label.toLowerCase().includes(searchQuery.toLowerCase())
+          sub.label.toLowerCase().includes(q)
         );
       return matchCategory && matchSearch;
     });
@@ -215,7 +735,7 @@ export function PersonalLifePage({ isEmbedded = false }: { isEmbedded?: boolean 
         <HeaderNavPills
           items={adjustCategoryTabsCount(PERSONAL_LIFE_CATEGORY_TABS, getPageCountDelta(pageId))}
           activeId={selectedCategory}
-          onSelect={(id) => setSelectedCategory(id as any)}
+          onSelect={(id) => setSelectedCategory(id as PersonalLifeCategory)}
         />
       </ShellHeader>
 
@@ -241,8 +761,10 @@ export function PersonalLifePage({ isEmbedded = false }: { isEmbedded?: boolean 
               accentGradient={app.accentGradient}
               features={app.subMenus.map((sub) => ({
                 title: sub.label,
-                to: sub.to || app.to,
+                to: sub.to ?? app.to,
+                inverted: sub.inverted,
               }))}
+              categoryGroups={buildModuleCategoryGroups(app.subMenus, app.to)}
               isFav={isFavorite(app.to)}
               toggleFavorite={toggleFavorite}
             />

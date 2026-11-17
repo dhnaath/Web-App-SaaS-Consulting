@@ -62,6 +62,7 @@ export function MovedCardsGridItems({
             accentGradient={card.accentGradient}
             features={card.features || []}
             tools={card.tools}
+            categoryGroups={card.categoryGroups}
             isFav={isFavorite(card.to)}
             toggleFavorite={toggleFavorite}
             cardHeightClass={cardHeightClass}

@@ -4,6 +4,7 @@ import { Info, ArrowUpDown, Settings } from "lucide-react";
 interface HeaderExtraControlsProps {
   isTopPanelOpen?: boolean;
   onToggleTopPanel?: () => void;
+  isInfoOpen?: boolean;
   onOpenInfo?: () => void;
   isLightOnDark?: boolean;
 }
@@ -11,14 +12,18 @@ interface HeaderExtraControlsProps {
 export function HeaderExtraControls({
   isTopPanelOpen = false,
   onToggleTopPanel,
+  isInfoOpen = false,
   onOpenInfo,
   isLightOnDark = false,
 }: HeaderExtraControlsProps) {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [infoAnim, setInfoAnim] = useState(false);
 
   const handleInfo = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setInfoAnim(true);
+    setTimeout(() => setInfoAnim(false), 540);
     window.dispatchEvent(new CustomEvent("app-info"));
     if (onOpenInfo) {
       onOpenInfo();
@@ -44,11 +49,15 @@ export function HeaderExtraControls({
   };
 
   const baseBtnClass = isLightOnDark
-    ? "size-9 rounded-full aspect-square shrink-0 transition-colors text-white/90 hover:text-white hover:bg-white/20 cursor-pointer flex items-center justify-center"
-    : "size-9 rounded-full aspect-square shrink-0 transition-colors text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer flex items-center justify-center";
+    ? "group size-9 rounded-full aspect-square shrink-0 transition-colors text-white/90 hover:text-white hover:bg-white/20 cursor-pointer flex items-center justify-center"
+    : "group size-9 rounded-full aspect-square shrink-0 transition-colors text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer flex items-center justify-center";
+
+  const infoBtnClass = isInfoOpen
+    ? "group size-9 rounded-full aspect-square shrink-0 transition-colors bg-primary text-primary-foreground font-bold shadow-2xs cursor-pointer flex items-center justify-center"
+    : baseBtnClass;
 
   const settingsBtnClass = isTopPanelOpen
-    ? "size-9 rounded-full aspect-square shrink-0 transition-colors bg-primary text-primary-foreground font-bold shadow-2xs cursor-pointer flex items-center justify-center"
+    ? "group size-9 rounded-full aspect-square shrink-0 transition-colors bg-primary text-primary-foreground font-bold shadow-2xs cursor-pointer flex items-center justify-center"
     : baseBtnClass;
 
   return (
@@ -56,12 +65,18 @@ export function HeaderExtraControls({
       {/* 1. Ikon Info */}
       <button
         type="button"
+        data-info-trigger="true"
         onClick={handleInfo}
-        className={baseBtnClass}
-        title="Informasi Sistem & Pintasan Keyboard"
+        className={infoBtnClass}
+        title={isInfoOpen ? "Tutup Informasi" : "Informasi"}
         aria-label="Informasi"
+        aria-pressed={isInfoOpen}
       >
-        <Info size={20} className="shrink-0" />
+        <Info
+          size={20}
+          data-anim={infoAnim ? "true" : undefined}
+          className="shrink-0 header-anim-info transition-transform duration-200"
+        />
       </button>
 
       {/* 2. Ikon Sortir */}
@@ -92,7 +107,12 @@ export function HeaderExtraControls({
         }
         aria-label="Toggle panel pengaturan atas"
       >
-        <Settings size={20} className="shrink-0" />
+        <Settings
+          size={20}
+          className={`shrink-0 header-anim-gear-cw transition-transform duration-300 ${
+            isTopPanelOpen ? "rotate-180" : ""
+          }`}
+        />
       </button>
     </div>
   );

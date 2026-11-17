@@ -3,6 +3,8 @@ import { ArrowLeft, ArrowRight, RotateCw } from "lucide-react";
 
 export function HeaderNavControls({ isLightOnDark = false }: { isLightOnDark?: boolean } = {}) {
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [undoAnim, setUndoAnim] = useState(false);
+  const [redoAnim, setRedoAnim] = useState(false);
 
   const handleRefresh = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -21,6 +23,8 @@ export function HeaderNavControls({ isLightOnDark = false }: { isLightOnDark?: b
   const handleUndo = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setUndoAnim(true);
+    setTimeout(() => setUndoAnim(false), 450);
 
     // 1. Coba undo teks aktif jika input/textarea/contenteditable sedang fokus
     try {
@@ -47,6 +51,8 @@ export function HeaderNavControls({ isLightOnDark = false }: { isLightOnDark?: b
   const handleRedo = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setRedoAnim(true);
+    setTimeout(() => setRedoAnim(false), 450);
 
     // 1. Coba redo teks aktif jika input/textarea/contenteditable sedang fokus
     try {
@@ -71,8 +77,8 @@ export function HeaderNavControls({ isLightOnDark = false }: { isLightOnDark?: b
   };
 
   const btnClass = isLightOnDark
-    ? "size-9 rounded-full aspect-square shrink-0 transition-colors text-white/90 hover:text-white hover:bg-white/20 cursor-pointer flex items-center justify-center"
-    : "size-9 rounded-full aspect-square shrink-0 transition-colors text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer flex items-center justify-center";
+    ? "group size-9 rounded-full aspect-square shrink-0 transition-colors text-white/90 hover:text-white hover:bg-white/20 cursor-pointer flex items-center justify-center"
+    : "group size-9 rounded-full aspect-square shrink-0 transition-colors text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer flex items-center justify-center";
 
   return (
     <div className="relative z-10 flex items-center gap-0.5 sm:gap-1 shrink-0">
@@ -84,7 +90,11 @@ export function HeaderNavControls({ isLightOnDark = false }: { isLightOnDark?: b
         title="Undo / Riwayat Sebelumnya (Ctrl+Z)"
         aria-label="Undo"
       >
-        <ArrowLeft size={20} className="shrink-0" />
+        <ArrowLeft
+          size={20}
+          data-anim={undoAnim ? "true" : undefined}
+          className="shrink-0 header-anim-arrow-left transition-transform duration-200"
+        />
       </button>
 
       {/* Ikon Refresh: Menggantikan Home di antara panah kiri dan kanan */}
@@ -97,7 +107,7 @@ export function HeaderNavControls({ isLightOnDark = false }: { isLightOnDark?: b
       >
         <RotateCw
           size={20}
-          className={`shrink-0 transition-transform duration-500 ${isRefreshing ? "animate-spin text-white" : ""}`}
+          className={`shrink-0 transition-transform duration-500 ${isRefreshing ? "animate-spin text-white" : "header-anim-refresh"}`}
         />
       </button>
 
@@ -109,7 +119,11 @@ export function HeaderNavControls({ isLightOnDark = false }: { isLightOnDark?: b
         title="Redo / Riwayat Berikutnya (Ctrl+Y)"
         aria-label="Redo"
       >
-        <ArrowRight size={20} className="shrink-0" />
+        <ArrowRight
+          size={20}
+          data-anim={redoAnim ? "true" : undefined}
+          className="shrink-0 header-anim-arrow-right transition-transform duration-200"
+        />
       </button>
     </div>
   );

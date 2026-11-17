@@ -54,7 +54,7 @@ export function ShellLeftSidebar({
       className={`fixed inset-y-0 left-0 z-50 flex ${
         isLeftSidebar75
           ? "w-[75px] bg-primary border-r border-white/20 shadow-xl"
-          : "w-[400px] liquid-glass-sidebar-left"
+          : "w-[360px] liquid-glass-sidebar-left"
       } max-w-[85vw] shrink-0 flex-col transition-all duration-300 ease-in-out ${
         isLeftOpen ? "translate-x-0" : "-translate-x-full"
       }`}
@@ -76,7 +76,7 @@ export function ShellLeftSidebar({
               title="Sembunyikan Navigasi"
               aria-label="Tutup sidebar kiri"
             >
-              <WindowPositionLeftIcon size={24} />
+              <WindowPositionLeftIcon size={24} showArrow={false} />
             </button>
 
             {/* 3 Dots: Klik langsung minimize / switch ke mode ringkas 75px */}
@@ -91,14 +91,14 @@ export function ShellLeftSidebar({
             </button>
           </>
         ) : (
-          /* Mode Ringkas 75px: Hanya 3 Dots untuk mengembalikan ke 400px */
+          /* Mode Ringkas 75px: Hanya 3 Dots untuk mengembalikan ke 360px */
           <div className="w-full flex items-center justify-center">
             <button
               type="button"
               onClick={toggleLeftSidebar75}
               className="size-9 rounded-full aspect-square text-white/80 hover:text-white hover:bg-white/20 active:scale-95 transition-all cursor-pointer flex items-center justify-center shrink-0"
-              title="Perluas ke Lebar Penuh (400px)"
-              aria-label="Perluas ke 400px"
+              title="Perluas ke Lebar Penuh (360px)"
+              aria-label="Perluas ke 360px"
             >
               <MoreHorizontal size={20} className="shrink-0" />
             </button>
@@ -113,10 +113,10 @@ export function ShellLeftSidebar({
           <button
             type="button"
             onClick={() => setSidebarView("navigation")}
-            className={`relative flex-1 h-10 flex items-center justify-center gap-2 px-2 text-xs transition-all cursor-pointer rounded-tl-none rounded-tr-xl -mb-px ${
+            className={`relative flex-1 h-10 flex items-center justify-center gap-2 px-2 text-xs transition-all cursor-pointer -mb-px ${
               sidebarView === "navigation"
-                ? "sidebar-tab-active-glass !border-b-0"
-                : "sidebar-tab-inactive-glass"
+                ? "rounded-tl-none rounded-tr-[28px] sidebar-tab-active-glass !border-b-0"
+                : "rounded-none sidebar-tab-inactive-glass"
             }`}
             title="Navigation"
           >
@@ -128,10 +128,10 @@ export function ShellLeftSidebar({
           <button
             type="button"
             onClick={() => setSidebarView("menu")}
-            className={`relative flex-1 h-10 flex items-center justify-center gap-2 px-2 text-xs transition-all cursor-pointer rounded-tl-xl rounded-tr-none -mb-px ${
+            className={`relative flex-1 h-10 flex items-center justify-center gap-2 px-2 text-xs transition-all cursor-pointer -mb-px ${
               sidebarView === "menu"
-                ? "sidebar-tab-active-glass !border-b-0"
-                : "sidebar-tab-inactive-glass"
+                ? "rounded-tl-[28px] rounded-tr-none sidebar-tab-active-glass !border-b-0"
+                : "rounded-none sidebar-tab-inactive-glass"
             }`}
             title="Menu"
           >
@@ -159,114 +159,7 @@ export function ShellLeftSidebar({
 
         {sidebarView === "navigation" ? (
           <div className="flex flex-col gap-3">
-            {!isLeftSidebar75 ? (
-              <div className="flex flex-col gap-3">
-                {/* 1. Self-Shaping */}
-                <div className="rounded-xl border border-white/15 dark:border-white/10 bg-white/10 dark:bg-white/5 p-2 flex flex-col gap-1">
-                  <span className="text-[10px] font-bold uppercase text-indigo-600 dark:text-indigo-400 px-1 mb-0.5 flex items-center gap-1">
-                    <ShieldCheck className="size-3" /> 1. Self-Shaping (Fase Diri)
-                  </span>
-                  <div className="grid grid-cols-2 gap-1">
-                    {[
-                      { to: "/reliance", label: "Reliance", icon: ShieldCheck },
-                      { to: "/sufficient", label: "Sufficient", icon: CheckCircle2 },
-                      { to: "/improvement", label: "Improvement", icon: TrendingUp },
-                      { to: "/development", label: "Development", icon: Sparkles },
-                    ].map((item) => {
-                      const isActive = pathname === item.to;
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.to}
-                          to={item.to}
-                          onClick={() => {
-                            if (window.innerWidth < 1024) setIsLeftOpen(false);
-                          }}
-                          className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] transition-all border ${
-                            isActive
-                              ? "bg-primary text-white font-semibold border-primary shadow-xs"
-                              : "hover:bg-white/15 dark:hover:bg-white/10 border-transparent text-foreground"
-                          }`}
-                        >
-                          <Icon className="size-3 shrink-0" />
-                          <span className="truncate">{item.label}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* 2. Mutual-Mapping */}
-                <div className="rounded-xl border border-white/15 dark:border-white/10 bg-white/10 dark:bg-white/5 p-2 flex flex-col gap-1">
-                  <span className="text-[10px] font-bold uppercase text-indigo-600 dark:text-indigo-400 px-1 mb-0.5 flex items-center gap-1">
-                    <Workflow className="size-3" /> 2. Mutual-Mapping (Fase Timbal Balik)
-                  </span>
-                  <div className="grid grid-cols-2 gap-1">
-                    {[
-                      { to: "/interact", label: "Interact", icon: MessagesSquare },
-                      { to: "/interest", label: "Interest", icon: Heart },
-                      { to: "/intersect", label: "Intersect", icon: Layers },
-                      { to: "/interdependence", label: "Interdependence", icon: Workflow },
-                    ].map((item) => {
-                      const isActive = pathname === item.to;
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.to}
-                          to={item.to}
-                          onClick={() => {
-                            if (window.innerWidth < 1024) setIsLeftOpen(false);
-                          }}
-                          className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] transition-all border ${
-                            isActive
-                              ? "bg-primary text-white font-semibold border-primary shadow-xs"
-                              : "hover:bg-white/15 dark:hover:bg-white/10 border-transparent text-foreground"
-                          }`}
-                        >
-                          <Icon className="size-3 shrink-0" />
-                          <span className="truncate">{item.label}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* 3. Organization-Optimizing */}
-                <div className="rounded-xl border border-white/15 dark:border-white/10 bg-white/10 dark:bg-white/5 p-2 flex flex-col gap-1">
-                  <span className="text-[10px] font-bold uppercase text-indigo-600 dark:text-indigo-400 px-1 mb-0.5 flex items-center gap-1">
-                    <Eye className="size-3" /> 3. Organization-Optimizing (Fase Organisasi)
-                  </span>
-                  <div className="grid grid-cols-2 gap-1">
-                    {[
-                      { to: "/insider", label: "Insider", icon: Eye },
-                      { to: "/insight", label: "Insight", icon: Lightbulb },
-                      { to: "/outward", label: "Outward", icon: Compass },
-                      { to: "/outlook", label: "Outlook", icon: TrendingUp },
-                    ].map((item) => {
-                      const isActive = pathname === item.to;
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.to}
-                          to={item.to}
-                          onClick={() => {
-                            if (window.innerWidth < 1024) setIsLeftOpen(false);
-                          }}
-                          className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] transition-all border ${
-                            isActive
-                              ? "bg-primary text-white font-semibold border-primary shadow-xs"
-                              : "hover:bg-white/15 dark:hover:bg-white/10 border-transparent text-foreground"
-                          }`}
-                        >
-                          <Icon className="size-3 shrink-0" />
-                          <span className="truncate">{item.label}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            ) : (
+            {isLeftSidebar75 && (
               /* Mode Ringkas 75px: 12 ikon modul Phase */
               <div className="flex flex-col gap-1.5 items-center">
                 {[
